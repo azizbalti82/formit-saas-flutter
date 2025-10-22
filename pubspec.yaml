@@ -1,0 +1,81 @@
+name: formbuilder
+description: "Clean Drag & Drop form builder"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shadcn_ui: ^0.26.0
+  blurrycontainer: ^2.1.0
+  window_manager: ^0.5.1
+  sidebarx: ^0.17.2
+  forui: ^0.14.1
+  flutter_secure_storage: ^9.2.4
+  cupertino_icons: ^1.0.8
+  flutter_svg: ^2.2.0
+  blur: ^4.0.0
+  percent_indicator: ^4.2.5
+  modal_bottom_sheet: ^3.0.0
+  toastification: ^2.3.0
+  top_modal_sheet: ^2.1.0
+  easy_url_launcher: ^0.0.7
+  shimmer: ^3.0.0
+  lottie: ^3.0.0
+  dio: ^5.4.0
+  auto_size_text: ^3.0.0
+  google_fonts: ^6.3.0
+  font_awesome_flutter: ^10.9.1
+  flutter_layout_grid: ^2.0.8
+  flutter_staggered_grid_view: ^0.7.0
+  web_splash: ^1.0.4
+  flutter_dotenv: ^6.0.0
+  hugeicons_pro: ^0.0.2
+  get: ^4.7.2
+  shared_preferences: ^2.5.3
+  file_picker: ^10.3.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.3
+  rename_app: ^1.6.5 #flutter pub run rename_app:main all="FormIt"
+
+
+flutter_launcher_icons:
+  image_path: "assets/logo/logo.png"
+  min_sdk_android: 21
+  adaptive_icon_foreground: "assets/logo/logo.png"  # Path to foreground image
+  adaptive_icon_background: "#FFFFFF"
+  web:
+    generate: true
+    image_path: "assets/logo/logo.png"
+    background_color: "#FFFFFF"  # White background
+    theme_color: "#hexcode"
+  windows:
+    generate: true
+    image_path: "assets/logo/logo.png"
+    icon_size: 60
+    background_color: "#FFFFFF"  # White background
+    theme_color: "#hexcode"
+  macos:
+    generate: true
+    image_path: "assets/logo/logo.png"
+  android:
+    generate: true
+    image_path: "assets/logo/logo.png"
+    color: "#FFFFFF"
+    background_color: "#FFFFFF"  # White background
+    icon_size: 144  # Adjust this for Android icons
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/logo/
+    - assets/vectors/
+    - assets/animation/
