@@ -36,7 +36,8 @@ dependencies:
   hugeicons_pro: ^0.0.2
   get: ^4.7.2
   shared_preferences: ^2.5.3
-  file_picker: ^10.3.2
+  image_picker: ^1.2.0
+  file_picker: ^8.0.3
 
 dev_dependencies:
   flutter_test:
@@ -47,9 +48,9 @@ dev_dependencies:
 
 
 flutter_launcher_icons:
-  image_path: "assets/logo/logo.png"
+  image_path: "assets/logo/logo_mobile.png"
   min_sdk_android: 21
-  adaptive_icon_foreground: "assets/logo/logo.png"  # Path to foreground image
+  adaptive_icon_foreground: "assets/logo/logo_mobile.png"  # Path to foreground image
   adaptive_icon_background: "#FFFFFF"
   web:
     generate: true
@@ -67,7 +68,7 @@ flutter_launcher_icons:
     image_path: "assets/logo/logo.png"
   android:
     generate: true
-    image_path: "assets/logo/logo.png"
+    image_path: "assets/logo/logo_mobile.png"
     color: "#FFFFFF"
     background_color: "#FFFFFF"  # White background
     icon_size: 144  # Adjust this for Android icons
@@ -79,3 +80,4 @@ flutter:
     - assets/logo/
     - assets/vectors/
     - assets/animation/
+    - assets/icons/

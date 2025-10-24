@@ -4,8 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
 import '../services/provider.dart';
 import '../services/themeService.dart';
@@ -115,6 +113,7 @@ class CustomButtonOutline extends StatefulWidget {
   final Color? textColor;
   final bool isLoading;
   final IconData? icon;
+  final String? iconSvg;
   final double? size;
   final bool isFullRow;
   final double height;
@@ -125,6 +124,7 @@ class CustomButtonOutline extends StatefulWidget {
     Key? key,
     this.text = "",
     this.icon,
+    this.iconSvg,
     this.isFullRow = true,
     this.size,
     required this.onPressed,
@@ -183,7 +183,13 @@ class _CustomButtonOutlineState extends State<CustomButtonOutline> {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                if (widget.icon != null)
+                if (widget.icon == null && widget.iconSvg!=null)
+                  SvgPicture.asset(
+                  "assets/icons/${widget.iconSvg}.svg",
+                  width: 22.0,
+                  color: textColor,
+                ),
+                if (widget.icon != null && widget.iconSvg==null)
                   Icon(widget.icon,color: textColor,),
                 if (widget.isLoading) const SizedBox(width: 8),
                 if (widget.isLoading)
@@ -244,7 +250,7 @@ Widget customInput(
         validator: isEmail
             ? (val) {
           if (val == null || val.isEmpty) {
-            return "Please enter your email (optional)";
+            return "Please enter your email";
           }
           final emailRegex =
           RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$"); // basic email validation
@@ -292,149 +298,4 @@ Widget customInput(
       );
     },
   );
-}
-
-
-Widget customWordInput(
-    theme theme,
-    TextEditingController controller,
-    String? placeholder,
-    String? text,
-    BuildContext context,
-    bool isShown,
-    theme t
-    ) {
-  final ValueNotifier<bool> obscure = ValueNotifier<bool>(true);
-  final GlobalKey textFieldKey = GlobalKey();
-
-  return ValueListenableBuilder(
-      valueListenable: obscure,
-      builder: (context, value, child) {
-        return RawKeyboardListener(
-            focusNode: FocusNode(),
-            onKey: (event) {
-              if (event.isKeyPressed(LogicalKeyboardKey.backspace)) {
-                final text = controller.text;
-                final selection = controller.selection;
-
-                if (selection.start == selection.end) {
-                  // No selection, just caret
-                  final cursorPos = selection.start;
-                  if (cursorPos > 0) {
-                    // Find the word boundaries around cursor
-                    final beforeCursor = text.substring(0, cursorPos);
-                    final afterCursor = text.substring(cursorPos);
-
-                    // Find start of current word (last space before cursor or beginning)
-                    int wordStart = beforeCursor.lastIndexOf(' ');
-                    if (wordStart == -1) {
-                      wordStart = 0; // Beginning of text
-                    } else {
-                      wordStart += 1; // After the space
-                    }
-
-                    // Check if cursor is at the end of a word or in the middle
-                    if (cursorPos > wordStart) {
-                      // We're in a word, delete the entire word
-                      String newText = text.substring(0, wordStart) + afterCursor;
-
-                      // Remove any double spaces that might result
-                      newText = newText.replaceAll(RegExp(r'\s+'), ' ');
-
-                      controller.text = newText;
-                      controller.selection = TextSelection.collapsed(offset: wordStart);
-                    } else if (cursorPos > 0 && text[cursorPos - 1] == ' ') {
-                      // We're right after a space, just delete the space
-                      String newText = text.substring(0, cursorPos - 1) + afterCursor;
-                      controller.text = newText;
-                      controller.selection = TextSelection.collapsed(offset: cursorPos - 1);
-                    }
-                  }
-                } else {
-                  // If user selected text → delete selection normally
-                  final newText = text.replaceRange(selection.start, selection.end, '');
-                  controller.text = newText;
-                  controller.selection = TextSelection.collapsed(offset: selection.start);
-                }
-              }
-            },
-            child: Stack(
-              children: [
-                TextFormField(
-                  key: textFieldKey,
-                  controller: controller,
-                  obscureText: false,
-                  maxLines: 4,
-                  minLines: 1,
-                  style: TextStyle(color: theme.textColor),
-                  keyboardType: TextInputType.text,
-                  onChanged: (text) {
-                    // Ensure only single spaces between words
-                    String processedText = text.replaceAll(RegExp(r'\s+'), ' ');
-
-                    // Only update if the text actually changed
-                    if (processedText != text) {
-                      final cursorPos = controller.selection.baseOffset;
-                      controller.text = processedText;
-
-                      // Adjust cursor position if text was shortened
-                      final newCursorPos = cursorPos > processedText.length
-                          ? processedText.length
-                          : cursorPos;
-
-                      controller.selection = TextSelection.collapsed(offset: newCursorPos);
-                    }
-                  },
-                  decoration: InputDecoration(
-                    suffixIcon: isShown
-                        ? IconButton(
-                      icon: Icon(
-                        Icons.copy,
-                        color: theme.secondaryTextColor,
-                      ),
-                      onPressed: (){
-
-                      },
-                    )
-                        : const SizedBox.shrink(),
-                    hintText: placeholder ?? 'Write something...',
-                    hintStyle: TextStyle(
-                      fontWeight: FontWeight.w300,
-                      color: theme.secondaryTextColor,
-                    ),
-                    filled: true,
-                    fillColor: theme.cardColor,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 16.0,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: theme.border, width: 1),
-                    ),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: theme.border, width: 1),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: theme.border, width: 1),
-                    ),
-                  ),
-                  textAlignVertical: TextAlignVertical.center,
-                ),
-                if(!isShown)
-                  Positioned.fill(
-                    child: BlurryContainer(
-                      blur: 4,
-                      elevation: 0,
-                      color: t.cardColor.withOpacity(0.2),
-                      borderRadius: const BorderRadius.all(Radius.circular(12)),
-                      child: const SizedBox.expand(),
-                    ),
-                  ),
-              ],
-            )
-        );
-      });
 }

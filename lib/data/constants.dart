@@ -1,1 +1,3 @@
-String version = '0.0.1 Alpha';
+class Constants{
+  static String notReadyMsg = "This feature is not ready yet";
+}

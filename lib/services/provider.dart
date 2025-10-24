@@ -12,14 +12,7 @@ class Provider extends GetxController {
 
   //settings
   RxBool isDark = false.obs;
-  RxBool isAutoSync = false.obs;
-  RxBool isOfflineMode = false.obs;
-  RxInt downloadLimit = (-1).obs; // -1=unlimited & 500 means 500kb
-  RxInt uploadLimit = (-1).obs; // -1=unlimited & 500 means 500kb
-  RxString storageLocation = ''.obs;
   RxString language = 'en'.obs;
-  RxString uploadLimitUnit = 'KB'.obs;
-  RxString downloadLimitUnit = 'KB'.obs;
 
   //quick
   RxString newSelectedStoragePath = ''.obs;
@@ -48,13 +41,6 @@ class Provider extends GetxController {
   void setUserName(String name) => user.value = user.value.copyWith(name: name);
   void setUserColor(Color color) => user.value = user.value.copyWith(color: color);
   //settings
-  void setAutoSync(bool value) => isAutoSync.value = value;
-  void setOfflineMode(bool value) => isOfflineMode.value = value;
-  void setDownloadLimit(int value) => downloadLimit.value = value;
-  void setUploadLimit(int value) => uploadLimit.value = value;
-  void setUploadLimitUnit(String value) => uploadLimitUnit.value = value;
-  void setDownloadLimitUnit(String value) => downloadLimitUnit.value = value;
-  void setStorageLocation(String value) => storageLocation.value = value;
   void setLanguage(String value) => language.value = value;
 
 }

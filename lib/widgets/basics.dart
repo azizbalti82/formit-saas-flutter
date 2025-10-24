@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
+
 import '../services/themeService.dart';
 
 Widget simpleAppBar(BuildContext context, {required String text,Widget? child,required theme t}) {

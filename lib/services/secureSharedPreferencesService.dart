@@ -2,13 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import '../backend/models/userMeta.dart';
-import '../tools/tools.dart';
-
 class SecureStorageService {
   final storage = FlutterSecureStorage(
     aOptions: AndroidOptions(

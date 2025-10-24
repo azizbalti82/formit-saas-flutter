@@ -1,25 +1,17 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
-import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:forui/forui.dart';
 import 'package:get/get.dart';
-import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:formbuilder/screens/startScreen/newVaultScreen.dart';
 
 import '../../main.dart';
 import '../../services/provider.dart';
-import '../../services/secureSharedPreferencesService.dart';
-import '../../services/sharedPreferencesService.dart';
 import '../../services/themeService.dart';
 import '../../tools/tools.dart';
-import '../../widgets/complex.dart';
 import '../../widgets/form.dart';
-import '../../widgets/messages.dart';
-import 'openVaultScreen.dart';
+import 'login.dart';
 
 class StartScreen extends StatefulWidget {
   const StartScreen({super.key,required this.canBack});
@@ -275,141 +267,13 @@ class _AppScreenState extends State<StartScreen> {
 
   signInButton() {
     return CustomButtonOutline(isLoading: false,height:50,isFullRow:false,borderSize:0.6,backgroundColor: t.secondaryTextColor,text: 'Create account', t: t,onPressed: (){
-      navigateTo(context, NewVaultScreen(t: t),false);
+      navigateTo(context, Login(t: t,isLogin: false,),false);
     });
   }
 
   loginButton() {
     return CustomButton(isLoading: false,isFullRow:false, t: t,onPressed: (){
-      navigateTo(context, OpenVaultScreen(t: t),false);
+      navigateTo(context, Login(t: t,isLogin: true,),false);
     }, text: 'Log in',);
   }
-  /*
-  recentButton() {
-    return TextButton(
-      onPressed: () {
-        showDialogRecentVaults(context,t);
-      },
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(HugeIconsStroke.clock02,color: Colors.white,size: 17,),
-          SizedBox(width: 8,),
-          Text(
-            'Recent Vaults',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.w200,
-              decoration: TextDecoration.underline,
-            ),
-          ),
-        ],
-      )
-    );
-  }
-   */
-}
-
-Future showDialogRecentVaults(BuildContext context,theme t) async {
-  //get keys list
-  List<String> keys = await SecureStorageService().getVaultKeys();
-  String? current = await SecureStorageService().getCurrentKey();
-
-
-  return dialogBuilder(context:context,builder: (context, style, animation) => FDialog(
-    style: style,
-    animation: animation,
-    title: const Text('Recent Vaults',style:TextStyle(fontSize: 22) ,),
-    body: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SizedBox(height: 20,),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Icon(HugeIconsStroke.informationCircle,color: t.secondaryTextColor,size: 14,),
-            SizedBox(width:8,),
-            Expanded(child: const Text(
-              'This list contains only the vaults that you own',
-              softWrap: true,
-              textAlign: TextAlign.left,
-            ),)
-          ],
-        ),
-        const SizedBox(height: 30,),
-        SizedBox(
-          height: MediaQuery.of(context).size.height*0.2,
-
-          child: SingleChildScrollView(
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: keys.isEmpty? [ Text("empty") ] : keys.map((k)=>
-                    Padding(padding: EdgeInsets.only(bottom: 5),child: FSidebarItem(
-                      style: FSidebarItemStyle(
-                        backgroundColor: FWidgetStateMap.all(t.cardColor),
-                        iconStyle: FWidgetStateMap.all(
-                          IconThemeData(
-                            color: t.secondaryTextColor, // your theme color
-                            size: 20,
-                          ),
-                        ),
-
-                        collapsibleIconStyle: FWidgetStateMap.all(
-                          IconThemeData(color: t.secondaryTextColor, size: 18),
-                        ),
-
-                        borderRadius: BorderRadius.circular(8),
-
-                        tappableStyle: FTappableStyle(), // default tap behavior
-
-                        focusedOutlineStyle: FFocusedOutlineStyle(
-                          color: t.accentColor, // outline color
-                          width: 2, borderRadius: BorderRadius.circular(10),                                   // thickness
-                        ),
-
-                        textStyle: FWidgetStateMap.all(
-                          TextStyle(color: t.textColor, fontSize: 16),
-                        ),
-
-                      ).call,
-
-
-                      label: Row(
-                        children: [
-                          Expanded(child: Text(
-                            k,
-                            style: TextStyle(fontSize: 14),
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.start,
-                          )),
-                          SizedBox(width:10),
-                          (current!=null && current==k)?
-                          FBadge(child: const Text('Current',style: TextStyle(fontSize: 12),))
-                      : Icon(HugeIconsStroke.arrowRight01,color: t.secondaryTextColor,)
-                        ],
-                      ),
-                      onPress: () {
-                        if(current!=null && current==k){
-                          Navigator.pop(context);
-                        }else{
-                          //....
-                        }
-                      },
-                    )),).toList()
-            ),
-          ),
-        ),
-      ],
-    ),
-
-    actions: [
-      FButton(
-        style: FButtonStyle.outline(),
-        onPress: () => Navigator.of(context).pop(),
-        child: const Text('Close'),
-      ),
-    ],
-  ));
 }
