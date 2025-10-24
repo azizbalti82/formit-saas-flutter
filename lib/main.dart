@@ -63,7 +63,7 @@ Future<void> main() async {
   provider.setLanguage(lang);
   provider.setUser(user);
   //check if there is a logged in key (currentKey)
-  bool logged = await SecureStorageService().getCurrentKey() != null;
+  bool logged = true;//await SecureStorageService().getCurrentKey() != null;
 
   runApp(ToastificationWrapper( child: Main(isLogged : logged)));
 }

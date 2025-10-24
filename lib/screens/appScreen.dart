@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:formbuilder/backend/models/userMeta.dart';
 import 'package:formbuilder/screens/startScreen/startScreen.dart';
+import 'package:formbuilder/widgets/form.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
@@ -41,6 +42,7 @@ class _AppScreenState extends State<AppScreen> {
 
   List<String> currentPath = ["Home"];
   bool logoutLoading = false;
+  Uint8List? imageBytes;
 
   @override
   void initState() {
@@ -106,31 +108,53 @@ class _AppScreenState extends State<AppScreen> {
                         children: [
                           const Text('Overview'),
                           Spacer(),
-                          collapseWidget()
+                          collapseWidget(),
                         ],
                       ),
                       children: [
                         SizedBox(height: 5),
-                        menuItem(title:'Home',icon:HugeIconsStroke.home04,onClick:(){
-                          setState(() {
-                            currentPath = ["Home"];
-                          });
-                        }),
-                        menuItem(title:'Search',icon:HugeIconsStroke.search01,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        }),
-                        menuItem(title:'Templates',icon:HugeIconsStroke.layoutGrid,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                          setState(() {
-                            currentPath = ["Templates"];
-                          });
-                        }),
-                        menuItem(title:'Trash',icon:HugeIconsStroke.delete02,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        }),
-                        menuItem(title:'Upgrade plan',icon:HugeIconsStroke.starAward01,weight:FontWeight.w600,color: t.accentColor,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        })
+                        menuItem(
+                          title: 'Home',
+                          icon: HugeIconsStroke.home04,
+                          onClick: () {
+                            setState(() {
+                              currentPath = ["Home"];
+                            });
+                          },
+                        ),
+                        menuItem(
+                          title: 'Search',
+                          icon: HugeIconsStroke.search01,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
+                        menuItem(
+                          title: 'Templates',
+                          icon: HugeIconsStroke.layoutGrid,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                            setState(() {
+                              currentPath = ["Templates"];
+                            });
+                          },
+                        ),
+                        menuItem(
+                          title: 'Trash',
+                          icon: HugeIconsStroke.delete02,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
+                        menuItem(
+                          title: 'Upgrade plan',
+                          icon: HugeIconsStroke.starAward01,
+                          weight: FontWeight.w600,
+                          color: t.accentColor,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
                       ],
                     ),
                     FSidebarGroup(
@@ -143,7 +167,10 @@ class _AppScreenState extends State<AppScreen> {
                             children: [
                               const Text(
                                 'Dark mode',
-                                style: TextStyle(fontSize: 13.2,fontWeight: FontWeight.w500),
+                                style: TextStyle(
+                                  fontSize: 13.2,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                               const Spacer(),
                               SizedBox(
@@ -157,8 +184,9 @@ class _AppScreenState extends State<AppScreen> {
                                       await SharedPrefService.saveIsDark(
                                         !provider.isDark.value,
                                       );
-                                      provider.setIsDark(!provider.isDark.value);
-
+                                      provider.setIsDark(
+                                        !provider.isDark.value,
+                                      );
                                     },
                                   ),
                                 ),
@@ -172,25 +200,47 @@ class _AppScreenState extends State<AppScreen> {
                             provider.setIsDark(!provider.isDark.value);
                           },
                         ),
-                        menuItem(title:'Language',icon:HugeIconsStroke.translate,onClick:(){
-                          showMsg(
-                            "We Support Only English For Now",
-                            context,
-                            t,
-                          );
-                        }),
-                        menuItem(title:'Domains',icon:HugeIconsStroke.internet,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        }),
-                        menuItem(title:'Notifications',icon:HugeIconsStroke.notification01,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        }),
-                        menuItem(title:'Billing & usage',icon:HugeIconsStroke.masterCard,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        }),
-                        menuItem(title:'Log out',icon:HugeIconsStroke.login02,color: t.errorColor,isLoading:logoutLoading,onClick:(){
-                          logout();
-                        }),
+                        menuItem(
+                          title: 'Language',
+                          icon: HugeIconsStroke.translate,
+                          onClick: () {
+                            showMsg(
+                              "We Support Only English For Now",
+                              context,
+                              t,
+                            );
+                          },
+                        ),
+                        menuItem(
+                          title: 'Domains',
+                          icon: HugeIconsStroke.internet,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
+                        menuItem(
+                          title: 'Notifications',
+                          icon: HugeIconsStroke.notification01,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
+                        menuItem(
+                          title: 'Billing & usage',
+                          icon: HugeIconsStroke.masterCard,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
+                        menuItem(
+                          title: 'Log out',
+                          icon: HugeIconsStroke.login02,
+                          color: t.errorColor,
+                          isLoading: logoutLoading,
+                          onClick: () {
+                            logout();
+                          },
+                        ),
                       ],
                     ),
 
@@ -198,30 +248,53 @@ class _AppScreenState extends State<AppScreen> {
                       label: const Text('Help'),
                       children: [
                         SizedBox(height: 5),
-                        menuItem(title:'Contact support',icon:HugeIconsStroke.message01,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        }),
-                        menuItem(title:'Change log',icon:HugeIconsStroke.sparkles,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        }),
-                        menuItem(title:'Privacy policy',icon:HugeIconsStroke.lockPassword,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        }),
-                        menuItem(title:'Terms of service',icon:HugeIconsStroke.service,onClick:(){
-                          showMsg(Constants.notReadyMsg, context, t);
-                        }),
-                        menuItem(title:'Website',icon:HugeIconsStroke.globe02,onClick:(){
-                          EasyLauncher.url(
-                            url:
-                            "https://azizbalti.netlify.app/projects/web/formbuilder/",
-                          );
-                        }),
-                        menuItem(title:'Developer Website',icon:HugeIconsSolid.developer,onClick:(){
-                          EasyLauncher.url(
-                            url:
-                            "https://azizbalti.netlify.app",
-                          );
-                        }),
+                        menuItem(
+                          title: 'Contact support',
+                          icon: HugeIconsStroke.message01,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
+                        menuItem(
+                          title: 'Change log',
+                          icon: HugeIconsStroke.sparkles,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
+                        menuItem(
+                          title: 'Privacy policy',
+                          icon: HugeIconsStroke.lockPassword,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
+                        menuItem(
+                          title: 'Terms of service',
+                          icon: HugeIconsStroke.service,
+                          onClick: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
+                        ),
+                        menuItem(
+                          title: 'Website',
+                          icon: HugeIconsStroke.globe02,
+                          onClick: () {
+                            EasyLauncher.url(
+                              url:
+                                  "https://azizbalti.netlify.app/projects/web/formbuilder/",
+                            );
+                          },
+                        ),
+                        menuItem(
+                          title: 'Developer Website',
+                          icon: HugeIconsSolid.developer,
+                          onClick: () {
+                            EasyLauncher.url(
+                              url: "https://azizbalti.netlify.app",
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ],
@@ -235,10 +308,8 @@ class _AppScreenState extends State<AppScreen> {
               children: [
                 Row(
                   children: [
-                    if(!provider.isSideBarOpen.value)
-                    collapseWidget(),
-                    if(!provider.isSideBarOpen.value)
-                      SizedBox(width: 10,),
+                    if (!provider.isSideBarOpen.value) collapseWidget(),
+                    if (!provider.isSideBarOpen.value) SizedBox(width: 10),
                     pathWidgetBuilder(currentPath),
                     Spacer(),
                     FButton.icon(
@@ -250,15 +321,21 @@ class _AppScreenState extends State<AppScreen> {
                         crossAxisAlignment: CrossAxisAlignment.center,
 
                         children: [
-                          SizedBox(width: 4,),
+                          SizedBox(width: 4),
                           Icon(
                             HugeIconsStroke.folderAdd,
                             color: t.textColor,
                             size: 16,
                           ),
                           SizedBox(width: 10),
-                          Text("New collection", style: TextStyle(fontSize: 14,fontWeight: FontWeight.w500)),
-                          SizedBox(width: 10,),
+                          Text(
+                            "New collection",
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(width: 10),
                         ],
                       ),
                     ),
@@ -269,7 +346,7 @@ class _AppScreenState extends State<AppScreen> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          SizedBox(width: 4,),
+                          SizedBox(width: 4),
                           Icon(
                             HugeIconsStroke.add01,
                             color: t.bgColor,
@@ -285,7 +362,7 @@ class _AppScreenState extends State<AppScreen> {
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(width: 10,),
+                          SizedBox(width: 10),
                         ],
                       ),
                     ),
@@ -308,7 +385,396 @@ class _AppScreenState extends State<AppScreen> {
     });
   }
 
-  Future showDialogDeleteVault() async {
+  Future showDialogNewFolder() async {
+    final TextEditingController inputController = TextEditingController();
+    return dialogBuilder(
+      context: context,
+      builder: (context, style, animation) => FDialog(
+        style: style,
+        animation: animation,
+        title: const Text(
+          "Create New Collection",
+          style: TextStyle(fontSize: 22),
+        ),
+        body: Column(
+          children: [
+            SizedBox(height: 40),
+            FTextField(
+              controller: inputController, // TextEditingController
+              hint: 'Enter Collection Name',
+              maxLines: 1,
+              clearable: (value) => value.text.isNotEmpty,
+            ),
+          ],
+        ),
+        actions: [
+          FButton(
+            onPress: () {
+              showMsg(
+                "Collection ${inputController.text} created!",
+                context,
+                t,
+              );
+              Navigator.pop(context);
+            },
+            child: const Text('Create Collection'),
+          ),
+        ],
+      ),
+    );
+  }
+  Future showDialogProfile() async {
+    return dialogBuilder(
+      context: context,
+      builder: (context, style, animation) => FDialog(
+        style: style,
+        animation: animation,
+        title: const Text("Edit Profile", style: TextStyle(fontSize: 22)),
+        body: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.7, // 60% of screen height
+          child: Padding(
+            padding: const EdgeInsets.only(top: 32),
+            child: FTabs(
+              initialIndex: 0,
+              onPress: (index) {},
+              children: [
+                FTabEntry(
+                    label: Text('Info'),
+                    child: Expanded(child: accountInfoWidget()
+                )),
+                FTabEntry(
+                  label: Text('Advanced'),
+                  child: Expanded(child: accountAdvancedWidget()),
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [],
+      ),
+    );
+  }
+  userProfileImage(UserMeta value) {
+    return FAvatar.raw(
+      size: 25,
+      style: FAvatarStyle(
+        backgroundColor: provider.user.value.color,
+        foregroundColor: t.textColor,
+        textStyle: TextStyle(),
+      ),
+      child: Text(provider.user.value.name.substring(0, 1)),
+    );
+  }
+
+  collapseWidget() {
+    return FButton.icon(
+      onPress: () async {
+        provider.toggleSideBar();
+        //update settings:
+        await SharedPrefService.saveIsSideBarOpen(provider.isSideBarOpen.value);
+      },
+      style: FButtonStyle.ghost(),
+      child: Icon(
+        provider.isSideBarOpen.value
+            ? HugeIconsStroke.sidebarLeft01
+            : HugeIconsStroke.sidebarRight01,
+        color: t.textColor,
+      ),
+    );
+  }
+
+  menuItem({
+    required String title,
+    required IconData icon,
+    required Function() onClick,
+    Color? color,
+    FontWeight? weight,
+    bool isLoading = false,
+  }) {
+    return FSidebarItem(
+      icon: Icon(icon, color: color),
+      label: Row(
+        children: [
+          Text(
+            title,
+            style: TextStyle(
+              fontSize: 13.2,
+              fontWeight: weight ?? FontWeight.w500,
+              color: color,
+            ),
+          ),
+          Spacer(),
+          if (isLoading)
+            SizedBox(
+              width: 10,
+              height: 10,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: color ?? t.textColor,
+              ),
+            ),
+        ],
+      ),
+      onPress: onClick,
+    );
+  }
+
+  Widget pathWidgetBuilder(List<String> paths) {
+    paths = paths.reversed.toList();
+    paths.add("FormIt");
+    paths = paths.reversed.toList();
+
+    return FBreadcrumb(
+      children: List.generate(paths.length, (index) {
+        final isLast = index == paths.length - 1;
+        final isFirst = index == 0;
+        final segment = paths[index];
+
+        return FBreadcrumbItem(
+          current: isLast,
+          onPress: isLast || isFirst
+              ? null
+              : () {
+                  // Handle navigation or logic when clicking breadcrumb
+                  debugPrint('Navigate to: ${paths.take(index + 1).join('/')}');
+                  setState(() {
+                    currentPath = paths.take(index + 1).toList().sublist(1);
+                  });
+                },
+          child: Text(segment),
+        );
+      }),
+    );
+  }
+
+  Future<void> logout() async {
+    setState(() {
+      logoutLoading = true;
+    });
+
+    try {
+      bool logoutSuccess = true;
+      await Future.delayed(
+        const Duration(seconds: 2),
+      ); //simulate a logout api call
+      if (logoutSuccess) {
+        //remove token from shared preferences
+
+        //navigate to login screen
+        navigateTo(context, StartScreen(canBack: false), true);
+        //show message
+        showSuccess("Logout Succeed", context);
+      } else {
+        showError("Logout Failed", context);
+      }
+    } finally {
+      setState(() {
+        logoutLoading = false;
+      });
+    }
+  }
+
+  Widget accountInfoWidget() {
+    final firstNameController = TextEditingController(text: "aziz");
+    final lastNameController = TextEditingController(text: "balti");
+
+      return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(height: 20),
+          InkWell(
+            onTap: () async {
+              var image = (await pickImage());
+              if (image == null) return;
+              setState(() {
+                imageBytes = image;
+              });
+            },
+            borderRadius: BorderRadius.circular(300),
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: t.textColor.withOpacity(0.1),
+                  ),
+                ),
+                (imageBytes == null)
+                    ? Icon(
+                  Icons.add_rounded,
+                  size: 50,
+                  color: t.textColor.withOpacity(0.3),
+                )
+                    : ClipOval(
+                  child: Image.memory(
+                    imageBytes!,
+                    width: 100,
+                    height: 100,
+                    fit: BoxFit.cover, // fills and crops nicely
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(
+                child: FTextField(
+                  controller: firstNameController, // TextEditingController
+                  hint: 'First name',
+                  maxLines: 1,
+                  clearable: (value) => value.text.isNotEmpty,
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: FTextField(
+                  controller: lastNameController, // TextEditingController
+                  hint: 'Last name',
+                  maxLines: 1,
+                  clearable: (value) => value.text.isNotEmpty,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          GestureDetector(
+            onTap: (){
+              showMsg("update email", context, t);
+            },
+            child: FCard.raw(
+              child: Padding(padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(width: 20,),
+                      Text("aziz@gmail.com",textAlign: TextAlign.center,),
+                      Spacer(),
+                      Padding(padding: EdgeInsets.symmetric(horizontal: 7,vertical: 2),child:FButton.icon(
+                        style: FButtonStyle.primary(),
+                        onPress: () {
+                          showMsg("update email", context, t);
+                        },
+                        child: const Icon(HugeIconsStroke.edit04),
+                      ),)
+
+                    ],
+                  )
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
+          GestureDetector(
+            onTap: (){
+              showMsg("update password", context, t);
+            },
+            child: FCard.raw(
+              child: Padding(padding: const EdgeInsets.symmetric(vertical: 5),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(width: 20,),
+                      Text("**************",textAlign: TextAlign.center,),
+                      Spacer(),
+                      Padding(padding: EdgeInsets.symmetric(horizontal: 7,vertical: 2),child:FButton.icon(
+                        style: FButtonStyle.primary(),
+                        onPress: () {
+                          showMsg("update password", context, t);
+                        },
+                        child: const Icon(HugeIconsStroke.edit04),
+                      ),)
+
+                    ],
+                  )
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+          FButton(
+            onPress: () {
+              showMsg("Profile updated!", context, t);
+              Navigator.pop(context);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget accountAdvancedWidget() {
+    return
+      SingleChildScrollView(
+      child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(height: 20),
+        Row(
+          children: [
+            SvgPicture.asset(
+              "assets/icons/danger.svg",
+              width: 22.0,
+              color: t.textColor,
+            ),
+            SizedBox(width: 8),
+            Text(
+              "Danger zone",
+              style: TextStyle(
+                color: t.textColor,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 10),
+        Text(
+          "This will permanently delete your entire account. All your forms, submissions and workspaces will be deleted.",
+          textAlign: TextAlign.start,
+        ),
+        SizedBox(height: 20),
+        FButton(
+          onPress: (){
+            showDialogDeleteAccount();
+          },
+          style: FButtonStyle(
+            decoration: FWidgetStateMap.all(
+              BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            contentStyle: FButtonContentStyle(
+              textStyle: FWidgetStateMap.all(
+                const TextStyle(color: Colors.white),
+              ),
+              iconStyle: FWidgetStateMap.all(
+                const IconThemeData(color: Colors.white),
+              ),
+            ),
+            iconContentStyle: FButtonIconContentStyle(
+              iconStyle: FWidgetStateMap.all(
+                const IconThemeData(color: Colors.white),
+              ),
+            ),
+            tappableStyle: FTappableStyle(), // default interactions
+            focusedOutlineStyle: FFocusedOutlineStyle(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ).call,
+          child: const Text('Delete Account'),
+        ),
+      ],
+    )
+      );
+  }
+  Future showDialogDeleteAccount() async {
     return dialogBuilder(
       context: context,
       builder: (context, style, animation) => FDialog(
@@ -322,15 +788,19 @@ class _AppScreenState extends State<AppScreen> {
           children: [
             SizedBox(height: 20),
             const Text(
-              'This action is permanent and will delete this vault with its data.',
+              'This action is permanent and will delete this account with its data.',
             ),
-            const Text('Export your files first if you want to keep them.'),
             SizedBox(height: 20),
           ],
         ),
         actions: [
           FButton(
-            onPress: () => Navigator.of(context).pop(),
+            onPress: (){
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              navigateTo(context, StartScreen(canBack: false), true);
+              showMsg("Account deleted!", context, t);
+            },
             style: FButtonStyle(
               decoration: FWidgetStateMap.all(
                 BoxDecoration(
@@ -357,7 +827,7 @@ class _AppScreenState extends State<AppScreen> {
                 borderRadius: BorderRadius.circular(8),
               ),
             ).call,
-            child: const Text('Delete Vault'),
+            child: const Text('Delete Account'),
           ),
 
           FButton(
@@ -368,182 +838,6 @@ class _AppScreenState extends State<AppScreen> {
         ],
       ),
     );
-  }
-
-  Future showDialogNewFolder() async {
-    final TextEditingController inputController = TextEditingController();
-    return dialogBuilder(
-      context: context,
-      builder: (context, style, animation) => FDialog(
-        style: style,
-        animation: animation,
-        title: const Text("Create New Collection", style: TextStyle(fontSize: 22)),
-        body: Column(
-          children: [
-            SizedBox(height: 40),
-            FTextField(
-              controller: inputController, // TextEditingController
-              hint: 'Enter Collection Name',
-              maxLines: 1,
-              clearable: (value) => value.text.isNotEmpty,
-            ),
-          ],
-        ),
-        actions: [
-          FButton(
-            onPress: () {
-              showMsg("Collection ${inputController.text} created!", context, t);
-              Navigator.pop(context);
-            },
-            child: const Text('Create Collection'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future showDialogProfile() async {
-    final TextEditingController inputController = TextEditingController();
-    return dialogBuilder(
-      context: context,
-      builder: (context, style, animation) => FDialog(
-        style: style,
-        animation: animation,
-        title: const Text("Edit Profile", style: TextStyle(fontSize: 22)),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(height: 40),
-            FTextField(
-              controller: inputController, // TextEditingController
-              hint: 'Enter Your Name',
-              maxLines: 1,
-              clearable: (value) => value.text.isNotEmpty,
-            ),
-            SizedBox(height: 20),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text("Choose Color"),
-            ),
-            SizedBox(height: 40),
-          ],
-        ),
-        actions: [
-          FButton(
-            onPress: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-  }
-  userProfileImage(UserMeta value) {
-    return FAvatar.raw(
-      size: 25,
-      style: FAvatarStyle(
-        backgroundColor: provider.user.value.color,
-        foregroundColor: t.textColor,
-        textStyle: TextStyle(),
-      ),
-      child: Text(provider.user.value.name.substring(0, 1)),
-    );
-  }
-  collapseWidget(){
-    return FButton.icon(
-      onPress: () async {
-        provider.toggleSideBar();
-        //update settings:
-        await SharedPrefService.saveIsSideBarOpen(
-          provider.isSideBarOpen.value,
-        );
-      },
-      style: FButtonStyle.ghost(),
-      child: Icon(
-        provider.isSideBarOpen.value
-            ? HugeIconsStroke.sidebarLeft01
-            : HugeIconsStroke.sidebarRight01,
-        color: t.textColor,
-      ),
-    );
-  }
-
-  menuItem({required String title, required IconData icon, required Function() onClick,Color? color,FontWeight? weight, bool isLoading=false}) {
-    return FSidebarItem(
-      icon: Icon(icon,color: color,),
-      label:Row(
-        children: [
-          Text(
-            title,
-            style: TextStyle(fontSize: 13.2,fontWeight: weight ?? FontWeight.w500,color: color),
-          ),
-          Spacer(),
-          if(isLoading)
-            SizedBox(
-            width: 10,
-            height: 10,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: color ?? t.textColor,
-            ),
-          ),
-        ],
-      ),
-      onPress: onClick
-    );
-  }
-
-  Widget pathWidgetBuilder(List<String> paths) {
-    paths = paths.reversed.toList();
-    paths.add("FormIt");
-    paths = paths.reversed.toList();
-
-    return FBreadcrumb(
-      children: List.generate(paths.length, (index) {
-        final isLast = index == paths.length - 1;
-        final isFirst = index == 0;
-        final segment = paths[index];
-
-        return FBreadcrumbItem(
-          current: isLast,
-          onPress: isLast || isFirst ? null : () {
-            // Handle navigation or logic when clicking breadcrumb
-            debugPrint('Navigate to: ${paths.take(index + 1).join('/')}');
-            setState(() {
-              currentPath = paths.take(index + 1).toList().sublist(1);
-            });
-          },
-          child: Text(segment),
-        );
-      }),
-    );
-  }
-
-
-  Future<void> logout() async {
-    setState(() {
-      logoutLoading = true;
-    });
-
-    try{
-      bool logoutSuccess = true;
-      await Future.delayed(const Duration(seconds: 2)); //simulate a logout api call
-      if(logoutSuccess){
-        //remove token from shared preferences
-
-        //navigate to login screen
-        navigateTo(context, StartScreen(canBack: false), true);
-        //show message
-        showSuccess("Logout Succeed", context);
-      } else{
-        showError("Logout Failed", context);
-      }
-    }finally{
-      setState(() {
-        logoutLoading = false;
-      });
-    }
   }
 }
 

@@ -1,13 +1,35 @@
 import 'dart:io';
 import 'dart:math';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' hide Uint8List;
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:path/path.dart' as p;
 
 import '../services/provider.dart';
 import '../services/themeService.dart';
+import 'dart:async';
+import 'dart:io';
+import 'dart:ui';
+
+import 'package:blurrycontainer/blurrycontainer.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:formbuilder/screens/appScreen.dart';
+import 'package:formbuilder/widgets/messages.dart';
+import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
+
+import '../../main.dart';
+import '../../services/provider.dart';
+import '../../services/secureSharedPreferencesService.dart';
+import '../../services/themeService.dart';
+import '../../tools/tools.dart';
+import '../../widgets/basics.dart';
+import '../../widgets/form.dart';
 
 void navigateTo(BuildContext context, Widget destination, isReplace) {
   PageRouteBuilder p = PageRouteBuilder(
@@ -84,3 +106,21 @@ double getRatio(num x, num y) {
   return x / y;
 }
 
+/// Picks an image from the device and returns it.
+/// On mobile/desktop → returns a [File].
+/// On web → returns [Uint8List].
+Future<Uint8List?> pickImage() async {
+  final result = await FilePicker.platform.pickFiles(
+    type: FileType.image,
+    withData: true, // ensures bytes are available
+  );
+
+  if (result == null) return null;
+
+  if (kIsWeb) {
+    return result.files.single.bytes;
+  } else {
+    final path = result.files.single.path!;
+    return await File(path).readAsBytes();
+  }
+}

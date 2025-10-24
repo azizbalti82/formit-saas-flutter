@@ -22,15 +22,14 @@ import '../../widgets/basics.dart';
 import '../../widgets/form.dart';
 
 
-class SignIn extends StatefulWidget {
-  SignIn({super.key, required this.t,required this.currentKey});
+class SignInFinalization extends StatefulWidget {
+  const SignInFinalization({super.key, required this.t});
   final theme t;
-  final String currentKey;
   @override
-  State<SignIn> createState() => _State();
+  State<SignInFinalization> createState() => _State();
 }
 
-class _State extends State<SignIn> {
+class _State extends State<SignInFinalization> {
   final Provider provider = Get.find<Provider>();
   late theme t;
   bool showKey = false;
@@ -200,7 +199,7 @@ class _State extends State<SignIn> {
                                       await Future.delayed(const Duration(seconds: 2)); //simulate a logout api call
                                       if (signInSuccess) {
                                         //account created successfully!
-                                        await SecureStorageService().saveCurrentKey(widget.currentKey);
+                                        //await SecureStorageService().saveCurrentKey(widget.currentKey);
                                         Navigator.pop(context);
                                         Navigator.pop(context);
                                         navigateTo(context, AppScreen(t: getTheme()),true);
@@ -231,25 +230,6 @@ class _State extends State<SignIn> {
             : const Center(child: Text("Welcome")),
       ),
     );
-  }
-
-  /// Picks an image from the device and returns it.
-  /// On mobile/desktop → returns a [File].
-  /// On web → returns [Uint8List].
-  Future<Uint8List?> pickImage() async {
-    final result = await FilePicker.platform.pickFiles(
-      type: FileType.image,
-      withData: true, // ensures bytes are available
-    );
-
-    if (result == null) return null;
-
-    if (kIsWeb) {
-      return result.files.single.bytes;
-    } else {
-      final path = result.files.single.path!;
-      return await File(path).readAsBytes();
-    }
   }
 }
 

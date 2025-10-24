@@ -10,7 +10,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:formbuilder/screens/appScreen.dart';
-import 'package:formbuilder/screens/startScreen/signIn.dart';
+import 'package:formbuilder/screens/startScreen/signInFinalization.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,6 +23,8 @@ import '../../services/themeService.dart';
 import '../../tools/tools.dart';
 import '../../widgets/basics.dart';
 import '../../widgets/form.dart';
+import 'verifyEmail.dart';
+import 'newPassword.dart';
 
 class Login extends StatefulWidget {
   Login({super.key, required this.t, required this.isLogin});
@@ -209,7 +211,17 @@ class _State extends State<Login> {
                                       mainAxisAlignment: MainAxisAlignment.end,
                                       children: [
                                         TextButton(
-                                          onPressed: () {},
+                                          onPressed: () {
+                                            navigateTo(
+                                              context,
+                                              VerifyEmail(
+                                                t: t,
+                                                type: 'reset',
+                                                email: emailController.text,
+                                              ),
+                                              false
+                                            );
+                                          },
                                           child: const Text('Forgot password?'),
                                         ),
                                       ],
@@ -224,12 +236,18 @@ class _State extends State<Login> {
                                       String email = emailController.text;
                                       String password = passwordController.text;
 
-                                      if(email.isEmpty){
-                                        showError("Please enter your email", context);
+                                      if (email.isEmpty) {
+                                        showError(
+                                          "Please enter your email",
+                                          context,
+                                        );
                                         return;
                                       }
-                                      if(password.length < 8){
-                                        showError("Password must be at least 8 characters", context);
+                                      if (password.length < 8) {
+                                        showError(
+                                          "Password must be at least 8 characters",
+                                          context,
+                                        );
                                         return;
                                       }
 
@@ -239,7 +257,9 @@ class _State extends State<Login> {
                                       try {
                                         /// try to login
                                         bool loginSuccess = false;
-                                        await Future.delayed(const Duration(seconds: 2)); //simulate a logout api call
+                                        await Future.delayed(
+                                          const Duration(seconds: 2),
+                                        ); //simulate a logout api call
                                         if (loginSuccess) {
                                           //if its login or sign in and the account logged in: open app!
                                           await SecureStorageService()
@@ -262,7 +282,10 @@ class _State extends State<Login> {
                                           //its sign in screen so lets continue account creation
                                           navigateTo(
                                             context,
-                                            SignIn(t: t, currentKey: ''),
+                                            VerifyEmail(
+                                              t: t,
+                                              type: 'create account', email: emailController.text,
+                                            ),
                                             false,
                                           );
                                         }
@@ -277,44 +300,44 @@ class _State extends State<Login> {
                                     text: isLogin ? 'Log in' : "Continue",
                                   ),
 
-                                  if(!isLogin)
-                                  const SizedBox(height: 30),
-                                  if(!isLogin)
-                                  Align(
-                                    alignment: FractionalOffset.center,
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          "By registering you agree to",
-                                          style: TextStyle(
-                                            color: t.secondaryTextColor,
-                                            fontWeight: FontWeight.w400,
-                                            fontSize: 15,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                        InkWell(
-                                          onTap: () async {
-                                            await EasyLauncher.url(
-                                              url: "https://azizbalti.netlify.app",
-                                            );
-                                          },
-                                          child: Text(
-                                            "Privacy Policy",
+                                  if (!isLogin) const SizedBox(height: 30),
+                                  if (!isLogin)
+                                    Align(
+                                      alignment: FractionalOffset.center,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            "By registering you agree to",
                                             style: TextStyle(
-                                              color: t.accentColor,
-                                              fontWeight: FontWeight.w600,
+                                              color: t.secondaryTextColor,
+                                              fontWeight: FontWeight.w400,
                                               fontSize: 15,
                                             ),
                                             textAlign: TextAlign.center,
                                           ),
-                                        ),
-                                      ],
+                                          InkWell(
+                                            onTap: () async {
+                                              await EasyLauncher.url(
+                                                url:
+                                                    "https://azizbalti.netlify.app",
+                                              );
+                                            },
+                                            child: Text(
+                                              "Privacy Policy",
+                                              style: TextStyle(
+                                                color: t.accentColor,
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 15,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
-                                  if(!isLogin)
-                                  const SizedBox(height: 50),
+                                  if (!isLogin) const SizedBox(height: 50),
                                 ],
                               ),
                             ),
