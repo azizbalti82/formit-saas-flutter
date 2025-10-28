@@ -2,22 +2,22 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 
-class UserMeta {
+class User {
   //final String id;
   final String name;
   final Color color;
 
-  const UserMeta({
+  const User({
     required this.name,
     required this.color,
   });
 
   /// Copy the object with some changed values
-  UserMeta copyWith({
+  User copyWith({
     String? name,
     Color? color,
   }) {
-    return UserMeta(
+    return User(
       name: name ?? this.name,
       color: color ?? this.color,
     );
@@ -32,8 +32,8 @@ class UserMeta {
   }
 
   /// Convert Map to object
-  factory UserMeta.fromMap(Map<String, dynamic> map) {
-    return UserMeta(
+  factory User.fromMap(Map<String, dynamic> map) {
+    return User(
       name: map['name'] ?? '',
       color: Color(map['color'] ?? 0xFF000000), // default black
     );
@@ -43,8 +43,8 @@ class UserMeta {
   String toJson() => json.encode(toMap());
 
   /// Convert JSON string to object
-  factory UserMeta.fromJson(String source) =>
-      UserMeta.fromMap(json.decode(source));
+  factory User.fromJson(String source) =>
+      User.fromMap(json.decode(source));
 
   @override
   String toString() => 'UserMeta(name: $name, color: $color)';
@@ -53,7 +53,7 @@ class UserMeta {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is UserMeta &&
+    return other is User &&
         other.name == name &&
         other.color == color;
   }

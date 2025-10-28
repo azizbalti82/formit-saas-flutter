@@ -92,6 +92,9 @@ class _State extends State<NewPassword> {
             child: Container(
               width: screenWidth*0.5,
               height: screenHeight*0.4,
+              constraints: BoxConstraints(
+                maxWidth: 500, // maximum width in pixels
+              ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
@@ -134,15 +137,12 @@ class _State extends State<NewPassword> {
                     ),
                     // Main content
                     Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: SingleChildScrollView(
+                      child: SingleChildScrollView(
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               landscape(t)
                             ],
-                          ),
                         ),
                       ),
                     ),
@@ -217,16 +217,15 @@ class _State extends State<NewPassword> {
           },
           isLoading: updatePasswordLoading, t: theme,
         ),
-        const SizedBox(height: 60),
+        const SizedBox(height: 30),
       ],
     );
   }
   landscape(theme theme) {
     return Center(
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 20),
         constraints: const BoxConstraints(maxWidth: 600), // Increased from 100 to 600
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.symmetric(horizontal: 24),
         child: portrait(theme),
       ),
     );

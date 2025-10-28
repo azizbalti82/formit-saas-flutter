@@ -19,7 +19,7 @@ import 'package:window_manager/window_manager.dart';
 // Conditionally import dart:io only for non-web platforms
 import 'dart:io' if (dart.library.html) 'dart:html' as platform;
 
-import 'backend/models/userMeta.dart';
+import 'backend/models/user.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,14 +29,14 @@ Future<void> main() async {
     // Must be added to run app.
     await windowManager.ensureInitialized();
 
-    WindowOptions windowOptions = const WindowOptions(
+    WindowOptions windowOptions = WindowOptions(
       size: Size(850, 600),
       // Initial window size
       minimumSize: Size(850, 500),
+      backgroundColor: Colors.transparent,
       // Minimum window size
       center: true,
       // Center the window
-      backgroundColor: Colors.transparent,
       skipTaskbar: false,
       titleBarStyle: TitleBarStyle.normal,
     );
@@ -55,7 +55,7 @@ Future<void> main() async {
   bool isDark = await SharedPrefService.getIsDark();
   bool isSideBarOpen = await SharedPrefService.getIsSideBarOpen();
   String lang = await SharedPrefService.getLanguage();
-  UserMeta user = await SharedPrefService.getUser();
+  User user = await SharedPrefService.getUser();
 
   final Provider provider = Get.find<Provider>();
   provider.setIsDark(isDark);

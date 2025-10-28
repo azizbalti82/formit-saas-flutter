@@ -9,11 +9,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  shadcn_ui: ^0.26.0
   blurrycontainer: ^2.1.0
   window_manager: ^0.5.1
   sidebarx: ^0.17.2
   forui: ^0.14.1
+  forui_assets: ^0.14.0
+  flutter_popup: ^3.3.9
+  custom_pop_up_menu: ^1.2.4
   flutter_secure_storage: ^9.2.4
   cupertino_icons: ^1.0.8
   flutter_svg: ^2.2.0

@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../backend/models/userMeta.dart';
+import '../backend/models/user.dart';
 import '../tools/tools.dart';
 
 class SharedPrefService {
@@ -31,15 +31,15 @@ class SharedPrefService {
   }
 
   // ----------------- user -----------------
-  static Future<void> saveUser(UserMeta user) async {
+  static Future<void> saveUser(User user) async {
     (await _prefs).setString('user', user.toJson()); // JSON encoding
   }
 
-  static Future<UserMeta> getUser() async {
+  static Future<User> getUser() async {
     final str = (await _prefs).getString('user');
     if (str == null) {
-      return UserMeta(name: "Guest", color: getRandomHighContrastColor()); // default
+      return User(name: "Guest", color: getRandomHighContrastColor()); // default
     }
-    return UserMeta.fromJson(str);
+    return User.fromJson(str);
   }
 }

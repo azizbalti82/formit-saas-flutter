@@ -1,23 +1,29 @@
 // ignore_for_file: file_names
 
+import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
 import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:formbuilder/backend/models/userMeta.dart';
+import 'package:formbuilder/backend/models/user.dart';
 import 'package:formbuilder/screens/startScreen/startScreen.dart';
+import 'package:formbuilder/screens/startScreen/verifyEmail.dart';
 import 'package:formbuilder/widgets/form.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 
+import '../backend/models/collection.dart';
 import '../data/constants.dart';
 import '../main.dart';
 import '../services/provider.dart';
 import '../services/sharedPreferencesService.dart';
 import '../services/themeService.dart';
 import '../tools/tools.dart';
+import '../widgets/basics.dart';
 import '../widgets/complex.dart';
+import '../widgets/menu.dart';
 import '../widgets/messages.dart';
 
 class AppScreen extends StatefulWidget {
@@ -43,6 +49,32 @@ class _AppScreenState extends State<AppScreen> {
   List<String> currentPath = ["Home"];
   bool logoutLoading = false;
   Uint8List? imageBytes;
+
+  final List<Collection> fakeCollections = [
+    // 🌳 Root collection
+    Collection(id: '1', name: 'Root', parentId: null),
+
+    // 📁 Level 1 (children of Root)
+    Collection(id: '2', name: 'Documents', parentId: '1'),
+    Collection(id: '3', name: 'Images', parentId: '1'),
+    Collection(id: '4', name: 'Videos', parentId: '1'),
+
+    // 🗂 Level 2 (children of Documents)
+    Collection(id: '5', name: 'Work', parentId: '2'),
+    Collection(id: '6', name: 'Personal', parentId: '2'),
+
+    // 🖼 Level 2 (children of Images)
+    Collection(id: '7', name: 'Travel', parentId: '3'),
+    Collection(id: '8', name: 'Family', parentId: '3'),
+
+    // 🎬 Level 2 (children of Videos)
+    Collection(id: '9', name: 'Projects', parentId: '4'),
+    Collection(id: '10', name: 'Tutorials', parentId: '4'),
+
+    // 📄 Level 3 (children of Work)
+    Collection(id: '11', name: 'Reports', parentId: '5'),
+    Collection(id: '12', name: 'Presentations', parentId: '5'),
+  ];
 
   @override
   void initState() {
@@ -369,13 +401,23 @@ class _AppScreenState extends State<AppScreen> {
                   ],
                 ),
                 Expanded(
-                  child: Center(
-                    child: SvgPicture.asset(
-                      "assets/vectors/vision.svg",
-                      height: isLandscape(context) ? screenHeight * 0.6 : null,
-                      width: isLandscape(context) ? null : screenWidth * 0.9,
-                    ),
-                  ),
+                  child: (fakeCollections.isEmpty)
+                      ? Center(
+                          child: SvgPicture.asset(
+                            "assets/vectors/vision.svg",
+                            height: isLandscape(context)
+                                ? screenHeight * 0.6
+                                : null,
+                            width: isLandscape(context)
+                                ? null
+                                : screenWidth * 0.9,
+                          ),
+                        )
+                      : ListCollections(
+                          collections: fakeCollections,
+                          theme: t,
+                          isGrid: true,
+                        ),
                 ),
               ],
             ),
@@ -423,6 +465,7 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
+
   Future showDialogProfile() async {
     return dialogBuilder(
       context: context,
@@ -431,7 +474,8 @@ class _AppScreenState extends State<AppScreen> {
         animation: animation,
         title: const Text("Edit Profile", style: TextStyle(fontSize: 22)),
         body: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.7, // 60% of screen height
+          height:
+              MediaQuery.of(context).size.height * 0.7, // 60% of screen height
           child: Padding(
             padding: const EdgeInsets.only(top: 32),
             child: FTabs(
@@ -439,9 +483,9 @@ class _AppScreenState extends State<AppScreen> {
               onPress: (index) {},
               children: [
                 FTabEntry(
-                    label: Text('Info'),
-                    child: Expanded(child: accountInfoWidget()
-                )),
+                  label: Text('Info'),
+                  child: Expanded(child: accountInfoWidget()),
+                ),
                 FTabEntry(
                   label: Text('Advanced'),
                   child: Expanded(child: accountAdvancedWidget()),
@@ -454,7 +498,8 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
-  userProfileImage(UserMeta value) {
+
+  userProfileImage(User value) {
     return FAvatar.raw(
       size: 25,
       style: FAvatarStyle(
@@ -578,7 +623,7 @@ class _AppScreenState extends State<AppScreen> {
     final firstNameController = TextEditingController(text: "aziz");
     final lastNameController = TextEditingController(text: "balti");
 
-      return SingleChildScrollView(
+    return SingleChildScrollView(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -605,18 +650,18 @@ class _AppScreenState extends State<AppScreen> {
                 ),
                 (imageBytes == null)
                     ? Icon(
-                  Icons.add_rounded,
-                  size: 50,
-                  color: t.textColor.withOpacity(0.3),
-                )
+                        Icons.add_rounded,
+                        size: 50,
+                        color: t.textColor.withOpacity(0.3),
+                      )
                     : ClipOval(
-                  child: Image.memory(
-                    imageBytes!,
-                    width: 100,
-                    height: 100,
-                    fit: BoxFit.cover, // fills and crops nicely
-                  ),
-                ),
+                        child: Image.memory(
+                          imageBytes!,
+                          width: 100,
+                          height: 100,
+                          fit: BoxFit.cover, // fills and crops nicely
+                        ),
+                      ),
               ],
             ),
           ),
@@ -644,53 +689,90 @@ class _AppScreenState extends State<AppScreen> {
           ),
           SizedBox(height: 10),
           GestureDetector(
-            onTap: (){
-              showMsg("update email", context, t);
+            onTap: () {
+              navigateTo(
+                  context,
+                  VerifyEmail(
+                    t: darkTheme,
+                    type: verifyEmailType.updateEmail,
+                    email:"nigga@gmail.com"
+                  ),
+                  false
+              );
             },
             child: FCard.raw(
-              child: Padding(padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(width: 20,),
-                      Text("aziz@gmail.com",textAlign: TextAlign.center,),
-                      Spacer(),
-                      Padding(padding: EdgeInsets.symmetric(horizontal: 7,vertical: 2),child:FButton.icon(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 20),
+                    Text("aziz@gmail.com", textAlign: TextAlign.center),
+                    Spacer(),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      child: FButton.icon(
                         style: FButtonStyle.primary(),
-                        onPress: () {
-                          showMsg("update email", context, t);
+                        onPress: () async {
+                          navigateTo(
+                              context,
+                              VerifyEmail(
+                                  t: darkTheme,
+                                  type: verifyEmailType.updateEmail,
+                                  email:"nigga@gmail.com"
+                              ),
+                              false
+                          );
                         },
                         child: const Icon(HugeIconsStroke.edit04),
-                      ),)
-
-                    ],
-                  )
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
           SizedBox(height: 10),
           GestureDetector(
-            onTap: (){
-              showMsg("update password", context, t);
+            onTap: () {
+              navigateTo(
+                  context,
+                  VerifyEmail(
+                      t: darkTheme,
+                      type: verifyEmailType.resetPassword,
+                      email:"nigga@gmail.com"
+                  ),
+                  false
+              );
             },
             child: FCard.raw(
-              child: Padding(padding: const EdgeInsets.symmetric(vertical: 5),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(width: 20,),
-                      Text("**************",textAlign: TextAlign.center,),
-                      Spacer(),
-                      Padding(padding: EdgeInsets.symmetric(horizontal: 7,vertical: 2),child:FButton.icon(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 20),
+                    Text("**************", textAlign: TextAlign.center),
+                    Spacer(),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                      child: FButton.icon(
                         style: FButtonStyle.primary(),
                         onPress: () {
-                          showMsg("update password", context, t);
-                        },
+                          navigateTo(
+                              context,
+                              VerifyEmail(
+                                  t: darkTheme,
+                                  type: verifyEmailType.resetPassword,
+                                  email:"nigga@gmail.com"
+                              ),
+                              false
+                          );                        },
                         child: const Icon(HugeIconsStroke.edit04),
-                      ),)
-
-                    ],
-                  )
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -708,72 +790,72 @@ class _AppScreenState extends State<AppScreen> {
   }
 
   Widget accountAdvancedWidget() {
-    return
-      SingleChildScrollView(
+    return SingleChildScrollView(
       child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 20),
-        Row(
-          children: [
-            SvgPicture.asset(
-              "assets/icons/danger.svg",
-              width: 22.0,
-              color: t.textColor,
-            ),
-            SizedBox(width: 8),
-            Text(
-              "Danger zone",
-              style: TextStyle(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 20),
+          Row(
+            children: [
+              SvgPicture.asset(
+                "assets/icons/danger.svg",
+                width: 22.0,
                 color: t.textColor,
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
               ),
-            ),
-          ],
-        ),
-        SizedBox(height: 10),
-        Text(
-          "This will permanently delete your entire account. All your forms, submissions and workspaces will be deleted.",
-          textAlign: TextAlign.start,
-        ),
-        SizedBox(height: 20),
-        FButton(
-          onPress: (){
-            showDialogDeleteAccount();
-          },
-          style: FButtonStyle(
-            decoration: FWidgetStateMap.all(
-              BoxDecoration(
-                color: Colors.red,
+              SizedBox(width: 8),
+              Text(
+                "Danger zone",
+                style: TextStyle(
+                  color: t.textColor,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+          Text(
+            "This will permanently delete your entire account. All your forms, submissions and workspaces will be deleted.",
+            textAlign: TextAlign.start,
+          ),
+          SizedBox(height: 20),
+          FButton(
+            onPress: () {
+              showDialogDeleteAccount();
+            },
+            style: FButtonStyle(
+              decoration: FWidgetStateMap.all(
+                BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              contentStyle: FButtonContentStyle(
+                textStyle: FWidgetStateMap.all(
+                  const TextStyle(color: Colors.white),
+                ),
+                iconStyle: FWidgetStateMap.all(
+                  const IconThemeData(color: Colors.white),
+                ),
+              ),
+              iconContentStyle: FButtonIconContentStyle(
+                iconStyle: FWidgetStateMap.all(
+                  const IconThemeData(color: Colors.white),
+                ),
+              ),
+              tappableStyle: FTappableStyle(), // default interactions
+              focusedOutlineStyle: FFocusedOutlineStyle(
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(8),
               ),
-            ),
-            contentStyle: FButtonContentStyle(
-              textStyle: FWidgetStateMap.all(
-                const TextStyle(color: Colors.white),
-              ),
-              iconStyle: FWidgetStateMap.all(
-                const IconThemeData(color: Colors.white),
-              ),
-            ),
-            iconContentStyle: FButtonIconContentStyle(
-              iconStyle: FWidgetStateMap.all(
-                const IconThemeData(color: Colors.white),
-              ),
-            ),
-            tappableStyle: FTappableStyle(), // default interactions
-            focusedOutlineStyle: FFocusedOutlineStyle(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(8),
-            ),
-          ).call,
-          child: const Text('Delete Account'),
-        ),
-      ],
-    )
-      );
+            ).call,
+            child: const Text('Delete Account'),
+          ),
+        ],
+      ),
+    );
   }
+
   Future showDialogDeleteAccount() async {
     return dialogBuilder(
       context: context,
@@ -795,7 +877,7 @@ class _AppScreenState extends State<AppScreen> {
         ),
         actions: [
           FButton(
-            onPress: (){
+            onPress: () {
               Navigator.of(context).pop();
               Navigator.of(context).pop();
               navigateTo(context, StartScreen(canBack: false), true);
@@ -838,6 +920,139 @@ class _AppScreenState extends State<AppScreen> {
         ],
       ),
     );
+  }
+
+  Widget ListCollections({
+    required List<Collection> collections,
+    required theme theme, // keeping exactly as is
+    required bool isGrid,
+  }) {
+    Widget buildCard(Collection collection) {
+      return FTappable(
+        style: FTappableStyle(),
+        semanticsLabel: 'Forms Collection',
+        selected: false,
+        autofocus: false,
+        behavior: HitTestBehavior.translucent,
+        onPress: () {},
+        builder: (context, state, child) => child!,
+        child: FCard.raw(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 16, top: 16,right: 10),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            HugeIconsStroke.folder01,
+                            color: theme.secondaryTextColor.withOpacity(0.8),
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              collection.name,
+                              style: TextStyle(
+                                color: theme.textColor,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Text(
+                        "${collection.name.length} items",
+                        style: TextStyle(
+                          color: theme.secondaryTextColor.withOpacity(0.8),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                CollectionPopupMenu(
+                  iconColor: theme.textColor,
+                  cardColor: theme.cardColor,
+                  items: [
+                    PopupMenuItemData(
+                      onTap: () { print("Open"); },
+                      label: "Open",
+                      color: theme.textColor,
+                      icon: HugeIconsStroke.view,
+                    ),
+                    PopupMenuItemData(
+                      onTap: () { print("Rename"); },
+                      label: "Rename",
+                      color: theme.textColor,
+                      icon: HugeIconsStroke.edit03,
+                    ),
+                    PopupMenuItemData(
+                      onTap: () { print("Delete"); },
+                      label: "Delete Collection",
+                      color: theme.errorColor,
+                      icon: HugeIconsStroke.delete01,
+                    ),
+                  ],
+                )
+
+
+              ],
+          ),
+        ),
+      ));
+    }
+
+    if (isGrid) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          const double minItemWidth = 250;
+          final int crossAxisCount = (constraints.maxWidth / minItemWidth)
+              .floor()
+              .clamp(1, 6);
+
+          final double childWidth =
+              (constraints.maxWidth - (crossAxisCount - 1) * 12) /
+              crossAxisCount;
+          const double childHeight = 120;
+          final double childAspectRatio = childWidth / childHeight;
+
+          return GridView.builder(
+            padding: const EdgeInsets.all(12),
+            itemCount: collections.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: crossAxisCount,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: childAspectRatio,
+            ),
+            itemBuilder: (context, index) {
+              return buildCard(collections[index]);
+            },
+          );
+        },
+      );
+    } else {
+      return ListView.builder(
+        itemCount: collections.length,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: buildCard(collections[index]),
+          );
+        },
+      );
+    }
   }
 }
 

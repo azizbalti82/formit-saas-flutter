@@ -2,13 +2,13 @@ import 'dart:ui';
 
 import 'package:get/get.dart';
 
-import '../backend/models/userMeta.dart';
+import '../backend/models/user.dart';
 import '../tools/tools.dart';
 
 class Provider extends GetxController {
   RxInt currentIndex = 0.obs;
   RxBool isSideBarOpen = true.obs;
-  Rx<UserMeta> user = UserMeta(name: "Guest", color: getRandomHighContrastColor()).obs;
+  Rx<User> user = User(name: "Guest", color: getRandomHighContrastColor()).obs;
 
   //settings
   RxBool isDark = false.obs;
@@ -37,7 +37,7 @@ class Provider extends GetxController {
 
   }
   //user
-  void setUser(UserMeta value) => user.value = value;
+  void setUser(User value) => user.value = value;
   void setUserName(String name) => user.value = user.value.copyWith(name: name);
   void setUserColor(Color color) => user.value = user.value.copyWith(color: color);
   //settings

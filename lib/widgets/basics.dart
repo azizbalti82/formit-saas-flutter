@@ -39,3 +39,4 @@ Widget simpleAppBar(BuildContext context, {required String text,Widget? child,re
     ],
   );
 }
+

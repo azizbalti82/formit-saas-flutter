@@ -28,7 +28,7 @@ import '../../widgets/form.dart';
 
 class VerifyEmail extends StatefulWidget {
   const VerifyEmail({super.key, required this.t,required this.type,required this.email});
-  final String type;
+  final verifyEmailType type;
   final theme t;
   final String email;
   @override
@@ -88,6 +88,9 @@ class _State extends State<VerifyEmail> {
             child: Container(
               width: screenWidth*0.5,
               height: screenHeight*0.7,
+              constraints: BoxConstraints(
+                maxWidth: 500, // maximum width in pixels
+              ),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
@@ -304,14 +307,8 @@ class _State extends State<VerifyEmail> {
             if (!verifyCodeLoading) {
               try {
                 /// remove later , just for testing
-                navigate(
-                  context,
-                  NewPassword(
-                    email: latestEmail,
-                    t: t,
-                  ),
-                  isReplace: true,
-                );
+                onVerified();
+                return;
                 /// ////////////////////////////////
 
                 final String email = latestEmail;
@@ -346,6 +343,7 @@ class _State extends State<VerifyEmail> {
                   context,
                 );
               } finally {
+                onVerified();
                 setState(() {
                   verifyCodeLoading = false;
                 });
@@ -358,7 +356,7 @@ class _State extends State<VerifyEmail> {
   }
 
   onVerified(){
-    if(widget.type=="reset"){
+    if(widget.type==verifyEmailType.resetPassword){
       navigate(
         context,
         NewPassword(
@@ -367,17 +365,30 @@ class _State extends State<VerifyEmail> {
         ),
         isReplace: true,
       );
-    }else if(widget.type=="create account"){
+    }else if(widget.type==verifyEmailType.createAccount){
       navigate(
         context,
         SignInFinalization(t: t),
         isReplace: true,
       );
-    }else if(widget.type=="update password"){
-
-    }else if(widget.type=="update email"){
-
-    }
+    }else if(widget.type==verifyEmailType.updateEmail){
+      Navigator.pop(context,true);
+    }else if(widget.type==verifyEmailType.updatePassword){
+      navigate(
+        context,
+        NewPassword(
+          email: latestEmail,
+          t: t,
+        ),
+        isReplace: true,
+      );    }
   }
+}
+
+enum verifyEmailType{
+  resetPassword,
+  createAccount,
+  updatePassword,
+  updateEmail,
 }
 

@@ -14,7 +14,6 @@ import 'package:formbuilder/screens/startScreen/signInFinalization.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shadcn_ui/shadcn_ui.dart';
 
 import '../../main.dart';
 import '../../services/provider.dart';
@@ -93,6 +92,9 @@ class _State extends State<Login> {
                 child: Container(
                   width: screenWidth * 0.5,
                   height: screenHeight * 0.7,
+                  constraints: BoxConstraints(
+                    maxWidth: 500, // maximum width in pixels
+                  ),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
@@ -216,7 +218,7 @@ class _State extends State<Login> {
                                               context,
                                               VerifyEmail(
                                                 t: t,
-                                                type: 'reset',
+                                                type: verifyEmailType.resetPassword,
                                                 email: emailController.text,
                                               ),
                                               false
@@ -281,12 +283,13 @@ class _State extends State<Login> {
                                         } else {
                                           //its sign in screen so lets continue account creation
                                           navigateTo(
-                                            context,
-                                            VerifyEmail(
-                                              t: t,
-                                              type: 'create account', email: emailController.text,
-                                            ),
-                                            false,
+                                              context,
+                                              VerifyEmail(
+                                                t: t,
+                                                type: verifyEmailType.createAccount,
+                                                email: emailController.text,
+                                              ),
+                                              false
                                           );
                                         }
                                       } catch (e) {
