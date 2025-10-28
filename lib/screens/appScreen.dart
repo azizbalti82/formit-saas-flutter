@@ -335,7 +335,7 @@ class _AppScreenState extends State<AppScreen> {
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 14),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               spacing: 12,
               children: [
                 Row(
@@ -413,10 +413,30 @@ class _AppScreenState extends State<AppScreen> {
                                 : screenWidth * 0.9,
                           ),
                         )
-                      : ListCollections(
-                          collections: fakeCollections,
-                          theme: t,
-                          isGrid: true,
+                      : Container(
+                          width: double.infinity,
+                          constraints: BoxConstraints(
+                            maxWidth: (!provider.isGrid.value)
+                                ? 700
+                                : double.infinity, // maximum width in pixels
+                          ),
+                          child: Column(
+                            children: [
+                              Container(
+                                margin: EdgeInsets.only(left: 12),
+                                alignment: Alignment.centerLeft,
+                                child: ItemsViewType(),
+                              ),
+                              SizedBox(height: 20),
+                              Expanded(
+                                child: ListCollections(
+                                  collections: fakeCollections,
+                                  theme: t,
+                                  isGrid: provider.isGrid.value,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                 ),
               ],
@@ -691,13 +711,13 @@ class _AppScreenState extends State<AppScreen> {
           GestureDetector(
             onTap: () {
               navigateTo(
-                  context,
-                  VerifyEmail(
-                    t: darkTheme,
-                    type: verifyEmailType.updateEmail,
-                    email:"nigga@gmail.com"
-                  ),
-                  false
+                context,
+                VerifyEmail(
+                  t: darkTheme,
+                  type: verifyEmailType.updateEmail,
+                  email: "nigga@gmail.com",
+                ),
+                false,
               );
             },
             child: FCard.raw(
@@ -715,13 +735,13 @@ class _AppScreenState extends State<AppScreen> {
                         style: FButtonStyle.primary(),
                         onPress: () async {
                           navigateTo(
-                              context,
-                              VerifyEmail(
-                                  t: darkTheme,
-                                  type: verifyEmailType.updateEmail,
-                                  email:"nigga@gmail.com"
-                              ),
-                              false
+                            context,
+                            VerifyEmail(
+                              t: darkTheme,
+                              type: verifyEmailType.updateEmail,
+                              email: "nigga@gmail.com",
+                            ),
+                            false,
                           );
                         },
                         child: const Icon(HugeIconsStroke.edit04),
@@ -736,13 +756,13 @@ class _AppScreenState extends State<AppScreen> {
           GestureDetector(
             onTap: () {
               navigateTo(
-                  context,
-                  VerifyEmail(
-                      t: darkTheme,
-                      type: verifyEmailType.resetPassword,
-                      email:"nigga@gmail.com"
-                  ),
-                  false
+                context,
+                VerifyEmail(
+                  t: darkTheme,
+                  type: verifyEmailType.resetPassword,
+                  email: "nigga@gmail.com",
+                ),
+                false,
               );
             },
             child: FCard.raw(
@@ -760,14 +780,15 @@ class _AppScreenState extends State<AppScreen> {
                         style: FButtonStyle.primary(),
                         onPress: () {
                           navigateTo(
-                              context,
-                              VerifyEmail(
-                                  t: darkTheme,
-                                  type: verifyEmailType.resetPassword,
-                                  email:"nigga@gmail.com"
-                              ),
-                              false
-                          );                        },
+                            context,
+                            VerifyEmail(
+                              t: darkTheme,
+                              type: verifyEmailType.resetPassword,
+                              email: "nigga@gmail.com",
+                            ),
+                            false,
+                          );
+                        },
                         child: const Icon(HugeIconsStroke.edit04),
                       ),
                     ),
@@ -938,7 +959,12 @@ class _AppScreenState extends State<AppScreen> {
         builder: (context, state, child) => child!,
         child: FCard.raw(
           child: Padding(
-            padding: const EdgeInsets.only(left: 16, bottom: 16, top: 16,right: 10),
+            padding: const EdgeInsets.only(
+              left: 16,
+              bottom: 16,
+              top: 16,
+              right: 10,
+            ),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -985,31 +1011,36 @@ class _AppScreenState extends State<AppScreen> {
                   cardColor: theme.cardColor,
                   items: [
                     PopupMenuItemData(
-                      onTap: () { print("Open"); },
+                      onTap: () {
+                        print("Open");
+                      },
                       label: "Open",
                       color: theme.textColor,
                       icon: HugeIconsStroke.view,
                     ),
                     PopupMenuItemData(
-                      onTap: () { print("Rename"); },
+                      onTap: () {
+                        print("Rename");
+                      },
                       label: "Rename",
                       color: theme.textColor,
                       icon: HugeIconsStroke.edit03,
                     ),
                     PopupMenuItemData(
-                      onTap: () { print("Delete"); },
+                      onTap: () {
+                        print("Delete");
+                      },
                       label: "Delete Collection",
                       color: theme.errorColor,
                       icon: HugeIconsStroke.delete01,
                     ),
                   ],
-                )
-
-
+                ),
               ],
+            ),
           ),
         ),
-      ));
+      );
     }
 
     if (isGrid) {
@@ -1048,7 +1079,15 @@ class _AppScreenState extends State<AppScreen> {
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
-            child: buildCard(collections[index]),
+            child: Align(
+              alignment: Alignment.center, // center the card
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 700, // maximum width for each card
+                ),
+                child: buildCard(collections[index]),
+              ),
+            ),
           );
         },
       );
@@ -1107,4 +1146,26 @@ class BottomNavItem extends StatelessWidget {
       ),
     );
   }
+}
+
+class ItemsViewType extends StatelessWidget {
+  ItemsViewType({super.key});
+
+  final Provider provider = Get.find<Provider>();
+  final options = ['Grid', 'List'];
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 150,
+    child: FSelect<String>(
+      hint: (provider.isGrid.value) ? "Grid" : "List",
+      format: (s) => s,
+      children: [for (final v in options) FSelectItem(v, v)],
+      onChange: (value) {
+        provider.isGrid.value = (value == "Grid");
+        //update shared preferences:
+        SharedPrefService.saveIsGrid(provider.isGrid.value);
+      },
+    ),
+  );
 }

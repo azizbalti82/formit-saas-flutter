@@ -7,6 +7,14 @@ class SharedPrefService {
   static final Future<SharedPreferences> _prefs = SharedPreferences
       .getInstance();
 
+
+  static Future<void> saveIsGrid(bool value) async {
+    (await _prefs).setBool('is_grid', value);
+  }
+  static Future<bool> getIsGrid() async {
+    return (await _prefs).getBool('is_grid') ?? true;
+  }
+
   static Future<void> saveIsDark(bool value) async {
     (await _prefs).setBool('is_dark_mode', value);
   }

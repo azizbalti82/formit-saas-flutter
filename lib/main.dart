@@ -56,12 +56,15 @@ Future<void> main() async {
   bool isSideBarOpen = await SharedPrefService.getIsSideBarOpen();
   String lang = await SharedPrefService.getLanguage();
   User user = await SharedPrefService.getUser();
+  bool isGrid = await SharedPrefService.getIsGrid();
 
   final Provider provider = Get.find<Provider>();
   provider.setIsDark(isDark);
   provider.setIsSideBarOpen(isSideBarOpen);
   provider.setLanguage(lang);
   provider.setUser(user);
+  provider.setIsGrid(isGrid);
+
   //check if there is a logged in key (currentKey)
   bool logged = true;//await SecureStorageService().getCurrentKey() != null;
 

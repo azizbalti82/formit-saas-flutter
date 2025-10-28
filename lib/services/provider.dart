@@ -12,7 +12,9 @@ class Provider extends GetxController {
 
   //settings
   RxBool isDark = false.obs;
+  RxBool isGrid = true.obs;
   RxString language = 'en'.obs;
+
 
   //quick
   RxString newSelectedStoragePath = ''.obs;
@@ -21,7 +23,9 @@ class Provider extends GetxController {
 
 
 
-
+  void setIsGrid(bool value) {
+    isGrid.value = value;
+  }
   void setCurrentIndex(int index) {
     currentIndex.value = index;
   }
