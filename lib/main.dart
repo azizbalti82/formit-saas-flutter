@@ -7,17 +7,16 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:formbuilder/screens/appScreen.dart';
 import 'package:formbuilder/screens/startScreen/startScreen.dart';
 import 'package:formbuilder/services/provider.dart';
-import 'package:formbuilder/services/secureSharedPreferencesService.dart';
 import 'package:formbuilder/services/sharedPreferencesService.dart';
 import 'package:formbuilder/services/themeService.dart';
 import 'package:formbuilder/tools/tools.dart';
+import 'package:formbuilder/widgets/menu.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:toastification/toastification.dart';
 import 'package:window_manager/window_manager.dart';
-// Conditionally import dart:io only for non-web platforms
-import 'dart:io' if (dart.library.html) 'dart:html' as platform;
 
 import 'backend/models/user.dart';
 
@@ -30,9 +29,9 @@ Future<void> main() async {
     await windowManager.ensureInitialized();
 
     WindowOptions windowOptions = WindowOptions(
-      size: Size(850, 600),
+      //size: Size(850, 600),
       // Initial window size
-      minimumSize: Size(850, 500),
+      //minimumSize: Size(850, 500),
       backgroundColor: Colors.transparent,
       // Minimum window size
       center: true,
@@ -123,7 +122,43 @@ class _MainState extends State<Main>{
           Theme.of(context).textTheme,
         ),
       ),
-      home: (widget.isLogged)? AppScreen(t: t,) : StartScreen(canBack:false,),
+
+      home: (widget.isLogged)? Scaffold(
+        floatingActionButton: !isLandscape(context)
+            ? CollectionPopupMenu(
+          iconSize: 25,
+          iconColor: t.textColor,
+          cardColor: t.cardColor,
+          items: [
+            PopupMenuItemData(
+              onTap: () {
+                print("Create new form");
+                // Add your create form logic here
+              },
+              label: "Create new form",
+              color: t.textColor,
+              icon: Icons.description_outlined, // or your preferred icon
+            ),
+            PopupMenuItemData(
+              onTap: () {
+                print("Create new collection");
+                // Add your create folder logic here
+              },
+              label: "Create new collection",
+              color: t.textColor,
+              icon: Icons.folder_outlined, // or your preferred icon
+            ),
+          ],
+          customTrigger: FloatingActionButton(
+            shape: CircleBorder(),
+            onPressed: null, // Set to null, the menu handles the tap
+            backgroundColor: t.textColor,
+            child: Icon(Icons.add_rounded, color: t.bgColor),
+          ),
+        )
+            : null,
+        body: AppScreen(t: t,),
+      ): StartScreen(canBack:false,)
     );});
   }
 }
@@ -152,7 +187,7 @@ class SystemUiStyleWrapper extends StatelessWidget {
         systemNavigationBarColor: navBarColor ?? t.bgColor,
         systemNavigationBarIconBrightness: t.brightness,
       ),
-      child: child,
+      child: SafeArea(child: child),
     );
   }
 }

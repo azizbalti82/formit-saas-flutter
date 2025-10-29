@@ -1,35 +1,14 @@
-import 'dart:io';
-import 'dart:math';
-import 'dart:typed_data';
-
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart' hide Uint8List;
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:path/path.dart' as p;
-
-import '../services/provider.dart';
-import '../services/themeService.dart';
 import 'dart:async';
 import 'dart:io';
-import 'dart:ui';
+import 'dart:math';
 
-import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:formbuilder/screens/appScreen.dart';
-import 'package:formbuilder/widgets/messages.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 
-import '../../main.dart';
-import '../../services/provider.dart';
-import '../../services/secureSharedPreferencesService.dart';
-import '../../services/themeService.dart';
-import '../../tools/tools.dart';
-import '../../widgets/basics.dart';
-import '../../widgets/form.dart';
+import '../services/provider.dart';
+import '../services/themeService.dart';
 
 void navigateTo(BuildContext context, Widget destination, isReplace) {
   PageRouteBuilder p = PageRouteBuilder(
@@ -85,9 +64,9 @@ DateTime getCurrentDate() {
 
 
 bool isLandscape(BuildContext context) {
-  final bool landscapeMode = MediaQuery.of(context).orientation == Orientation.landscape;
-  final double width = MediaQuery.of(context).size.width;
-  return landscapeMode && width>800;
+  final size = MediaQuery.of(context).size;
+  return MediaQuery.of(context).orientation == Orientation.landscape &&
+      size.width > size.height && size.width > 600;
 }
 
 Color getRandomHighContrastColor() {

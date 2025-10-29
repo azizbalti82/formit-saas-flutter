@@ -1,6 +1,4 @@
-import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -18,6 +16,7 @@ class CustomButton extends StatefulWidget {
   final IconData? icon;
   final bool isFullRow;
   final double? iconSize;
+  final double? maxWidth;
   final theme t;
 
   const CustomButton({
@@ -29,7 +28,9 @@ class CustomButton extends StatefulWidget {
     this.icon,
     this.backgroundColor,
     this.textColor,
-    this.iconSize, required this.t,
+    this.iconSize,
+    this.maxWidth,
+    required this.t,
   }) : super(key: key);
 
   @override
@@ -40,6 +41,7 @@ class _CustomButtonState extends State<CustomButton> {
   bool _isHovered = false;
   final Provider provider = Get.find<Provider>();
   late theme t;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -51,60 +53,64 @@ class _CustomButtonState extends State<CustomButton> {
   Widget build(BuildContext context) {
     return Obx(() {
       t = getTheme();
-    Color bgColor = widget.backgroundColor ?? t.accentColor;
-    Color fgColor = widget.textColor ?? t.bgColor ;
+      Color bgColor = widget.backgroundColor ?? t.accentColor;
+      Color fgColor = widget.textColor ?? t.bgColor ;
 
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovered = true),
-      onExit: (_) => setState(() => _isHovered = false),
-      cursor: SystemMouseCursors.click,
-      child: SizedBox(
-        width: widget.isFullRow ? double.infinity : null,
-        height: 50,
-        child: FilledButton(
-          onPressed: widget.onPressed,
-          style: FilledButton.styleFrom(
-            backgroundColor: bgColor,
-            foregroundColor: fgColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-              side: _isHovered ? BorderSide(color: bgColor, width: 1) : BorderSide.none,
+      return MouseRegion(
+        onEnter: (_) => setState(() => _isHovered = true),
+        onExit: (_) => setState(() => _isHovered = false),
+        cursor: SystemMouseCursors.click,
+        child: SizedBox(
+          width: widget.isFullRow ? double.infinity : null,
+          height: 50,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: widget.maxWidth ?? double.infinity,
             ),
-            elevation: 0,
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (widget.icon != null)
-                Icon(widget.icon,color: fgColor,),
-              if (widget.isLoading) const SizedBox(width: 8),
-              if (widget.isLoading)
-                SizedBox(
-                  width: 10,
-                  height: 10,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: fgColor,
-                  ),
+            child: FilledButton(
+              onPressed: widget.onPressed,
+              style: FilledButton.styleFrom(
+                backgroundColor: bgColor,
+                foregroundColor: fgColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: _isHovered ? BorderSide(color: bgColor, width: 1) : BorderSide.none,
                 ),
-              const SizedBox(width: 12),
-              Text(
-                widget.text,
-                style: TextStyle(
-                  fontSize: 16,
-                  color: fgColor,
-                ),
-                textAlign: TextAlign.center,
+                elevation: 0,
               ),
-            ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (widget.icon != null)
+                    Icon(widget.icon,color: fgColor,),
+                  if (widget.isLoading) const SizedBox(width: 8),
+                  if (widget.isLoading)
+                    SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: fgColor,
+                      ),
+                    ),
+                  const SizedBox(width: 12),
+                  Text(
+                    widget.text,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: fgColor,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
-      ),
-    );
-  });}
+      );
+    });}
 }
-
 
 class CustomButtonOutline extends StatefulWidget {
   final String text;
@@ -138,7 +144,6 @@ class CustomButtonOutline extends StatefulWidget {
   @override
   State<CustomButtonOutline> createState() => _CustomButtonOutlineState();
 }
-
 class _CustomButtonOutlineState extends State<CustomButtonOutline> {
   bool _isHovered = false;
   late theme t;

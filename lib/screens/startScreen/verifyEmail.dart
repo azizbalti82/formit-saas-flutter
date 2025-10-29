@@ -2,24 +2,17 @@
 
 import 'dart:async';
 import 'dart:developer';
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:blurrycontainer/blurrycontainer.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:formbuilder/screens/appScreen.dart';
 import 'package:formbuilder/screens/startScreen/newPassword.dart';
 import 'package:formbuilder/screens/startScreen/signInFinalization.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 
 import '../../main.dart';
 import '../../services/provider.dart';
-import '../../services/secureSharedPreferencesService.dart';
 import '../../services/themeService.dart';
 import '../../tools/tools.dart';
 import '../../widgets/basics.dart';

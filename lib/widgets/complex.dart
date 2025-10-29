@@ -1,10 +1,7 @@
 import 'dart:ui';
 
-import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-
-import 'basics.dart';
 
 dialogBuilder({required BuildContext context,required Widget Function(BuildContext, FDialogStyle, Animation<double>) builder}){
   return showFDialog(

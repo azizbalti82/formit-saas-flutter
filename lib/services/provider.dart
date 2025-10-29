@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:formbuilder/backend/models/collection.dart';
 import 'package:get/get.dart';
 
 import '../backend/models/user.dart';
@@ -14,7 +15,7 @@ class Provider extends GetxController {
   RxBool isDark = false.obs;
   RxBool isGrid = true.obs;
   RxString language = 'en'.obs;
-
+  final RxnString currentFolderId = RxnString();
 
   //quick
   RxString newSelectedStoragePath = ''.obs;
@@ -22,6 +23,11 @@ class Provider extends GetxController {
 
 
 
+  void resetCurrentFolderId(List<Collection> allCollections){
+    currentFolderId.value = allCollections
+        .firstWhere((c) => c.parentId == null)
+        .id;
+  }
 
   void setIsGrid(bool value) {
     isGrid.value = value;

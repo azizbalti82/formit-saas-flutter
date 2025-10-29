@@ -1,15 +1,12 @@
 // ignore_for_file: file_names
 
-import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
 import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_popup/flutter_popup.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:formbuilder/backend/models/user.dart';
 import 'package:formbuilder/screens/startScreen/startScreen.dart';
 import 'package:formbuilder/screens/startScreen/verifyEmail.dart';
-import 'package:formbuilder/widgets/form.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
@@ -21,7 +18,6 @@ import '../services/provider.dart';
 import '../services/sharedPreferencesService.dart';
 import '../services/themeService.dart';
 import '../tools/tools.dart';
-import '../widgets/basics.dart';
 import '../widgets/complex.dart';
 import '../widgets/menu.dart';
 import '../widgets/messages.dart';
@@ -79,6 +75,9 @@ class _AppScreenState extends State<AppScreen> {
   @override
   void initState() {
     super.initState();
+    //find root collection
+    provider.resetCurrentFolderId(fakeCollections);
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       bool isDark = await SharedPrefService.getIsDark();
       provider.setIsDark(isDark);
@@ -151,6 +150,7 @@ class _AppScreenState extends State<AppScreen> {
                           onClick: () {
                             setState(() {
                               currentPath = ["Home"];
+                              provider.resetCurrentFolderId(fakeCollections);
                             });
                           },
                         ),
@@ -332,7 +332,7 @@ class _AppScreenState extends State<AppScreen> {
                   ],
                 )
               : null,
-          child: Padding(
+          child: (isLandscape(context) || !isLandscape(context)&&!provider.isSideBarOpen.value)?Padding(
             padding: const EdgeInsets.symmetric(vertical: 14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -344,6 +344,7 @@ class _AppScreenState extends State<AppScreen> {
                     if (!provider.isSideBarOpen.value) SizedBox(width: 10),
                     pathWidgetBuilder(currentPath),
                     Spacer(),
+                    if(isLandscape(context))
                     FButton.icon(
                       onPress: () {
                         showDialogNewFolder();
@@ -365,14 +366,17 @@ class _AppScreenState extends State<AppScreen> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
+                              color: t.textColor
                             ),
                           ),
                           SizedBox(width: 10),
                         ],
                       ),
                     ),
-                    SizedBox(width: 10),
-                    FButton.icon(
+                    if(isLandscape(context))
+                      SizedBox(width: 10),
+                    if(isLandscape(context))
+                      FButton.icon(
                       onPress: () {},
                       style: FButtonStyle.primary(),
                       child: Row(
@@ -401,7 +405,10 @@ class _AppScreenState extends State<AppScreen> {
                   ],
                 ),
                 Expanded(
-                  child: (fakeCollections.isEmpty)
+                  child: (countFolderChildren(
+                    allFolders: fakeCollections,
+                    currentFolderId: provider.currentFolderId.value,
+                  )==0)
                       ? Center(
                           child: SvgPicture.asset(
                             "assets/vectors/vision.svg",
@@ -430,7 +437,10 @@ class _AppScreenState extends State<AppScreen> {
                               SizedBox(height: 20),
                               Expanded(
                                 child: ListCollections(
-                                  collections: fakeCollections,
+                                  collections: getFoldersOf(
+                                    allFolders: fakeCollections,
+                                    currentFolderId: provider.currentFolderId.value,
+                                  ),
                                   theme: t,
                                   isGrid: provider.isGrid.value,
                                 ),
@@ -438,10 +448,14 @@ class _AppScreenState extends State<AppScreen> {
                             ],
                           ),
                         ),
-                ),
+                )
               ],
             ),
-          ),
+          ): Expanded(child: GestureDetector(
+            onTap: (){
+              provider.setIsSideBarOpen(false);
+            },
+          )),
         ),
       );
     });
@@ -955,7 +969,13 @@ class _AppScreenState extends State<AppScreen> {
         selected: false,
         autofocus: false,
         behavior: HitTestBehavior.translucent,
-        onPress: () {},
+        onPress: () {
+          //1) update current folder
+          provider.currentFolderId.value = collection.id;
+          //2) update path
+          currentPath.add(collection.name);
+
+        },
         builder: (context, state, child) => child!,
         child: FCard.raw(
           child: Padding(
@@ -996,7 +1016,7 @@ class _AppScreenState extends State<AppScreen> {
                       ),
                       const SizedBox(height: 3),
                       Text(
-                        "${collection.name.length} items",
+                        "${countFolderChildren(allFolders: fakeCollections, currentFolderId: collection.id)} items",
                         style: TextStyle(
                           color: theme.secondaryTextColor.withOpacity(0.8),
                           fontSize: 14,
@@ -1042,7 +1062,6 @@ class _AppScreenState extends State<AppScreen> {
         ),
       );
     }
-
     if (isGrid) {
       return LayoutBuilder(
         builder: (context, constraints) {
@@ -1092,6 +1111,23 @@ class _AppScreenState extends State<AppScreen> {
         },
       );
     }
+  }
+
+  List<Collection> getFoldersOf({
+    required List<Collection> allFolders,
+    String? currentFolderId,
+  }) {
+    return allFolders.where((f) => f.parentId == currentFolderId).toList();
+  }
+
+  int countFolderChildren({
+    required List<Collection> allFolders,
+    String? currentFolderId,
+  }) {
+    return getFoldersOf(
+      allFolders: allFolders,
+      currentFolderId: currentFolderId,
+    ).length;
   }
 }
 

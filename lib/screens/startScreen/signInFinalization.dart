@@ -1,21 +1,16 @@
 // ignore_for_file: file_names
 
 import 'dart:async';
-import 'dart:io';
 import 'dart:ui';
 
-import 'package:blurrycontainer/blurrycontainer.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:formbuilder/screens/appScreen.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:get/get.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../main.dart';
 import '../../services/provider.dart';
-import '../../services/secureSharedPreferencesService.dart';
 import '../../services/themeService.dart';
 import '../../tools/tools.dart';
 import '../../widgets/basics.dart';

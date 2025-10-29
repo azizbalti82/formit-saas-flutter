@@ -1,20 +1,12 @@
-import 'dart:ui';
-
 import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
-
-import 'basics.dart';
-
-import 'package:flutter/material.dart';
-import 'package:custom_pop_up_menu/custom_pop_up_menu.dart';
-import 'package:forui/forui.dart';
 
 class CollectionPopupMenu extends StatefulWidget {
   final Color iconColor;
   final Color cardColor;
   final List<PopupMenuItemData> items;
   final double iconSize;
+  final Widget? customTrigger;
 
   const CollectionPopupMenu({
     Key? key,
@@ -22,6 +14,7 @@ class CollectionPopupMenu extends StatefulWidget {
     required this.cardColor,
     required this.items,
     this.iconSize = 20,
+    this.customTrigger,
   }) : super(key: key);
 
   @override
@@ -52,7 +45,7 @@ class _CollectionPopupMenuState extends State<CollectionPopupMenu> {
     return CustomPopupMenu(
       controller: _controller,
       arrowColor: widget.cardColor,
-      child: Icon(
+      child: widget.customTrigger ?? Icon(
         Icons.more_vert,
         color: widget.iconColor,
         size: widget.iconSize,

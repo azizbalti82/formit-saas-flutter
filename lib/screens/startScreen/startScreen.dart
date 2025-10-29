@@ -14,7 +14,7 @@ import '../../widgets/form.dart';
 import 'login.dart';
 
 class StartScreen extends StatefulWidget {
-  const StartScreen({super.key,required this.canBack});
+  const StartScreen({super.key, required this.canBack});
   final bool canBack;
 
   @override
@@ -30,27 +30,24 @@ class _AppScreenState extends State<StartScreen> {
     {
       'title': 'Easy Form Creation',
       'text': 'Build forms quickly with just Drag and Drop.',
-      'image': 'assets/vectors/easy.svg'
+      'image': 'assets/vectors/easy.svg',
     },
     {
       'title': 'Realtime Updates',
       'text': 'View new submissions instantly as they happen.',
-      'image': 'assets/vectors/secure.svg'
+      'image': 'assets/vectors/secure.svg',
     },
     {
       'title': 'High Security',
       'text': 'All submissions are securely encrypted and protected.',
-      'image': 'assets/vectors/encrypted.svg'
+      'image': 'assets/vectors/encrypted.svg',
     },
     {
       'title': 'AI Form Design',
       'text': 'Generate form templates instantly with AI assistance.',
-      'image': 'assets/vectors/ai.svg'
-    }
+      'image': 'assets/vectors/ai.svg',
+    },
   ];
-
-
-
 
   @override
   void initState() {
@@ -60,7 +57,7 @@ class _AppScreenState extends State<StartScreen> {
       provider.setIsDark(true);
     });
     // Auto-advance the intro dots every 3s
-    _timer = Timer.periodic(const Duration(seconds:3), (_) {
+    _timer = Timer.periodic(const Duration(seconds: 3), (_) {
       if (!mounted) return;
       setState(() {
         selectedIntroPage = selectedIntroPage == 3 ? 0 : selectedIntroPage + 1;
@@ -94,7 +91,7 @@ class _AppScreenState extends State<StartScreen> {
                   Expanded(child: introRight()),
                 ],
               )
-            : const Center(child: Text("Welcome")),
+            : Expanded(child: introRight()),
       ),
     );
   }
@@ -122,21 +119,34 @@ class _AppScreenState extends State<StartScreen> {
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Spacer(),
-                    SvgPicture.asset(introSlides[selectedIntroPage]["image"]!,width: MediaQuery.of(context).size.height*0.3,),
+                    SvgPicture.asset(
+                      introSlides[selectedIntroPage]["image"]!,
+                      width: MediaQuery.of(context).size.height * 0.3,
+                    ),
                     Spacer(),
                     Text(
                       introSlides[selectedIntroPage]["title"]!,
-                      style: TextStyle(fontWeight: FontWeight.w800,fontSize: MediaQuery.of(context).size.height*0.042,color: t.textColor),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: MediaQuery.of(context).size.height * 0.042,
+                        color: t.textColor,
+                      ),
                       textAlign: TextAlign.center,
-
                     ),
-                    SizedBox(height: 20,),
-                    Padding(padding: EdgeInsets.symmetric(horizontal: 30),child: Text(
-                      introSlides[selectedIntroPage]["text"]!,
-                      style: TextStyle(fontWeight: FontWeight.w300,fontSize:MediaQuery.of(context).size.height*0.03 ,color: t.secondaryTextColor),
-                      textAlign: TextAlign.center,
-                    ),),
-                    SizedBox(height: 60,),
+                    SizedBox(height: 20),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 30),
+                      child: Text(
+                        introSlides[selectedIntroPage]["text"]!,
+                        style: TextStyle(
+                          fontWeight: FontWeight.w300,
+                          fontSize: MediaQuery.of(context).size.height * 0.03,
+                          color: t.secondaryTextColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                    SizedBox(height: 60),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
@@ -161,7 +171,7 @@ class _AppScreenState extends State<StartScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 20,)
+                    SizedBox(height: 20),
                   ],
                 ),
               ),
@@ -174,22 +184,25 @@ class _AppScreenState extends State<StartScreen> {
 
   Widget introRight() {
     return Stack(
-        fit: StackFit.expand,
-        children: [
-          // Main Content
-          Container(
-            alignment: Alignment.center,
-            color: Colors.transparent,
-            // Don't force width inside Row child
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: SingleChildScrollView(
-                child: Column(
+      fit: StackFit.expand,
+      children: [
+        // Main Content
+        Container(
+          alignment: Alignment.center,
+          color: Colors.transparent,
+          // Don't force width inside Row child
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: SingleChildScrollView(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SvgPicture.asset("assets/logo/logo.svg",width: MediaQuery.of(context).size.height*0.15,),
-                  SizedBox(height: 20,),
+                  SvgPicture.asset(
+                    "assets/logo/logo.svg",
+                    width: MediaQuery.of(context).size.height * 0.15,
+                  ),
+                  SizedBox(height: 20),
                   Text(
                     "Build forms effortlessly",
                     style: TextStyle(
@@ -213,39 +226,44 @@ class _AppScreenState extends State<StartScreen> {
                     ),
                   ),
 
-                  SizedBox(height: 50,),
-                  (MediaQuery.of(context).size.width> 900) ? Column(
-                    children: [
-                      IntrinsicWidth(
-                        child: Column(
+                  SizedBox(height: 50),
+                  (MediaQuery.of(context).size.width > 900)
+                      ? Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Expanded(child: signInButton()),
-                                SizedBox(width: 10),
-                                Expanded(child: loginButton()),
-                              ],
+                            IntrinsicWidth(
+                              child: Column(
+                                children: [
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Expanded(child: signInButton()),
+                                      SizedBox(width: 10),
+                                      Expanded(child: loginButton()),
+                                    ],
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
+                        )
+                      : Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 20),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              signInButton(),
+                              SizedBox(height: 10),
+                              loginButton(),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  )
-                      : Padding(padding: EdgeInsets.symmetric(horizontal: 20),child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      signInButton(),
-                      SizedBox(height: 10,),
-                      loginButton(),
-                    ],
-                  ),)
                 ],
               ),
-            ),)
+            ),
           ),
-        ],
+        ),
+      ],
     );
   }
 
@@ -266,14 +284,29 @@ class _AppScreenState extends State<StartScreen> {
   }
 
   signInButton() {
-    return CustomButtonOutline(isLoading: false,height:50,isFullRow:false,borderSize:0.6,backgroundColor: t.secondaryTextColor,text: 'Create account', t: t,onPressed: (){
-      navigateTo(context, Login(t: t,isLogin: false,),false);
-    });
+    return CustomButtonOutline(
+      isLoading: false,
+      height: 50,
+      isFullRow: false,
+      borderSize: 0.6,
+      backgroundColor: t.secondaryTextColor,
+      text: 'Create account',
+      t: t,
+      onPressed: () {
+        navigateTo(context, Login(t: t, isLogin: false), false);
+      },
+    );
   }
 
   loginButton() {
-    return CustomButton(isLoading: false,isFullRow:false, t: t,onPressed: (){
-      navigateTo(context, Login(t: t,isLogin: true,),false);
-    }, text: 'Log in',);
+    return CustomButton(
+      isLoading: false,
+      isFullRow: false,
+      t: t,
+      onPressed: () {
+        navigateTo(context, Login(t: t, isLogin: true), false);
+      },
+      text: 'Log in',
+    );
   }
 }
