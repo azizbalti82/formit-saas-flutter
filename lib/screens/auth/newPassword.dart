@@ -1,7 +1,6 @@
 // ignore_for_file: file_names
 
 import 'dart:developer';
-import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -15,212 +14,323 @@ import '../../tools/tools.dart';
 import '../../widgets/basics.dart';
 import '../../widgets/form.dart';
 
-
 class NewPassword extends StatefulWidget {
-  NewPassword({super.key, required this.t, required this.email});
+  const NewPassword({super.key, required this.t, required this.email});
   final theme t;
   final String email;
+
   @override
   State<NewPassword> createState() => _State();
 }
 
 class _State extends State<NewPassword> {
-  final Provider provider = Get.find<Provider>();
+  // --------------------------------------------------------------------------
+  // STATE VARIABLES
+  // --------------------------------------------------------------------------
   late theme t;
-  bool showKey = false;
-
-  TextEditingController firstNameController = TextEditingController();
-  TextEditingController lastNameController = TextEditingController();
-  bool isSignInLoading = false;
-  Uint8List? imageBytes;
-  bool getCodeLoading = false;
-  bool verifyCodeLoading = false;
-  TextEditingController emailController = TextEditingController();
-  TextEditingController codeController = TextEditingController();
-  String latestEmail = "";
   bool updatePasswordLoading = false;
+
+  // --------------------------------------------------------------------------
+  // CONTROLLERS
+  // --------------------------------------------------------------------------
   TextEditingController passwordController = TextEditingController();
   TextEditingController confirmPasswordController = TextEditingController();
 
+  // --------------------------------------------------------------------------
+  // SERVICES
+  // --------------------------------------------------------------------------
+  final Provider provider = Get.find<Provider>();
 
-
+  // --------------------------------------------------------------------------
+  // LIFECYCLE METHODS
+  // --------------------------------------------------------------------------
   @override
   void initState() {
     super.initState();
-    // Start with the provided theme (fallback to dark if needed)
     t = widget.t;
   }
 
   @override
-  Widget build(BuildContext context) {
-    return _buildScaffold(t, context);
+  void dispose() {
+    passwordController.dispose();
+    confirmPasswordController.dispose();
+    super.dispose();
   }
 
-  Widget _buildScaffold(theme currentTheme, BuildContext context) {
+  // --------------------------------------------------------------------------
+  // BUILD METHOD
+  // --------------------------------------------------------------------------
+  @override
+  Widget build(BuildContext context) {
     Size screenSize = MediaQuery.of(context).size;
     double screenWidth = screenSize.width;
     double screenHeight = screenSize.height;
 
     return SystemUiStyleWrapper(
-      t: currentTheme,
+      t: t,
       child: Scaffold(
-        backgroundColor: currentTheme.bgColor,
-        // AppBar
-        appBar: isLandscape(context)
-            ? AppBar(
-          backgroundColor: Colors.transparent,
-          automaticallyImplyLeading: false,
-          elevation: 0,
-          scrolledUnderElevation: 0,
-          title: LayoutBuilder(
-            builder: (context, constraints) {
-              return simpleAppBar(context, text: "Reset password",t:t);
-            },
-          ),
-        )
-            : null,
+        backgroundColor: t.bgColor,
+        appBar: isLandscape(context) ? _buildAppBar() : null,
         body: isLandscape(context)
-            ? Center(
-            child: Container(
-              width: screenWidth*0.5,
-              height: screenHeight*0.4,
-              constraints: BoxConstraints(
-                maxWidth: 500, // maximum width in pixels
-              ),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  width: 1,
-                  color: Colors.white.withOpacity(0.1), // Add border color
-                ),
-              ),
-              child: ClipRRect( // Use ClipRRect instead of clipBehavior
-                borderRadius: BorderRadius.circular(20),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      top: -150,
-                      left: -50,
-                      right: -50,
-                      child: Container(
-                        height: 500,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          gradient: RadialGradient(
-                            colors: [
-                              Color(0xFF8B5CF6).withOpacity(0.6),
-                              Color(0xFFA855F7).withOpacity(0.4),
-                              Color(0xFF9333EA).withOpacity(0.2),
-                              Colors.transparent,
-                            ],
-                            stops: [0.0, 0.3, 0.6, 1.0],
-                          ),
-                        ),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.transparent,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    // Main content
-                    Center(
-                      child: SingleChildScrollView(
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              landscape(t)
-                            ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ))
-            : const Center(child: Text("Welcome")),
+            ? _buildLandscapeBody(screenWidth, screenHeight)
+            : _buildPortraitBody(),
       ),
     );
   }
 
-  portrait(theme theme) {
+  // --------------------------------------------------------------------------
+  // LANDSCAPE BODY
+  // --------------------------------------------------------------------------
+  Widget _buildLandscapeBody(double screenWidth, double screenHeight) {
+    return Center(
+      child: Container(
+        width: screenWidth * 0.5,
+        height: screenHeight * 0.5,
+        constraints: const BoxConstraints(maxWidth: 500),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            width: 1,
+            color: Colors.white.withOpacity(0.1),
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: Stack(
+            children: [
+              _buildOptimizedGradientBackground(),
+              _buildMainContent(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // OPTIMIZED: Simple gradient without BackdropFilter
+  Widget _buildOptimizedGradientBackground() {
+    return Positioned.fill(
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: RadialGradient(
+            center: const Alignment(0.0, -0.8),
+            radius: 1.2,
+            colors: [
+              const Color(0xFF8B5CF6).withOpacity(0.3),
+              const Color(0xFFA855F7).withOpacity(0.2),
+              const Color(0xFF9333EA).withOpacity(0.1),
+              Colors.transparent,
+            ],
+            stops: const [0.0, 0.3, 0.6, 1.0],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildMainContent() {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _buildPasswordInputs(),
+              const SizedBox(height: 32),
+              _buildSubmitButton(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // PORTRAIT BODY
+  // --------------------------------------------------------------------------
+  Widget _buildPortraitBody() {
+    return Stack(
+      children: [
+        _buildOptimizedGradientBackground(),
+        _buildMainContent(),
+        _buildCancelButton(),
+      ],
+    );
+  }
+
+  // --------------------------------------------------------------------------
+  // UI COMPONENTS
+  // --------------------------------------------------------------------------
+  PreferredSizeWidget _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.transparent,
+      automaticallyImplyLeading: false,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      title: LayoutBuilder(
+        builder: (context, constraints) {
+          return simpleAppBar(
+            context,
+            text: "Reset password",
+            t: t,
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildPasswordInputs() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: 30),
+        Text(
+          "Create new password",
+          style: TextStyle(
+            color: t.textColor,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          "Your new password must be different from previously used passwords",
+          style: TextStyle(
+            color: t.secondaryTextColor.withOpacity(0.7),
+            fontWeight: FontWeight.w400,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 24),
         customInput(
-          theme,
+          t,
           passwordController,
           "Enter new password",
           '',
           context,
           isPassword: true,
+          maxLines: 1,
         ),
-        const SizedBox(height: 30),
-        CustomButton(
-          text: "Change password",
-          onPressed: () async {
-            //prevent clicking while verifying
-            if (!updatePasswordLoading) {
-              try {
-                String password = passwordController.text;
-                if (password.length < 8 ||
-                    !RegExp(r'\d').hasMatch(password)) {
-                  showError(
-                    'Password must be at least 8 characters and include numbers.',
-                    context,
-                  );
-                } else {
-                  setState(() {
-                    updatePasswordLoading = true;
-                  });
-
-                  bool isPasswordUpdated = true;//await userService.updatePassword(widget.email, password);
-                  if (isPasswordUpdated) {
-                    showSuccess(
-                      "Password updated successfully",
-                      context,
-                    );
-                    //go to the login page
-                    Navigator.pop(context);
-                  } else {
-                    showError(
-                      "Could not update password",
-                      context,
-                    );
-                  }
-                }
-              } catch (e) {
-                log('error while updating password');
-                showError(
-                  'Error while updating password',
-                  context,
-                );
-              } finally {
-                setState(() {
-                  updatePasswordLoading = false;
-                });
-              }
-            }
-          },
-          isLoading: updatePasswordLoading, t: theme,
+        const SizedBox(height: 16),
+        customInput(
+          t,
+          confirmPasswordController,
+          "Confirm new password",
+          '',
+          context,
+          isPassword: true,
+          maxLines: 1,
         ),
-        const SizedBox(height: 30),
       ],
     );
   }
-  landscape(theme theme) {
-    return Center(
-      child: Container(
-        constraints: const BoxConstraints(maxWidth: 600), // Increased from 100 to 600
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: portrait(theme),
+
+  Widget _buildSubmitButton() {
+    return CustomButton(
+      isLoading: updatePasswordLoading,
+      t: t,
+      onPressed: _handleChangePassword,
+      text: 'Change password',
+    );
+  }
+
+  Widget _buildCancelButton() {
+    return Positioned(
+      top: 20,
+      left: 20,
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: buildCancelIconButton(t, context),
       ),
     );
   }
-}
 
+  // --------------------------------------------------------------------------
+  // ACTION HANDLERS
+  // --------------------------------------------------------------------------
+  Future<void> _handleChangePassword() async {
+    if (updatePasswordLoading) return;
+
+    String password = passwordController.text;
+    String confirmPassword = confirmPasswordController.text;
+
+    if (!_validatePasswords(password, confirmPassword)) {
+      return;
+    }
+
+    setState(() {
+      updatePasswordLoading = true;
+    });
+
+    try {
+      await _performPasswordUpdate(password);
+    } catch (e) {
+      log('Error while updating password: $e');
+      if (mounted) {
+        showError('Error while updating password', context);
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          updatePasswordLoading = false;
+        });
+      }
+    }
+  }
+
+  bool _validatePasswords(String password, String confirmPassword) {
+    if (password.isEmpty) {
+      showError('Please enter a password', context);
+      return false;
+    }
+
+    if (password.length < 8) {
+      showError(
+        'Password must be at least 8 characters',
+        context,
+      );
+      return false;
+    }
+
+    if (!RegExp(r'\d').hasMatch(password)) {
+      showError(
+        'Password must include at least one number',
+        context,
+      );
+      return false;
+    }
+
+    if (password != confirmPassword) {
+      showError(
+        'Passwords do not match',
+        context,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
+  Future<void> _performPasswordUpdate(String password) async {
+    // Simulate API call
+    await Future.delayed(const Duration(seconds: 2));
+
+    bool isPasswordUpdated = true; // await userService.updatePassword(widget.email, password);
+
+    if (mounted) {
+      if (isPasswordUpdated) {
+        showSuccess(
+          "Password updated successfully",
+          context,
+        );
+        // Go back to login page
+        Navigator.pop(context);
+      } else {
+        showError(
+          "Could not update password",
+          context,
+        );
+      }
+    }
+  }
+}

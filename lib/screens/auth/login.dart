@@ -27,6 +27,7 @@ class Login extends StatefulWidget {
   @override
   State<Login> createState() => _State();
 }
+
 class _State extends State<Login> {
   // --------------------------------------------------------------------------
   // STATE VARIABLES
@@ -58,8 +59,12 @@ class _State extends State<Login> {
     isLogin = widget.isLogin;
   }
 
-  void disposeController() {
+  @override
+  void dispose() {
     keyController.dispose();
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 
   // --------------------------------------------------------------------------
@@ -75,7 +80,7 @@ class _State extends State<Login> {
       t: t,
       child: Scaffold(
         backgroundColor: t.bgColor,
-        appBar: isLandscape(context)?_buildAppBar():null,
+        appBar: isLandscape(context) ? _buildAppBar() : null,
         body: isLandscape(context)
             ? _buildLandscapeBody(screenWidth, screenHeight)
             : _buildPortraitBody(),
@@ -91,7 +96,7 @@ class _State extends State<Login> {
       child: Container(
         width: screenWidth * 0.5,
         height: screenHeight * 0.7,
-        constraints: BoxConstraints(maxWidth: 500),
+        constraints: const BoxConstraints(maxWidth: 500),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
@@ -103,7 +108,7 @@ class _State extends State<Login> {
           borderRadius: BorderRadius.circular(20),
           child: Stack(
             children: [
-              _buildGradientBackground(),
+              _buildOptimizedGradientBackground(),
               _buildMainContent(),
             ],
           ),
@@ -111,37 +116,28 @@ class _State extends State<Login> {
       ),
     );
   }
-  Widget _buildGradientBackground() {
-    return Positioned(
-      top: -150,
-      left: -50,
-      right: -50,
+
+  // OPTIMIZED: Use simple gradient instead of BackdropFilter
+  Widget _buildOptimizedGradientBackground() {
+    return Positioned.fill(
       child: Container(
-        height: 500,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
           gradient: RadialGradient(
+            center: const Alignment(0.0, -0.8),
+            radius: 1.2,
             colors: [
-              Color(0xFF8B5CF6).withOpacity(0.6),
-              Color(0xFFA855F7).withOpacity(0.4),
-              Color(0xFF9333EA).withOpacity(0.2),
+              const Color(0xFF8B5CF6).withOpacity(0.3),
+              const Color(0xFFA855F7).withOpacity(0.2),
+              const Color(0xFF9333EA).withOpacity(0.1),
               Colors.transparent,
             ],
-            stops: [0.0, 0.3, 0.6, 1.0],
-          ),
-        ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
-          child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.transparent,
-            ),
+            stops: const [0.0, 0.3, 0.6, 1.0],
           ),
         ),
       ),
     );
   }
+
   Widget _buildMainContent() {
     return Center(
       child: Padding(
@@ -151,24 +147,24 @@ class _State extends State<Login> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildLogo(),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               _buildGoogleButton(),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               _buildDivider(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               _buildEmailInput(),
-              SizedBox(height: 12),
+              const SizedBox(height: 12),
               _buildPasswordInput(),
               if (isLogin) ...[
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 _buildForgotPasswordButton(),
               ],
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               _buildSubmitButton(),
               if (!isLogin) ...[
-                SizedBox(height: 30),
+                const SizedBox(height: 30),
                 _buildPrivacyPolicy(),
-                SizedBox(height: 50),
+                const SizedBox(height: 50),
               ],
             ],
           ),
@@ -183,12 +179,12 @@ class _State extends State<Login> {
   Widget _buildPortraitBody() {
     return Center(
       child: Stack(
-            children: [
-              _buildGradientBackground(),
-              _buildMainContent(),
-              _buildCancelButton()
-            ],
-          ),
+        children: [
+          _buildOptimizedGradientBackground(),
+          _buildMainContent(),
+          _buildCancelButton()
+        ],
+      ),
     );
   }
 
@@ -212,12 +208,14 @@ class _State extends State<Login> {
       ),
     );
   }
+
   Widget _buildLogo() {
     return SvgPicture.asset(
       "assets/logo/logo.svg",
       width: MediaQuery.of(context).size.height * 0.1,
     );
   }
+
   Widget _buildGoogleButton() {
     return CustomButtonOutline(
       text: "Continue with Google",
@@ -228,18 +226,19 @@ class _State extends State<Login> {
       height: 45,
     );
   }
+
   Widget _buildDivider() {
-    return Align(
+    return const Align(
       alignment: FractionalOffset.center,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: EdgeInsets.symmetric(horizontal: 8),
             child: Text(
               "Or continue with email",
               style: TextStyle(
-                color: t.secondaryTextColor.withOpacity(0.7),
+                color: Color(0xFF9CA3AF),
                 fontWeight: FontWeight.w400,
                 fontSize: 15,
               ),
@@ -249,6 +248,7 @@ class _State extends State<Login> {
       ),
     );
   }
+
   Widget _buildEmailInput() {
     return customInput(
       t,
@@ -260,6 +260,7 @@ class _State extends State<Login> {
       maxLines: 1,
     );
   }
+
   Widget _buildPasswordInput() {
     return customInput(
       t,
@@ -271,6 +272,7 @@ class _State extends State<Login> {
       maxLines: 1,
     );
   }
+
   Widget _buildForgotPasswordButton() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -292,6 +294,7 @@ class _State extends State<Login> {
       ],
     );
   }
+
   Widget _buildSubmitButton() {
     return CustomButton(
       isLoading: isLoginLoading,
@@ -300,6 +303,7 @@ class _State extends State<Login> {
       text: isLogin ? 'Log in' : "Continue",
     );
   }
+
   Widget _buildPrivacyPolicy() {
     return Align(
       alignment: FractionalOffset.center,
@@ -335,6 +339,7 @@ class _State extends State<Login> {
       ),
     );
   }
+
   // --------------------------------------------------------------------------
   // ACTION HANDLERS
   // --------------------------------------------------------------------------
@@ -355,11 +360,14 @@ class _State extends State<Login> {
     } catch (e) {
       showError(e.toString(), context);
     } finally {
-      setState(() {
-        isLoginLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          isLoginLoading = false;
+        });
+      }
     }
   }
+
   bool _validateInputs(String email, String password) {
     if (email.isEmpty) {
       showError("Please enter your email", context);
@@ -371,36 +379,43 @@ class _State extends State<Login> {
     }
     return true;
   }
+
   Future<void> _performLogin(String email, String password) async {
     bool loginSuccess = false;
     await Future.delayed(const Duration(seconds: 2));
 
     if (loginSuccess) {
       await SecureStorageService().saveCurrentKey(keyController.text.trim());
-      Navigator.pop(context);
-      navigateTo(context, AppScreen(t: getTheme()), true);
+      if (mounted) {
+        Navigator.pop(context);
+        navigateTo(context, AppScreen(t: getTheme()), true);
+      }
     } else if (isLogin) {
-      showError("Incorrect login email or password", context);
+      if (mounted) {
+        showError("Incorrect login email or password", context);
+      }
     } else {
-      navigateTo(
-        context,
-        VerifyEmail(
-          t: t,
-          type: verifyEmailType.createAccount,
-          email: emailController.text,
-        ),
-        false,
-      );
+      if (mounted) {
+        navigateTo(
+          context,
+          VerifyEmail(
+            t: t,
+            type: verifyEmailType.createAccount,
+            email: emailController.text,
+          ),
+          false,
+        );
+      }
     }
   }
 
-  _buildCancelButton() {
-    return  Positioned(
+  Widget _buildCancelButton() {
+    return Positioned(
       top: 20,
       left: 20,
       child: Align(
-      alignment: AlignmentGeometry.topLeft,
-      child: buildCancelIconButton(t,context)),
+          alignment: Alignment.topLeft,
+          child: buildCancelIconButton(t, context)),
     );
   }
 }

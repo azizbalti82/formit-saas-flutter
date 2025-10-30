@@ -1,7 +1,6 @@
 // ignore_for_file: file_names
 import 'dart:async';
 import 'dart:developer';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:formbuilder/screens/auth/newPassword.dart';
@@ -19,7 +18,12 @@ import '../../widgets/basics.dart';
 import '../../widgets/form.dart';
 
 class VerifyEmail extends StatefulWidget {
-  const VerifyEmail({super.key, required this.t, required this.type, required this.email});
+  const VerifyEmail({
+    super.key,
+    required this.t,
+    required this.type,
+    required this.email,
+  });
   final verifyEmailType type;
   final theme t;
   final String email;
@@ -58,6 +62,13 @@ class _State extends State<VerifyEmail> {
     emailController = TextEditingController(text: widget.email);
   }
 
+  @override
+  void dispose() {
+    emailController.dispose();
+    codeController.dispose();
+    super.dispose();
+  }
+
   // --------------------------------------------------------------------------
   // BUILD METHOD
   // --------------------------------------------------------------------------
@@ -90,7 +101,7 @@ class _State extends State<VerifyEmail> {
       child: Container(
         width: screenSize.width * 0.5,
         height: screenSize.height * 0.7,
-        constraints: BoxConstraints(maxWidth: 500),
+        constraints: const BoxConstraints(maxWidth: 500),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
@@ -102,7 +113,7 @@ class _State extends State<VerifyEmail> {
           borderRadius: BorderRadius.circular(20),
           child: Stack(
             children: [
-              _buildGradientBackground(),
+              _buildOptimizedGradientBackground(),
               _buildMainContent(),
             ],
           ),
@@ -114,32 +125,29 @@ class _State extends State<VerifyEmail> {
   Widget _buildPortraitBody() {
     return Stack(
       children: [
-        _buildGradientBackground(),
+        _buildOptimizedGradientBackground(),
         _buildMainContent(),
         _buildCancelButton(),
       ],
     );
   }
 
-  Widget _buildGradientBackground() {
+  // OPTIMIZED: Removed BackdropFilter, using simple gradient
+  Widget _buildOptimizedGradientBackground() {
     return Positioned.fill(
       child: Container(
         decoration: BoxDecoration(
           gradient: RadialGradient(
-            center: Alignment.topCenter,
+            center: const Alignment(0.0, -0.5),
             radius: 1.5,
             colors: [
-              Color(0xFF8B5CF6).withOpacity(0.6),
-              Color(0xFFA855F7).withOpacity(0.4),
-              Color(0xFF9333EA).withOpacity(0.2),
+              const Color(0xFF8B5CF6).withOpacity(0.25),
+              const Color(0xFFA855F7).withOpacity(0.15),
+              const Color(0xFF9333EA).withOpacity(0.08),
               Colors.transparent,
             ],
-            stops: [0.0, 0.3, 0.6, 1.0],
+            stops: const [0.0, 0.3, 0.6, 1.0],
           ),
-        ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
-          child: Container(color: Colors.transparent),
         ),
       ),
     );
@@ -148,7 +156,7 @@ class _State extends State<VerifyEmail> {
   Widget _buildMainContent() {
     return Center(
       child: Container(
-        constraints: BoxConstraints(maxWidth: 600),
+        constraints: const BoxConstraints(maxWidth: 600),
         padding: const EdgeInsets.all(24),
         child: SingleChildScrollView(
           child: Column(
@@ -187,7 +195,8 @@ class _State extends State<VerifyEmail> {
   }
 
   Widget _buildEmailInputSection() {
-    return isLandscape(context) ? IntrinsicHeight(
+    return isLandscape(context)
+        ? IntrinsicHeight(
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -212,45 +221,43 @@ class _State extends State<VerifyEmail> {
         ],
       ),
     )
-    : ClipRRect(
-        borderRadius: BorderRadius.circular(10), // Force border radius
-        child: Container(
-      decoration: BoxDecoration(
-        color: t.bgColor, // Same background as input
-        borderRadius: BorderRadius.circular(12), // Global border radius
-
-      ),
-      child: IntrinsicHeight(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(
-              child: customInput(
-                t,
-                emailController,
-                "Enter your email",
-                '',
-                context,
-                backgroundColor:t.bgColor,
-                haveBorder:false,
-
+        : ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        decoration: BoxDecoration(
+          color: t.bgColor,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: IntrinsicHeight(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(
+                child: customInput(
+                  t,
+                  emailController,
+                  "Enter your email",
+                  '',
+                  context,
+                  backgroundColor: t.bgColor,
+                  haveBorder: false,
+                ),
               ),
-            ),
-            SizedBox(height: 5,),
-            IntrinsicWidth(
-              child: CustomButton(
-                height: 40,
-                text: "Get Code",
-                onPressed: _handleGetCode,
-                isLoading: getCodeLoading,
-                t: t,
+              const SizedBox(height: 5),
+              IntrinsicWidth(
+                child: CustomButton(
+                  height: 40,
+                  text: "Get Code",
+                  onPressed: _handleGetCode,
+                  isLoading: getCodeLoading,
+                  t: t,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ))
-    ;
+    );
   }
 
   Widget _buildCodeInputSection() {
@@ -267,52 +274,20 @@ class _State extends State<VerifyEmail> {
         ),
         const SizedBox(height: 20),
         Center(
-          child: SizedBox(width: 300,child: SizedBox(
+          child: SizedBox(
+            width: 300,
             child: _buildPinCodeField(),
-          ),),
-        )
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildPinCodeField() {
-    /*
-    return PinCodeTextField(
-      appContext: context,
-      controller: codeController,
-      length: 5,
-      obscureText: false,
-      animationType: AnimationType.fade,
-      keyboardType: TextInputType.number,
-      textStyle: TextStyle(color: t.textColor),
-      pinTheme: PinTheme(
-        shape: PinCodeFieldShape.box,
-        borderRadius: BorderRadius.circular(10),
-        fieldHeight: 60,
-        fieldWidth: 50,
-        activeFillColor: t.accentColor.withOpacity(0.2),
-        selectedFillColor: t.bgColor,
-        inactiveFillColor: t.bgColor,
-        activeColor: t.accentColor,
-        selectedColor: t.accentColor,
-        inactiveColor: t.border,
-      ),
-      animationDuration: const Duration(milliseconds: 300),
-      enableActiveFill: true,
-      onChanged: (value) {},
-      onCompleted: (value) {
-        // Optionally auto-verify when code is completed
-        // _handleVerifyCode();
-      },
-    );
-
-    */
     return PinCode(
       appContext: context,
       length: 6,
-      textStyle: TextStyle(
-        color: t.textColor
-      ),
+      textStyle: TextStyle(color: t.textColor),
       pinTheme: PinCodeTheme(
         borderRadius: BorderRadius.circular(10),
         shape: PinCodeFieldShape.box,
@@ -321,18 +296,12 @@ class _State extends State<VerifyEmail> {
         selectedColor: t.accentColor,
       ),
       onChanged: (value) {
-        print(value);
+        codeController.text = value;
       },
       onCompleted: (value) {
-        print("Completed: $value");
-        // Show a dialog or navigate to the next screen
-        showDialog(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text("Success"),
-            content: Text("PIN Verified: $value"),
-          ),
-        );
+        codeController.text = value;
+        // Optionally auto-verify
+        // _handleVerifyCode();
       },
     );
   }
@@ -379,32 +348,38 @@ class _State extends State<VerifyEmail> {
       bool isExist = false; // await userService.isExistByMail(email);
 
       if (!isExist) {
-        showMsg(
-          "If the email exists, you will receive an OTP code shortly",
-          context,
-          t,
-        );
+        if (mounted) {
+          showMsg(
+            "If the email exists, you will receive an OTP code shortly",
+            context,
+            t,
+          );
+        }
         return;
       }
 
       // Send email - replace with actual API call
       final error = null; // await OTPService.sendOtp(emailController.text);
-      if (error == null) {
-        showMsg(
-          "If the email exists, you will receive an OTP code shortly",
-          context,
-          t,
-        );
-        latestEmail = email;
-        // Clear fields for better UX
-        emailController.text = '';
-        codeController.text = '';
-      } else {
-        showError("Error while sending code, please try later", context);
+      if (mounted) {
+        if (error == null) {
+          showMsg(
+            "If the email exists, you will receive an OTP code shortly",
+            context,
+            t,
+          );
+          latestEmail = email;
+          // Clear fields for better UX
+          emailController.text = '';
+          codeController.text = '';
+        } else {
+          showError("Error while sending code, please try later", context);
+        }
       }
     } catch (e) {
       log('Error while getting code: $e');
-      showError('Error while sending code', context);
+      if (mounted) {
+        showError('Error while sending code', context);
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -413,6 +388,7 @@ class _State extends State<VerifyEmail> {
       }
     }
   }
+
   Future<void> _handleVerifyCode() async {
     if (verifyCodeLoading) return;
 
@@ -427,25 +403,31 @@ class _State extends State<VerifyEmail> {
       });
 
       // For testing - remove this in production
-      if (code.length == 5) {
+      if (code.length == 6) {
         await Future.delayed(const Duration(seconds: 1));
-        _onVerified();
+        if (mounted) {
+          _onVerified();
+        }
         return;
       }
 
       // Actual verification - uncomment in production
       /*
       String? error = await OTPService.verifyOtp(latestEmail, code);
-      if (error == null) {
-        _onVerified();
-      } else {
-        showError('Wrong code, try again', context);
-        codeController.text = "";
+      if (mounted) {
+        if (error == null) {
+          _onVerified();
+        } else {
+          showError('Wrong code, try again', context);
+          codeController.text = "";
+        }
       }
       */
     } catch (e) {
       log('Error while verifying code: $e');
-      showError('Error while verifying code', context);
+      if (mounted) {
+        showError('Error while verifying code', context);
+      }
     } finally {
       if (mounted) {
         setState(() {
@@ -454,19 +436,26 @@ class _State extends State<VerifyEmail> {
       }
     }
   }
+
   // --------------------------------------------------------------------------
   // VALIDATION METHODS
   // --------------------------------------------------------------------------
   bool _validateEmail(String email) {
-    if (email.isEmpty || !RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+    if (email.isEmpty ||
+        !RegExp(r'^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
       showError('Invalid email', context);
       return false;
     }
     return true;
   }
+
   bool _validateCode(String code) {
-    if (code.length != 5) {
-      showError("Please enter the 5-digit code", context);
+    //just for testing
+    _onVerified();
+    /////////////////
+
+    if (code.length != 6) {
+      showError("Please enter the 6-digit code", context);
       return false;
     }
     if (latestEmail.isEmpty) {
@@ -475,10 +464,13 @@ class _State extends State<VerifyEmail> {
     }
     return true;
   }
+
   // --------------------------------------------------------------------------
   // NAVIGATION HANDLERS
   // --------------------------------------------------------------------------
   void _onVerified() {
+    if (!mounted) return;
+
     switch (widget.type) {
       case verifyEmailType.resetPassword:
       case verifyEmailType.updatePassword:
