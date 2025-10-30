@@ -757,6 +757,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.1"
+  pin_code:
+    dependency: "direct main"
+    description:
+      name: pin_code
+      sha256: "954931b6ea03ba1f835e24a91f627ef631e10b052fd629b66a88214c089b1d4c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   pin_code_fields:
     dependency: "direct main"
     description:

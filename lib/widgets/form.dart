@@ -18,6 +18,8 @@ class CustomButton extends StatefulWidget {
   final double? iconSize;
   final double? maxWidth;
   final theme t;
+  final double? height;
+
 
   const CustomButton({
     Key? key,
@@ -31,6 +33,7 @@ class CustomButton extends StatefulWidget {
     this.iconSize,
     this.maxWidth,
     required this.t,
+    this.height
   }) : super(key: key);
 
   @override
@@ -62,7 +65,7 @@ class _CustomButtonState extends State<CustomButton> {
         cursor: SystemMouseCursors.click,
         child: SizedBox(
           width: widget.isFullRow ? double.infinity : null,
-          height: 50,
+          height: widget.height?? 50,
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: widget.maxWidth ?? double.infinity,
@@ -185,7 +188,7 @@ class _CustomButtonOutlineState extends State<CustomButtonOutline> {
               ),
             ),
             child: Row(
-              mainAxisSize: MainAxisSize.min,
+              mainAxisSize: MainAxisSize.max,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (widget.icon == null && widget.iconSvg!=null)
@@ -209,14 +212,17 @@ class _CustomButtonOutlineState extends State<CustomButtonOutline> {
                 if(widget.text.isNotEmpty)
                   const SizedBox(width: 12),
                 if(widget.text.isNotEmpty)
-                  Text(
+                  Flexible(child: Text(
                     widget.text,
                     style: TextStyle(
                       fontSize: widget.size ?? 16,
                       color: textColor,
                     ),
                     textAlign: TextAlign.center,
-                  ),
+                    softWrap: true,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),)
               ],
             ),
           ),
@@ -236,6 +242,8 @@ Widget customInput(
       bool isPassword = false,
       bool isEmail = false,
       int? maxLines,
+      Color? backgroundColor,
+      bool? haveBorder = true,
     }) {
   final ValueNotifier<bool> obscure = ValueNotifier<bool>(isPassword);
 
@@ -281,23 +289,35 @@ Widget customInput(
             color: theme.secondaryTextColor.withOpacity(0.4),
           ),
           filled: true,
-          fillColor: theme.cardColor,
+          fillColor: backgroundColor?? theme.cardColor,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16.0,
             vertical: 16.0,
           ),
-          border: OutlineInputBorder(
+          border: haveBorder!=null&&haveBorder? OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: theme.border, width: 1),
-          ),
-          enabledBorder: OutlineInputBorder(
+          ) : InputBorder.none, // Set to InputBorder.none when no border
+          enabledBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: theme.border, width: 1),
-          ),
-          focusedBorder: OutlineInputBorder(
+          ) : InputBorder.none, // Set to InputBorder.none when no border
+          focusedBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: theme.border, width: 1),
-          ),
+          ) : InputBorder.none, // Set to InputBorder.none when no border
+          errorBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.red, width: 1),
+          ) : InputBorder.none, // Add this for error state
+          focusedErrorBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.red, width: 1),
+          ) : InputBorder.none, // Add this for focused error state
+          disabledBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: theme.border, width: 1),
+          ) : InputBorder.none, // Add this for disabled state
         ),
         textAlignVertical: TextAlignVertical.center,
       );

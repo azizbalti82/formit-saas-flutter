@@ -91,7 +91,7 @@ class _AppScreenState extends State<StartScreen> {
                   Expanded(child: introRight()),
                 ],
               )
-            : Expanded(child: introRight()),
+            : introRight(),
       ),
     );
   }

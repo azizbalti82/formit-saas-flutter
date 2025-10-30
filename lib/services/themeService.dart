@@ -69,7 +69,7 @@ final darkTheme = theme(
   surfaceColor: const Color(0xFF2C2C2C),
   // Slightly lighter than bg
   themeMode: ThemeMode.dark,
-  border: const Color(0xFF444444),
+  border: const Color(0xFF222222),
   // Subtle border color
   goldColor: const Color(0xFFFFD54F),
   // Gold remains unchanged

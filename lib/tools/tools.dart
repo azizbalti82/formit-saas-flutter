@@ -103,3 +103,7 @@ Future<Uint8List?> pickImage() async {
     return await File(path).readAsBytes();
   }
 }
+
+void runEvery3Seconds(void Function() action) {
+  Timer.periodic(const Duration(seconds: 3), (timer) => action());
+}

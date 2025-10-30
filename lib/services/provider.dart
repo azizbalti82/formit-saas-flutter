@@ -21,8 +21,6 @@ class Provider extends GetxController {
   RxString newSelectedStoragePath = ''.obs;
 
 
-
-
   void resetCurrentFolderId(List<Collection> allCollections){
     currentFolderId.value = allCollections
         .firstWhere((c) => c.parentId == null)
@@ -31,6 +29,9 @@ class Provider extends GetxController {
 
   void setIsGrid(bool value) {
     isGrid.value = value;
+  }
+  Future<void> setIsGridFuture(Future<bool> value) async {
+    isGrid.value = await value;
   }
   void setCurrentIndex(int index) {
     currentIndex.value = index;

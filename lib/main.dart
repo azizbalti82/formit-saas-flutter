@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:formbuilder/screens/appScreen.dart';
-import 'package:formbuilder/screens/startScreen/startScreen.dart';
+import 'package:formbuilder/screens/home/appScreen.dart';
+import 'package:formbuilder/screens/auth/intro.dart';
 import 'package:formbuilder/services/provider.dart';
 import 'package:formbuilder/services/sharedPreferencesService.dart';
 import 'package:formbuilder/services/themeService.dart';
@@ -80,10 +80,17 @@ class Main extends StatefulWidget {
 }
 class _MainState extends State<Main>{
   final Provider provider = Get.find<Provider>();
+
   @override
   Widget build(BuildContext context) {
     return Obx(() {
       theme t = getTheme();
+      if(!isLandscape(context)){
+        provider.setIsGrid(false);
+      }else{
+        provider.setIsGridFuture(SharedPrefService.getIsGrid());
+      }
+
     return MaterialApp(
       title: 'FormIt',
       debugShowCheckedModeBanner: false,
@@ -180,11 +187,15 @@ class SystemUiStyleWrapper extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: statusBarColor ?? t.bgColor,
+        statusBarColor: t.brightness == Brightness.light
+            ? FThemes.zinc.light.colors.background
+            : FThemes.zinc.dark.colors.background,
         statusBarIconBrightness: t.brightness == Brightness.dark
             ? Brightness.light
             : Brightness.dark,
-        systemNavigationBarColor: navBarColor ?? t.bgColor,
+        systemNavigationBarColor: navBarColor ?? (t.brightness == Brightness.light
+            ? FThemes.zinc.light.colors.background
+            : FThemes.zinc.dark.colors.background),
         systemNavigationBarIconBrightness: t.brightness,
       ),
       child: SafeArea(child: child),
