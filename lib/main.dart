@@ -47,9 +47,14 @@ Future<void> main() async {
 
   // Update values
   bool isDark = await SharedPrefService.getIsDark();
-  bool isSideBarOpen = (Platform.isAndroid || Platform.isIOS)
+
+  // FIXED: Check kIsWeb before using Platform
+  bool isSideBarOpen = kIsWeb
+      ? true  // Default for web
+      : (Platform.isAndroid || Platform.isIOS)
       ? false
       : await SharedPrefService.getIsSideBarOpen();
+
   String lang = await SharedPrefService.getLanguage();
   User user = await SharedPrefService.getUser();
   bool isGrid = await SharedPrefService.getIsGrid();

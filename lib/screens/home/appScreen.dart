@@ -25,6 +25,7 @@ import '../../widgets/complex.dart';
 import '../../widgets/dialogues.dart';
 import '../../widgets/menu.dart';
 import '../../widgets/messages.dart';
+import '../../backend/models/path.dart';
 
 // ============================================================================
 // MAIN APP SCREEN
@@ -46,7 +47,7 @@ class _AppScreenState extends State<AppScreen> {
   late List<Widget> _screens;
   late String selectedSection;
   late theme t;
-  List<String> currentPath = ["Home"];
+  List<Path> currentPath = [AppPath.home.data()];
   bool logoutLoading = false;
   Uint8List? imageBytes;
 
@@ -139,12 +140,13 @@ class _AppScreenState extends State<AppScreen> {
       ],
     );
   }
+
   Widget _buildSidebarFooter() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: FButton.icon(
         onPress: () {
-          showDialogProfile(context,t);
+          showDialogProfile(context, t);
         },
         style: FButtonStyle.outline(),
         child: Row(
@@ -163,23 +165,17 @@ class _AppScreenState extends State<AppScreen> {
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Icon(
-              HugeIconsStroke.arrowRight01,
-              color: t.secondaryTextColor,
-            ),
+            Icon(HugeIconsStroke.arrowRight01, color: t.secondaryTextColor),
           ],
         ),
       ),
     );
   }
+
   Widget _buildOverviewSection() {
     return FSidebarGroup(
       label: Row(
-        children: [
-          const Text('Overview'),
-          Spacer(),
-          collapseWidget(),
-        ],
+        children: [const Text('Overview'), Spacer(), collapseWidget()],
       ),
       children: [
         SizedBox(height: 5),
@@ -189,7 +185,7 @@ class _AppScreenState extends State<AppScreen> {
           onClick: () {
             setState(() {
               handleSideBarCloseMobile();
-              currentPath = ["Home"];
+              currentPath = [AppPath.home.data()];
               provider.resetCurrentFolderId(fakeCollections);
             });
           },
@@ -207,9 +203,8 @@ class _AppScreenState extends State<AppScreen> {
           icon: HugeIconsStroke.layoutGrid,
           onClick: () {
             handleSideBarCloseMobile();
-            showMsg(Constants.notReadyMsg, context, t);
             setState(() {
-              currentPath = ["Templates"];
+              currentPath = [AppPath.templates.data()];
             });
           },
         ),
@@ -219,7 +214,7 @@ class _AppScreenState extends State<AppScreen> {
           onClick: () {
             handleSideBarCloseMobile();
             setState(() {
-              currentPath = ["Trash"];
+              currentPath = [AppPath.trash.data()];
             });
           },
         ),
@@ -236,6 +231,7 @@ class _AppScreenState extends State<AppScreen> {
       ],
     );
   }
+
   Widget _buildSettingsSection() {
     return FSidebarGroup(
       label: const Text('Settings'),
@@ -247,10 +243,7 @@ class _AppScreenState extends State<AppScreen> {
             children: [
               const Text(
                 'Dark mode',
-                style: TextStyle(
-                  fontSize: 13.2,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: TextStyle(fontSize: 13.2, fontWeight: FontWeight.w500),
               ),
               const Spacer(),
               SizedBox(
@@ -261,7 +254,9 @@ class _AppScreenState extends State<AppScreen> {
                   child: FSwitch(
                     value: provider.isDark.value,
                     onChange: (value) async {
-                      await SharedPrefService.saveIsDark(!provider.isDark.value);
+                      await SharedPrefService.saveIsDark(
+                        !provider.isDark.value,
+                      );
                       provider.setIsDark(!provider.isDark.value);
                     },
                   ),
@@ -318,6 +313,7 @@ class _AppScreenState extends State<AppScreen> {
       ],
     );
   }
+
   Widget _buildHelpSection() {
     return FSidebarGroup(
       label: const Text('Help'),
@@ -372,8 +368,13 @@ class _AppScreenState extends State<AppScreen> {
   // --------------------------------------------------------------------------
   // MAIN CONTENT
   // --------------------------------------------------------------------------
-  Widget _buildMainContent(bool landscape, double screenHeight, double screenWidth) {
-    if (isLandscape(context) || !isLandscape(context) && !provider.isSideBarOpen.value) {
+  Widget _buildMainContent(
+    bool landscape,
+    double screenHeight,
+    double screenWidth,
+  ) {
+    if (isLandscape(context) ||
+        !isLandscape(context) && !provider.isSideBarOpen.value) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: Column(
@@ -387,39 +388,40 @@ class _AppScreenState extends State<AppScreen> {
       );
     }
     return GestureDetector(
-        onTap: () {
-          provider.setIsSideBarOpen(false);
-        },
+      onTap: () {
+        provider.setIsSideBarOpen(false);
+      },
     );
   }
+
   Widget _buildTopBar(bool landscape) {
     return Row(
       children: [
         if (!provider.isSideBarOpen.value) collapseWidget(),
         if (!provider.isSideBarOpen.value) SizedBox(width: 10),
-        pathWidgetBuilder(currentPath),
-        Spacer(),
-        if (isLandscape(context)) _buildNewCollectionButton(),
-        if (isLandscape(context)) SizedBox(width: 10),
-        if (isLandscape(context)) _buildCreateFormButton(),
+        Expanded(child: pathWidgetBuilder(),),
+        Row(
+          children: [
+            if (isLandscape(context)) _buildNewCollectionButton(),
+            if (isLandscape(context)) SizedBox(width: 10),
+            if (isLandscape(context)) _buildCreateFormButton(),
+          ],
+        )
       ],
     );
   }
+
   Widget _buildNewCollectionButton() {
     return FButton.icon(
       onPress: () {
-        showDialogNewFolder(context,t);
+        showDialogNewFolder(context, t);
       },
       style: FButtonStyle.outline(),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(width: 4),
-          Icon(
-            HugeIconsStroke.folderAdd,
-            color: t.textColor,
-            size: 16,
-          ),
+          Icon(HugeIconsStroke.folderAdd, color: t.textColor, size: 16),
           SizedBox(width: 10),
           Text(
             "New collection",
@@ -434,6 +436,7 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
+
   Widget _buildCreateFormButton() {
     return FButton.icon(
       onPress: () {},
@@ -442,12 +445,7 @@ class _AppScreenState extends State<AppScreen> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(width: 4),
-          Icon(
-            HugeIconsStroke.add01,
-            color: t.bgColor,
-            size: 16,
-            weight: 30,
-          ),
+          Icon(HugeIconsStroke.add01, color: t.bgColor, size: 16, weight: 30),
           SizedBox(width: 10),
           Text(
             "Create form",
@@ -462,48 +460,89 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
+
   Widget _buildContentArea(double screenHeight, double screenWidth) {
-    if (countFolderChildren(
-      allFolders: fakeCollections,
-      currentFolderId: provider.currentFolderId.value,
-    ) == 0) {
-      return Center(
-        child: SvgPicture.asset(
-          "assets/vectors/vision.svg",
-          height: isLandscape(context) ? screenHeight * 0.6 : null,
-          width: isLandscape(context) ? null : screenWidth * 0.9,
+    Path current = currentPath.lastOrNull ?? AppPath.home.data();
+    print(current.title);
+
+    if(current==AppPath.trash.data()){
+      //By default return the content of home
+      if (countTrash(allFolders: fakeCollections) == 0) {
+        return noResultsImage();
+      }
+      return Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxWidth: (!provider.isGrid.value) ? 700 : double.infinity,
+        ),
+        child: Column(
+          children: [
+            if (isLandscape(context))
+              Container(
+                margin: EdgeInsets.only(left: 12),
+                alignment: Alignment.centerLeft,
+                child: ItemsViewType(),
+              ),
+            if (isLandscape(context)) SizedBox(height: 20),
+            Expanded(
+              child: ListCollections(
+                collections: getFoldersOf(
+                  allFolders: fakeCollections,
+                  currentFolderId: provider.currentFolderId.value,
+                ),
+                theme: t,
+                isGrid: provider.isGrid.value,
+              ),
+            ),
+          ],
+        ),
+      );
+    } else if(current==AppPath.templates.data()){
+      return noResultsImage();
+    } else if(current==AppPath.collections.data()){
+      return noResultsImage();
+    } else{
+      //if its home folder clean some things
+      if(current==AppPath.home.data()){
+        currentPath = [AppPath.home.data()];
+        provider.resetCurrentFolderId(fakeCollections);
+      }
+      //if its a folder (not home) load its children
+      if (countFolderChildren(
+        allFolders: fakeCollections,
+        currentFolderId: provider.currentFolderId.value,
+      ) ==
+          0) {
+        return noResultsImage();
+      }
+      return Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxWidth: (!provider.isGrid.value) ? 700 : double.infinity,
+        ),
+        child: Column(
+          children: [
+            if (isLandscape(context))
+              Container(
+                margin: EdgeInsets.only(left: 12),
+                alignment: Alignment.centerLeft,
+                child: ItemsViewType(),
+              ),
+            if (isLandscape(context)) SizedBox(height: 20),
+            Expanded(
+              child: ListCollections(
+                collections: getFoldersOf(
+                  allFolders: fakeCollections,
+                  currentFolderId: provider.currentFolderId.value,
+                ),
+                theme: t,
+                isGrid: provider.isGrid.value,
+              ),
+            ),
+          ],
         ),
       );
     }
-
-    return Container(
-      width: double.infinity,
-      constraints: BoxConstraints(
-        maxWidth: (!provider.isGrid.value) ? 700 : double.infinity,
-      ),
-      child: Column(
-        children: [
-          if(isLandscape(context))
-          Container(
-            margin: EdgeInsets.only(left: 12),
-            alignment: Alignment.centerLeft,
-            child: ItemsViewType(),
-          ),
-          if(isLandscape(context))
-          SizedBox(height: 20),
-          Expanded(
-            child: ListCollections(
-              collections: getFoldersOf(
-                allFolders: fakeCollections,
-                currentFolderId: provider.currentFolderId.value,
-              ),
-              theme: t,
-              isGrid: provider.isGrid.value,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 
   // --------------------------------------------------------------------------
@@ -524,6 +563,7 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
+
   Widget menuItem({
     required String title,
     required IconData icon,
@@ -559,6 +599,7 @@ class _AppScreenState extends State<AppScreen> {
       onPress: onClick,
     );
   }
+
   Widget userProfileImage(User value) {
     return FAvatar.raw(
       size: 25,
@@ -570,32 +611,89 @@ class _AppScreenState extends State<AppScreen> {
       child: Text(provider.user.value.name.substring(0, 1)),
     );
   }
-  Widget pathWidgetBuilder(List<String> paths) {
+  Widget pathWidgetBuilder() {
+    var paths = currentPath.reversed.toList();
+    paths.add(Path(title: 'FormIt', type: PathType.section));
     paths = paths.reversed.toList();
-    paths.add("FormIt");
-    paths = paths.reversed.toList();
+
+    double screenWidth = MediaQuery.of(context).size.width;
+    final collapseThreshold = (screenWidth>900 && !provider.isSideBarOpen.value)? 4 : 3;
+
+    // If paths are short, show all normally
+    if (paths.length <= collapseThreshold) {
+      return FBreadcrumb(
+        children: List.generate(paths.length, (index) {
+          final isLast = index == paths.length - 1;
+          final isFirst = index == 0;
+          final segment = paths[index];
+          return FBreadcrumbItem(
+            current: isLast,
+            onPress: isLast || isFirst
+                ? null
+                : () {
+              debugPrint('Navigate to: ${paths.take(index + 1).join('/')}');
+              setState(() {
+                currentPath = paths.take(index + 1).toList().sublist(1);
+                provider.currentFolderId.value = segment.collectionId;
+              });
+            },
+            child: Text(segment.title),
+          );
+        }),
+      );
+    }
+
+    // Otherwise, collapse middle paths
+    final first = paths.first;
+    final last = paths.last;
+    final middle = paths.sublist(1, paths.length - 1);
 
     return FBreadcrumb(
-      children: List.generate(paths.length, (index) {
-        final isLast = index == paths.length - 1;
-        final isFirst = index == 0;
-        final segment = paths[index];
-
-        return FBreadcrumbItem(
-          current: isLast,
-          onPress: isLast || isFirst
-              ? null
-              : () {
-            debugPrint('Navigate to: ${paths.take(index + 1).join('/')}');
+      children: [
+        // First item
+        FBreadcrumbItem(
+          onPress: () {
             setState(() {
-              currentPath = paths.take(index + 1).toList().sublist(1);
+              currentPath = [];
+              provider.currentFolderId.value = first.collectionId;
             });
           },
-          child: Text(segment),
-        );
-      }),
+          child: Text(first.title),
+        ),
+
+        // Collapsed middle items
+        FBreadcrumbItem.collapsed(
+          menu: [
+            FItemGroup(
+              children: [
+                for (final segment in middle)
+                  FItem(
+                    title: Text(segment.title),
+                    onPress: () {
+                      debugPrint('Navigate to: ${segment.title}');
+                      setState(() {
+                        // Navigate up to the selected segment
+                        final targetIndex = paths.indexOf(segment);
+                        currentPath =
+                            paths.take(targetIndex + 1).toList().sublist(1);
+                        provider.currentFolderId.value = segment.collectionId;
+                      });
+                    },
+                  ),
+              ],
+            ),
+          ],
+        ),
+
+        // Last item (current)
+        FBreadcrumbItem(
+          current: true,
+          child: Text(last.title),
+        ),
+      ],
     );
   }
+
   Widget ListCollections({
     required List<Collection> collections,
     required theme theme,
@@ -609,8 +707,14 @@ class _AppScreenState extends State<AppScreen> {
         autofocus: false,
         behavior: HitTestBehavior.translucent,
         onPress: () {
-          provider.currentFolderId.value = collection.id;
-          currentPath.add(collection.name);
+          if(collection.parentId==null){
+            provider.resetCurrentFolderId(collections);
+          }else{
+            provider.currentFolderId.value = collection.id;
+          }
+          currentPath.add(
+            AppPath.collections.data(folderName: collection.name,collectionId: collection.id),
+          );
         },
         builder: (context, state, child) => child!,
         child: FCard.raw(
@@ -703,8 +807,12 @@ class _AppScreenState extends State<AppScreen> {
       return LayoutBuilder(
         builder: (context, constraints) {
           const double minItemWidth = 250;
-          final int crossAxisCount = (constraints.maxWidth / minItemWidth).floor().clamp(1, 6);
-          final double childWidth = (constraints.maxWidth - (crossAxisCount - 1) * 12) / crossAxisCount;
+          final int crossAxisCount = (constraints.maxWidth / minItemWidth)
+              .floor()
+              .clamp(1, 6);
+          final double childWidth =
+              (constraints.maxWidth - (crossAxisCount - 1) * 12) /
+              crossAxisCount;
           const double childHeight = 120;
           final double childAspectRatio = childWidth / childHeight;
 
@@ -723,8 +831,7 @@ class _AppScreenState extends State<AppScreen> {
           );
         },
       );
-    }
-    else {
+    } else {
       return ListView.builder(
         itemCount: collections.length,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
@@ -743,6 +850,7 @@ class _AppScreenState extends State<AppScreen> {
       );
     }
   }
+
   // --------------------------------------------------------------------------
   // HELPER METHODS
   // --------------------------------------------------------------------------
@@ -766,12 +874,14 @@ class _AppScreenState extends State<AppScreen> {
       });
     }
   }
+
   List<Collection> getFoldersOf({
     required List<Collection> allFolders,
     String? currentFolderId,
   }) {
     return allFolders.where((f) => f.parentId == currentFolderId).toList();
   }
+
   int countFolderChildren({
     required List<Collection> allFolders,
     String? currentFolderId,
@@ -783,10 +893,25 @@ class _AppScreenState extends State<AppScreen> {
   }
 
   void handleSideBarCloseMobile() {
-    if(!isLandscape(context)){
+    if (!isLandscape(context)) {
       provider.setIsSideBarOpen(false);
     }
   }
+
+  Widget noResultsImage() {
+    double screenHeight = MediaQuery.of(context).size.height;
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    return  Center(
+      child: SvgPicture.asset(
+        "assets/vectors/vision.svg",
+        height: isLandscape(context) ? screenHeight * 0.6 : null,
+        width: isLandscape(context) ? null : screenWidth,
+      ),
+    );
+  }
+
+  countTrash({required allFolders}) {
+    return 0;
+  }
 }
-
-
