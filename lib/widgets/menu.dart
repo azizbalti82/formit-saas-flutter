@@ -7,6 +7,7 @@ class CollectionPopupMenu extends StatefulWidget {
   final List<PopupMenuItemData> items;
   final double iconSize;
   final Widget? customTrigger;
+  final IconData? icon;
 
   const CollectionPopupMenu({
     Key? key,
@@ -14,7 +15,7 @@ class CollectionPopupMenu extends StatefulWidget {
     required this.cardColor,
     required this.items,
     this.iconSize = 20,
-    this.customTrigger,
+    this.customTrigger, this.icon,
   }) : super(key: key);
 
   @override
@@ -46,7 +47,7 @@ class _CollectionPopupMenuState extends State<CollectionPopupMenu> {
       controller: _controller,
       arrowColor: widget.cardColor,
       child: widget.customTrigger ?? Icon(
-        Icons.more_vert,
+        widget.icon ?? Icons.more_vert,
         color: widget.iconColor,
         size: widget.iconSize,
       ),

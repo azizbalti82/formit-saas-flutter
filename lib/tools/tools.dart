@@ -104,6 +104,7 @@ Future<Uint8List?> pickImage() async {
   }
 }
 
-void runEvery3Seconds(void Function() action) {
-  Timer.periodic(const Duration(seconds: 3), (timer) => action());
+Future<void> doAfter3Seconds(Function action) async {
+  await Future.delayed(const Duration(seconds: 3));
+  action();
 }

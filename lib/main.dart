@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:formbuilder/screens/home/appScreen.dart';
 import 'package:formbuilder/screens/auth/intro.dart';
+import 'package:formbuilder/screens/home/createForm.dart';
 import 'package:formbuilder/services/provider.dart';
 import 'package:formbuilder/services/sharedPreferencesService.dart';
 import 'package:formbuilder/services/themeService.dart';
@@ -160,8 +161,7 @@ class HomeWrapper extends StatelessWidget {
         items: [
           PopupMenuItemData(
             onTap: () {
-              print("Create new form");
-              // Add your create form logic here
+              navigateTo(context, CreatForm(t:t), false);
             },
             label: "Create new form",
             color: t.textColor,

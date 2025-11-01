@@ -28,6 +28,7 @@ import '../../widgets/dialogues.dart';
 import '../../widgets/menu.dart';
 import '../../widgets/messages.dart';
 import '../../backend/models/path.dart';
+import 'createForm.dart';
 
 // ============================================================================
 // MAIN APP SCREEN
@@ -40,6 +41,7 @@ class AppScreen extends StatefulWidget {
   @override
   State<AppScreen> createState() => _AppScreenState();
 }
+
 class _AppScreenState extends State<AppScreen> {
   // --------------------------------------------------------------------------
   // STATE VARIABLES
@@ -368,7 +370,8 @@ class _AppScreenState extends State<AppScreen> {
     double screenHeight,
     double screenWidth,
   ) {
-    if (isLandscape(context) || !isLandscape(context) && !provider.isSideBarOpen.value) {
+    if (isLandscape(context) ||
+        !isLandscape(context) && !provider.isSideBarOpen.value) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: Column(
@@ -387,22 +390,24 @@ class _AppScreenState extends State<AppScreen> {
       },
     );
   }
+
   Widget _buildTopBar(bool landscape) {
     return Row(
       children: [
         if (!provider.isSideBarOpen.value) collapseWidget(),
         if (!provider.isSideBarOpen.value) SizedBox(width: 10),
-        Expanded(child: pathWidgetBuilder(),),
+        Expanded(child: pathWidgetBuilder()),
         Row(
           children: [
             if (isLandscape(context)) _buildNewCollectionButton(),
             if (isLandscape(context)) SizedBox(width: 10),
             if (isLandscape(context)) _buildCreateFormButton(),
           ],
-        )
+        ),
       ],
     );
   }
+
   Widget _buildNewCollectionButton() {
     return FButton.icon(
       onPress: () {
@@ -428,9 +433,12 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
+
   Widget _buildCreateFormButton() {
     return FButton.icon(
-      onPress: () {},
+      onPress: () {
+        navigateTo(context, CreatForm(t: t), false);
+      },
       style: FButtonStyle.primary(),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -451,11 +459,12 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
+
   Widget _buildContentArea(double screenHeight, double screenWidth) {
     Path current = currentPath.lastOrNull ?? AppPath.home.data();
     print(current.title);
 
-    if(current==AppPath.trash.data()){
+    if (current == AppPath.trash.data()) {
       //By default return the content of home
       if (countTrash(allFolders: fakeCollections) == 0) {
         return noResultsImage();
@@ -481,30 +490,32 @@ class _AppScreenState extends State<AppScreen> {
                   currentFolderId: provider.currentFolderId.value,
                 ),
                 theme: t,
-                isGrid: provider.isGrid.value, forms: getFormsOf(
-                allForms: getFakeForms(),
-                currentFolderId: provider.currentFolderId.value,
-              ) ,
+                isGrid: provider.isGrid.value,
+                forms: getFormsOf(
+                  allForms: getFakeForms(),
+                  currentFolderId: provider.currentFolderId.value,
+                ),
               ),
             ),
           ],
         ),
       );
-    } else if(current==AppPath.templates.data()){
+    } else if (current == AppPath.templates.data()) {
       return noResultsImage();
-    } else if(current==AppPath.collections.data()){
+    } else if (current == AppPath.collections.data()) {
       return noResultsImage();
-    } else{
+    } else {
       //if its home folder clean some things
-      if(current==AppPath.home.data()){
+      if (current == AppPath.home.data()) {
         currentPath = [AppPath.home.data()];
         provider.resetCurrentFolderId(fakeCollections);
       }
       //if its a folder (not home) load its children
       if (countFolderChildren(
-        allFolders: fakeCollections,
-        currentFolderId: provider.currentFolderId.value, allForms: getFakeForms(),
-      ) ==
+            allFolders: fakeCollections,
+            currentFolderId: provider.currentFolderId.value,
+            allForms: getFakeForms(),
+          ) ==
           0) {
         return noResultsImage();
       }
@@ -529,10 +540,11 @@ class _AppScreenState extends State<AppScreen> {
                   currentFolderId: provider.currentFolderId.value,
                 ),
                 theme: t,
-                isGrid: provider.isGrid.value, forms: getFormsOf(
-                allForms: getFakeForms(),
-                currentFolderId: provider.currentFolderId.value,
-              ) ,
+                isGrid: provider.isGrid.value,
+                forms: getFormsOf(
+                  allForms: getFakeForms(),
+                  currentFolderId: provider.currentFolderId.value,
+                ),
               ),
             ),
           ],
@@ -559,6 +571,7 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
+
   Widget menuItem({
     required String title,
     required IconData icon,
@@ -594,6 +607,7 @@ class _AppScreenState extends State<AppScreen> {
       onPress: onClick,
     );
   }
+
   Widget userProfileImage(User value) {
     return FAvatar.raw(
       size: 25,
@@ -605,13 +619,15 @@ class _AppScreenState extends State<AppScreen> {
       child: Text(provider.user.value.name.substring(0, 1)),
     );
   }
+
   Widget pathWidgetBuilder() {
     var paths = currentPath.reversed.toList();
     paths.add(Path(title: 'FormIt', type: PathType.section));
     paths = paths.reversed.toList();
 
     double screenWidth = MediaQuery.of(context).size.width;
-    final collapseThreshold = (screenWidth>900 && !provider.isSideBarOpen.value)? 4 : 3;
+    final collapseThreshold =
+        (screenWidth > 900 && !provider.isSideBarOpen.value) ? 4 : 3;
 
     // If paths are short, show all normally
     if (paths.length <= collapseThreshold) {
@@ -622,15 +638,17 @@ class _AppScreenState extends State<AppScreen> {
           final segment = paths[index];
           return FBreadcrumbItem(
             current: isLast,
-            onPress: isLast || isFirst || segment.title=="FormIt"
+            onPress: isLast || isFirst || segment.title == "FormIt"
                 ? null
                 : () {
-              debugPrint('Navigate to: ${paths.take(index + 1).join('/')}');
-              setState(() {
-                currentPath = paths.take(index + 1).toList().sublist(1);
-                provider.currentFolderId.value = segment.collectionId;
-              });
-            },
+                    debugPrint(
+                      'Navigate to: ${paths.take(index + 1).join('/')}',
+                    );
+                    setState(() {
+                      currentPath = paths.take(index + 1).toList().sublist(1);
+                      provider.currentFolderId.value = segment.collectionId;
+                    });
+                  },
             child: Text(segment.title),
           );
         }),
@@ -668,8 +686,10 @@ class _AppScreenState extends State<AppScreen> {
                       setState(() {
                         // Navigate up to the selected segment
                         final targetIndex = paths.indexOf(segment);
-                        currentPath =
-                            paths.take(targetIndex + 1).toList().sublist(1);
+                        currentPath = paths
+                            .take(targetIndex + 1)
+                            .toList()
+                            .sublist(1);
                         provider.currentFolderId.value = segment.collectionId;
                       });
                     },
@@ -680,14 +700,10 @@ class _AppScreenState extends State<AppScreen> {
         ),
 
         // Last item (current)
-        FBreadcrumbItem(
-          current: true,
-          child: Text(last.title),
-        ),
+        FBreadcrumbItem(current: true, child: Text(last.title)),
       ],
     );
   }
-
 
   /*
   Widget ListCollections({
@@ -1082,13 +1098,16 @@ class _AppScreenState extends State<AppScreen> {
         autofocus: false,
         behavior: HitTestBehavior.translucent,
         onPress: () {
-          if(collection.parentId==null){
+          if (collection.parentId == null) {
             provider.resetCurrentFolderId(collections);
-          }else{
+          } else {
             provider.currentFolderId.value = collection.id;
           }
           currentPath.add(
-            AppPath.collections.data(folderName: collection.name,collectionId: collection.id),
+            AppPath.collections.data(
+              folderName: collection.name,
+              collectionId: collection.id,
+            ),
           );
         },
         builder: (context, state, child) => child!,
@@ -1141,7 +1160,7 @@ class _AppScreenState extends State<AppScreen> {
                     ],
                   ),
                 ),
-                popupForCollection(theme)
+                popupForCollection(theme),
               ],
             ),
           ),
@@ -1150,30 +1169,6 @@ class _AppScreenState extends State<AppScreen> {
     }
 
     Widget buildFormCard(Form form) {
-      // Status color
-      Color getStatusColor() {
-        switch (form.status) {
-          case FormStatus.published:
-            return Colors.green;
-          case FormStatus.draft:
-            return theme.secondaryTextColor;
-          case FormStatus.closed:
-            return theme.errorColor;
-        }
-      }
-
-      // Status icon
-      IconData getStatusIcon() {
-        switch (form.status) {
-          case FormStatus.published:
-            return HugeIconsStroke.checkmarkCircle02;
-          case FormStatus.draft:
-            return HugeIconsStroke.edit02;
-          case FormStatus.closed:
-            return HugeIconsStroke.cancelCircle;
-        }
-      }
-
       return FTappable(
         style: FTappableStyle(),
         semanticsLabel: 'Form',
@@ -1186,8 +1181,10 @@ class _AppScreenState extends State<AppScreen> {
         builder: (context, state, child) => child!,
         child: Container(
           decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8),
-              border: theme.brightness==Brightness.light ? Border.all(color: theme.border.withOpacity(0.3),width: 1):null
+            borderRadius: BorderRadius.circular(8),
+            border: theme.brightness == Brightness.light
+                ? Border.all(color: theme.border.withOpacity(0.3), width: 1)
+                : null,
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
@@ -1196,17 +1193,19 @@ class _AppScreenState extends State<AppScreen> {
                 // Mesh gradient background
                 Positioned.fill(
                   child: AnimatedMeshGradient(
-                    colors: theme.brightness==Brightness.dark ? [
-                      Color(0xFF201829),
-                      theme.cardColor.withOpacity(0.9),
-                      theme.cardColor.withOpacity(0.8),
-                      theme.cardColor.withOpacity(0.95),
-                    ]: [
-                      Color(0xFFE4DEFA),
-                      Color(0xFFDFDFDF),
-                      Color(0xFFDFDFDF),
-                      Color(0xFFDFDFDF),
-                    ],
+                    colors: theme.brightness == Brightness.dark
+                        ? [
+                            Color(0xFF201829),
+                            theme.cardColor.withOpacity(0.9),
+                            theme.cardColor.withOpacity(0.8),
+                            theme.cardColor.withOpacity(0.95),
+                          ]
+                        : [
+                            Color(0xFFE4DEFA),
+                            Color(0xFFDFDFDF),
+                            Color(0xFFDFDFDF),
+                            Color(0xFFDFDFDF),
+                          ],
                     options: AnimatedMeshGradientOptions(
                       amplitude: 30,
                       grain: 0.5,
@@ -1247,53 +1246,33 @@ class _AppScreenState extends State<AppScreen> {
                                 ),
                               ],
                             ),
-                            (isGrid)?Spacer():
-                            const SizedBox(height: 8), // Replace Spacer() with this
+                            (isGrid)
+                                ? Spacer()
+                                : const SizedBox(
+                                    height: 8,
+                                  ), // Replace Spacer() with this
                             Row(
                               children: [
                                 // Status badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: getStatusColor().withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        getStatusIcon(),
-                                        size: 12,
-                                        color: getStatusColor(),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        form.status.name.toUpperCase(),
-                                        style: TextStyle(
-                                          color: getStatusColor(),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
+                                StatueBadgeWidget(form.status,t),
+                                (isGrid)
+                                    ? Spacer()
+                                    : const SizedBox(width: 12),
                                 // Submissions count
                                 Icon(
                                   HugeIconsStroke.userMultiple,
                                   size: 14,
-                                  color: theme.secondaryTextColor.withOpacity(0.7),
+                                  color: theme.secondaryTextColor.withOpacity(
+                                    0.7,
+                                  ),
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  "${form.submissionsCount} responses",
+                                  "${form.submissionsCount}",
                                   style: TextStyle(
-                                    color: theme.secondaryTextColor.withOpacity(0.8),
+                                    color: theme.secondaryTextColor.withOpacity(
+                                      0.8,
+                                    ),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w400,
                                   ),
@@ -1358,6 +1337,7 @@ class _AppScreenState extends State<AppScreen> {
         ),
       );
     }
+
     // Combine collections and forms - collections first
     final totalItems = collections.length + forms.length;
 
@@ -1370,7 +1350,7 @@ class _AppScreenState extends State<AppScreen> {
               .clamp(1, 6);
           final double childWidth =
               (constraints.maxWidth - (crossAxisCount - 1) * 12) /
-                  crossAxisCount;
+              crossAxisCount;
           const double childHeight = 120;
           final double childAspectRatio = childWidth / childHeight;
 
@@ -1453,13 +1433,18 @@ class _AppScreenState extends State<AppScreen> {
       });
     }
   }
+
   List<Collection> getCollectionsOf({
     required List<Collection> allFolders,
     String? currentFolderId,
   }) {
     return allFolders.where((f) => f.parentId == currentFolderId).toList();
   }
-  List<Form> getFormsOf({required List<Form> allForms, String? currentFolderId}) {
+
+  List<Form> getFormsOf({
+    required List<Form> allForms,
+    String? currentFolderId,
+  }) {
     return allForms.where((f) => f.collectionId == currentFolderId).toList();
   }
 
@@ -1468,7 +1453,7 @@ class _AppScreenState extends State<AppScreen> {
     required List<Form> allForms,
     String? currentFolderId,
   }) {
-    int collections =  getCollectionsOf(
+    int collections = getCollectionsOf(
       allFolders: allFolders,
       currentFolderId: currentFolderId,
     ).length;
@@ -1491,7 +1476,7 @@ class _AppScreenState extends State<AppScreen> {
     double screenHeight = MediaQuery.of(context).size.height;
     double screenWidth = MediaQuery.of(context).size.width;
 
-    return  Center(
+    return Center(
       child: SvgPicture.asset(
         "assets/vectors/vision.svg",
         height: isLandscape(context) ? screenHeight * 0.6 : null,
@@ -1535,5 +1520,55 @@ class _AppScreenState extends State<AppScreen> {
         ),
       ],
     );
+  }
+}
+
+Widget StatueBadgeWidget(FormStatus status,theme theme) {
+  return Container(
+    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    decoration: BoxDecoration(
+      color: getStatusColor(status,theme).withOpacity(0.15),
+      borderRadius: BorderRadius.circular(4),
+    ),
+    child: Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(getStatusIcon(status,theme), size: 12, color: getStatusColor(status,theme)),
+        const SizedBox(width: 4),
+        Text(
+          status.name.toUpperCase(),
+          style: TextStyle(
+            color: getStatusColor(status,theme),
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.5,
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+// Status color
+Color getStatusColor(FormStatus status,theme theme) {
+  switch (status) {
+    case FormStatus.published:
+      return Colors.green;
+    case FormStatus.draft:
+      return theme.secondaryTextColor;
+    case FormStatus.closed:
+      return theme.errorColor;
+  }
+}
+
+// Status icon
+IconData getStatusIcon(FormStatus status,theme theme) {
+  switch (status) {
+    case FormStatus.published:
+      return HugeIconsStroke.checkmarkCircle02;
+    case FormStatus.draft:
+      return HugeIconsStroke.edit02;
+    case FormStatus.closed:
+      return HugeIconsStroke.cancelCircle;
   }
 }
