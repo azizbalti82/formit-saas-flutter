@@ -1,17 +1,120 @@
 import 'dart:typed_data';
 
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart' hide Form;
+import 'package:flutter/material.dart' hide Form;
 import 'package:flutter_svg/svg.dart';
 import 'package:formbuilder/services/themeService.dart';
 import 'package:forui/forui.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 
+import '../backend/models/collection/collection.dart';
 import '../screens/auth/intro.dart';
 import '../screens/auth/verifyEmail.dart';
+import '../services/provider.dart';
 import '../tools/tools.dart';
 import 'complex.dart';
 import 'messages.dart';
+import '../../backend/models/form/form.dart';
+
+
+// --------------------------------------------------------------------------
+// Notifications settings DIALOG
+// --------------------------------------------------------------------------
+Future showDialogNotificationSettings(BuildContext context, theme t) async {
+  final Provider provider = Get.find<Provider>();
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      title: const Text(
+        "Notification Settings",
+        style: TextStyle(fontSize: 22),
+      ),
+      body: StatefulBuilder(
+        builder: (context, setState) => Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const SizedBox(height: 30),
+            FSidebarItem(
+              label: Row(
+                children: [
+                  Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Push Notifications"),
+                      SizedBox(height: 5,),
+                      Text("Receive alerts directly on your device.",style: TextStyle(fontSize: 13,color: t.secondaryTextColor,),softWrap: true,maxLines: 3,textAlign: TextAlign.start,),
+                    ],
+                  )),
+                  SizedBox(
+                    width: 20,
+                    height: 5,
+                    child: Transform.scale(
+                      scale: 0.7,
+                      child: FSwitch(
+                        value: provider.pushNotifications.value,
+                        onChange: (value) async {
+                          provider.pushNotifications.value = !provider.pushNotifications.value;
+                        },
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              onPress: () async {
+              },
+            ),
+            SizedBox(height: 10,),
+            FSidebarItem(
+              label: Row(
+                children: [
+                  Expanded(child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text("Email Notifications"),
+                      SizedBox(height: 5,),
+                      Text("Tell us what type of emails you want to receive.",style: TextStyle(fontSize: 13,color: t.secondaryTextColor),softWrap: true,maxLines: 3,textAlign: TextAlign.start,),
+                    ],
+                  )),
+                  Icon(HugeIconsStroke.arrowRight01,color: t.secondaryTextColor,size: 22,)
+                ],
+              ),
+              onPress: () async {
+              },
+            ),
+            /*
+            FSwitchListTile(
+              title: const Text(""),
+              subtitle: const Text(""),
+              value: emailNotifications,
+              onChanged: (val) => setState(() => emailNotifications = val),
+            ),
+            const Divider(height: 25),
+            FSwitchListTile(
+              title: const Text("Reminders"),
+              subtitle: const Text("Get notified for scheduled reminders."),
+              value: reminderNotifications,
+              onChanged: (val) => setState(() => reminderNotifications = val),
+            ),
+
+             */
+          ],
+        ),
+      ),
+      actions: [
+        FButton(
+          onPress: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
+}
 
 // --------------------------------------------------------------------------
 // NEW FOLDER DIALOG
@@ -45,6 +148,44 @@ Future showDialogNewFolder(BuildContext context, theme t) async {
             Navigator.pop(context);
           },
           child: const Text('Create Collection'),
+        ),
+      ],
+    ),
+  );
+}
+// --------------------------------------------------------------------------
+// RENAME DIALOG
+// --------------------------------------------------------------------------
+Future showDialogRenameCollection(BuildContext context, theme t,Collection collection) async {
+  final TextEditingController inputController = TextEditingController();
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      title: Text(
+        "Rename Collection",
+        style: const TextStyle(fontSize: 22),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 40),
+          FTextField(
+            controller: inputController,
+            hint: 'Enter Collection Name',
+            maxLines: 1,
+            clearable: (value) => value.text.isNotEmpty,
+          ),
+        ],
+      ),
+      actions: [
+        FButton(
+          onPress: () {
+            //rename collection
+            showMsg("collection renamed!", context, t);
+            Navigator.pop(context);
+          },
+          child: const Text('Rename'),
         ),
       ],
     ),
@@ -394,7 +535,7 @@ Future showDialogDeleteAccount(BuildContext context, theme t) async {
             Navigator.of(context).pop();
             Navigator.of(context).pop();
             navigateTo(context, const StartScreen(canBack: false), true);
-            showMsg("Account deleted!", context, t);
+            showSuccess("Account deleted!", context);
           },
           style: FButtonStyle(
             decoration: FWidgetStateMap.all(
@@ -423,6 +564,136 @@ Future showDialogDeleteAccount(BuildContext context, theme t) async {
             ),
           ).call,
           child: const Text('Delete Account'),
+        ),
+        FButton(
+          style: FButtonStyle.outline(),
+          onPress: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
+    ),
+  );
+}
+
+// --------------------------------------------------------------------------
+// DELETE collection DIALOG
+// --------------------------------------------------------------------------
+Future showDialogDeleteCollection(BuildContext context, theme t,Collection c) async {
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      title: const Text(
+        'Are you absolutely sure?',
+        style: TextStyle(fontSize: 22),
+      ),
+      body: const Column(
+        children: [
+          SizedBox(height: 20),
+          Text("This action will permanently delete this collection, including all forms and subcollections inside it."          ),
+          SizedBox(height: 20),
+        ],
+      ),
+      actions: [
+        FButton(
+          onPress: () {
+            Navigator.of(context).pop();
+            showSuccess("collection deleted!", context);
+          },
+          style: FButtonStyle(
+            decoration: FWidgetStateMap.all(
+              BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            contentStyle: FButtonContentStyle(
+              textStyle: FWidgetStateMap.all(
+                const TextStyle(color: Colors.white),
+              ),
+              iconStyle: FWidgetStateMap.all(
+                const IconThemeData(color: Colors.white),
+              ),
+            ),
+            iconContentStyle: FButtonIconContentStyle(
+              iconStyle: FWidgetStateMap.all(
+                const IconThemeData(color: Colors.white),
+              ),
+            ),
+            tappableStyle: FTappableStyle(),
+            focusedOutlineStyle: FFocusedOutlineStyle(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ).call,
+          child: const Text('Delete Collection'),
+        ),
+        FButton(
+          style: FButtonStyle.outline(),
+          onPress: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
+    ),
+  );
+}
+
+// --------------------------------------------------------------------------
+// DELETE form DIALOG
+// --------------------------------------------------------------------------
+Future showDialogDeleteForm(BuildContext context, theme t,Form f) async {
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      title: const Text(
+        'Are you absolutely sure?',
+        style: TextStyle(fontSize: 22),
+      ),
+      body: const Column(
+        children: [
+          SizedBox(height: 20),
+          Text(
+            'This action is permanent and will delete this form, you can restore it from the trash section.',
+          ),
+          SizedBox(height: 20),
+        ],
+      ),
+      actions: [
+        FButton(
+          onPress: () {
+            Navigator.of(context).pop();
+            showSuccess("Form deleted!", context);
+          },
+          style: FButtonStyle(
+            decoration: FWidgetStateMap.all(
+              BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            contentStyle: FButtonContentStyle(
+              textStyle: FWidgetStateMap.all(
+                const TextStyle(color: Colors.white),
+              ),
+              iconStyle: FWidgetStateMap.all(
+                const IconThemeData(color: Colors.white),
+              ),
+            ),
+            iconContentStyle: FButtonIconContentStyle(
+              iconStyle: FWidgetStateMap.all(
+                const IconThemeData(color: Colors.white),
+              ),
+            ),
+            tappableStyle: FTappableStyle(),
+            focusedOutlineStyle: FFocusedOutlineStyle(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ).call,
+          child: const Text('Delete Form'),
         ),
         FButton(
           style: FButtonStyle.outline(),

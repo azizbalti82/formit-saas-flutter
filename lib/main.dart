@@ -20,7 +20,7 @@ import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:toastification/toastification.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'backend/models/user.dart';
+import 'backend/models/account/user.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

@@ -6,8 +6,8 @@ import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:flutter/material.dart' hide Form;
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:formbuilder/backend/models/user.dart';
-import 'package:formbuilder/screens/home/widgets/itemsViewType.dart';
+import 'package:formbuilder/backend/models/account/user.dart';
+import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/screens/auth/intro.dart';
 import 'package:formbuilder/screens/auth/verifyEmail.dart';
 import 'package:forui/forui.dart';
@@ -15,8 +15,8 @@ import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
 
-import '../../backend/models/collection.dart';
-import '../../backend/models/form.dart';
+import '../../backend/models/collection/collection.dart';
+import '../../backend/models/form/form.dart';
 import '../../data/constants.dart';
 import '../../main.dart';
 import '../../services/provider.dart';
@@ -287,7 +287,7 @@ class _AppScreenState extends State<AppScreen> {
           icon: HugeIconsStroke.notification01,
           onClick: () {
             handleSideBarCloseMobile();
-            showMsg(Constants.notReadyMsg, context, t);
+            showDialogNotificationSettings(context,t);
           },
         ),
         menuItem(
@@ -705,385 +705,6 @@ class _AppScreenState extends State<AppScreen> {
     );
   }
 
-  /*
-  Widget ListCollections({
-    required List<Collection> collections,
-    required List<Form> forms,
-    required theme theme,
-    required bool isGrid,
-  }) {
-    Widget buildCollectionCard(Collection collection) {
-      return FTappable(
-        style: FTappableStyle(),
-        semanticsLabel: 'Forms Collection',
-        selected: false,
-        autofocus: false,
-        behavior: HitTestBehavior.translucent,
-        onPress: () {
-          if(collection.parentId==null){
-            provider.resetCurrentFolderId(collections);
-          }else{
-            provider.currentFolderId.value = collection.id;
-          }
-          currentPath.add(
-            AppPath.collections.data(folderName: collection.name,collectionId: collection.id),
-          );
-        },
-        builder: (context, state, child) => child!,
-        child: FCard.raw(
-          child: Padding(
-            padding: const EdgeInsets.only(
-              left: 16,
-              bottom: 16,
-              top: 16,
-              right: 10,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            HugeIconsStroke.folder01,
-                            color: theme.secondaryTextColor.withOpacity(0.8),
-                            size: 20,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              collection.name,
-                              style: TextStyle(
-                                color: theme.textColor,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 3),
-                      Text(
-                        "${countFolderChildren(allFolders: fakeCollections, currentFolderId: collection.id)} items",
-                        style: TextStyle(
-                          color: theme.secondaryTextColor.withOpacity(0.8),
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                CollectionPopupMenu(
-                  iconColor: theme.textColor,
-                  cardColor: theme.cardColor,
-                  items: [
-                    PopupMenuItemData(
-                      onTap: () {
-                        print("Open");
-                      },
-                      label: "Open",
-                      color: theme.textColor,
-                      icon: HugeIconsStroke.view,
-                    ),
-                    PopupMenuItemData(
-                      onTap: () {
-                        print("Rename");
-                      },
-                      label: "Rename",
-                      color: theme.textColor,
-                      icon: HugeIconsStroke.edit03,
-                    ),
-                    PopupMenuItemData(
-                      onTap: () {
-                        print("Delete");
-                      },
-                      label: "Delete Collection",
-                      color: theme.errorColor,
-                      icon: HugeIconsStroke.delete01,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-    Widget buildFormCard(FormModel form) {
-      // Status color
-      Color getStatusColor() {
-        switch (form.status) {
-          case FormStatus.published:
-            return Colors.green;
-          case FormStatus.draft:
-            return theme.secondaryTextColor;
-          case FormStatus.closed:
-            return theme.errorColor;
-        }
-      }
-
-      // Status icon
-      IconData getStatusIcon() {
-        switch (form.status) {
-          case FormStatus.published:
-            return HugeIconsStroke.checkmarkCircle02;
-          case FormStatus.draft:
-            return HugeIconsStroke.edit02;
-          case FormStatus.closed:
-            return HugeIconsStroke.cancelCircle;
-        }
-      }
-
-      return FTappable(
-        style: FTappableStyle(),
-        semanticsLabel: 'Form',
-        selected: false,
-        autofocus: false,
-        behavior: HitTestBehavior.translucent,
-        onPress: () {
-          print("Open form: ${form.title}");
-        },
-        builder: (context, state, child) => child!,
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-
-            border: theme.brightness==Brightness.light ? Border.all(color: theme.border.withOpacity(0.4),width: 1):null
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(8),
-            child: Stack(
-              children: [
-                // Mesh gradient background
-                Positioned.fill(
-                  child: AnimatedMeshGradient(
-                    colors: theme.brightness==Brightness.dark ? [
-                      Color(0xFF201829),
-                      theme.cardColor.withOpacity(0.9),
-                      theme.cardColor.withOpacity(0.8),
-                      theme.cardColor.withOpacity(0.95),
-                    ]: [
-                      Color(0xFFE4DEFA),
-                      Color(0xFFDFDFDF),
-                      Color(0xFFDFDFDF),
-                      Color(0xFFDFDFDF),
-                    ],
-                    options: AnimatedMeshGradientOptions(
-                      amplitude: 30,
-                      grain: 0.5,
-                      frequency: 3,
-                      speed: 6,
-                    ),
-                  ),
-                ),
-                // Main content
-                Padding(
-                  padding: const EdgeInsets.only(
-                    left: 16,
-                    bottom: 16,
-                    top: 16,
-                    right: 10,
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    form.title,
-                                    style: TextStyle(
-                                      color: theme.textColor,
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Spacer(),
-                            Row(
-                              children: [
-                                // Status badge
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: getStatusColor().withOpacity(0.15),
-                                    borderRadius: BorderRadius.circular(4),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        getStatusIcon(),
-                                        size: 12,
-                                        color: getStatusColor(),
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Text(
-                                        form.status.name.toUpperCase(),
-                                        style: TextStyle(
-                                          color: getStatusColor(),
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(width: 12),
-                                // Submissions count
-                                Icon(
-                                  HugeIconsStroke.userMultiple,
-                                  size: 14,
-                                  color: theme.secondaryTextColor.withOpacity(0.7),
-                                ),
-                                const SizedBox(width: 4),
-                                Text(
-                                  "${form.submissionsCount} responses",
-                                  style: TextStyle(
-                                    color: theme.secondaryTextColor.withOpacity(0.8),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w400,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      CollectionPopupMenu(
-                        iconColor: theme.textColor,
-                        cardColor: theme.cardColor,
-                        items: [
-                          PopupMenuItemData(
-                            onTap: () {
-                              print("Edit form");
-                            },
-                            label: "Edit",
-                            color: theme.textColor,
-                            icon: HugeIconsStroke.edit03,
-                          ),
-                          PopupMenuItemData(
-                            onTap: () {
-                              print("View responses");
-                            },
-                            label: "View Responses",
-                            color: theme.textColor,
-                            icon: HugeIconsStroke.analytics01,
-                          ),
-                          PopupMenuItemData(
-                            onTap: () {
-                              print("Duplicate");
-                            },
-                            label: "Duplicate",
-                            color: theme.textColor,
-                            icon: HugeIconsStroke.copy01,
-                          ),
-                          PopupMenuItemData(
-                            onTap: () {
-                              print("Share");
-                            },
-                            label: "Share",
-                            color: theme.textColor,
-                            icon: HugeIconsStroke.share08,
-                          ),
-                          PopupMenuItemData(
-                            onTap: () {
-                              print("Delete");
-                            },
-                            label: "Delete Form",
-                            color: theme.errorColor,
-                            icon: HugeIconsStroke.delete01,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
-
-    if (isGrid) {
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          const double minItemWidth = 250;
-          final int crossAxisCount = (constraints.maxWidth / minItemWidth)
-              .floor()
-              .clamp(1, 6);
-          final double childWidth =
-              (constraints.maxWidth - (crossAxisCount - 1) * 12) /
-              crossAxisCount;
-          const double childHeight = 120;
-          final double childAspectRatio = childWidth / childHeight;
-
-          return GridView.builder(
-            padding: const EdgeInsets.all(12),
-            itemCount: collections.length,
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: crossAxisCount,
-              mainAxisSpacing: 12,
-              crossAxisSpacing: 12,
-              childAspectRatio: childAspectRatio,
-            ),
-            itemBuilder: (context, index) {
-              return buildFormCard(
-                FormModel(
-                  id: 'form_1',
-                  title: 'Customer Feedback Survey',
-                  description: 'Collect customer feedback about our services',
-                  collectionId: '2',
-                  status: FormStatus.published,
-                  createdAt: DateTime.now(),
-                  submissionsCount: 127,
-                ),
-              );
-              return buildCollectionCard(collections[index]);
-            },
-          );
-        },
-      );
-    } else {
-      return ListView.builder(
-        itemCount: collections.length,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 15),
-        itemBuilder: (context, index) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: Align(
-              alignment: Alignment.center,
-              child: ConstrainedBox(
-                constraints: BoxConstraints(maxWidth: 700),
-                child: buildCollectionCard(collections[index]),
-              ),
-            ),
-          );
-        },
-      );
-    }
-  }
-
-   */
   Widget ListCollections({
     required List<Collection> collections,
     required List<Form> forms,
@@ -1160,15 +781,14 @@ class _AppScreenState extends State<AppScreen> {
                     ],
                   ),
                 ),
-                popupForCollection(theme),
+                popupForCollection(theme,collection),
               ],
             ),
           ),
         ),
       );
     }
-
-    Widget buildFormCard(Form form) {
+    Widget buildFormCard(Form f) {
       return FTappable(
         style: FTappableStyle(),
         semanticsLabel: 'Form',
@@ -1176,7 +796,7 @@ class _AppScreenState extends State<AppScreen> {
         autofocus: false,
         behavior: HitTestBehavior.translucent,
         onPress: () {
-          print("Open form: ${form.title}");
+          print("Open form: ${f.title}");
         },
         builder: (context, state, child) => child!,
         child: Container(
@@ -1234,7 +854,7 @@ class _AppScreenState extends State<AppScreen> {
                               children: [
                                 Expanded(
                                   child: Text(
-                                    form.title,
+                                    f.title,
                                     style: TextStyle(
                                       color: theme.textColor,
                                       fontSize: 16,
@@ -1254,7 +874,7 @@ class _AppScreenState extends State<AppScreen> {
                             Row(
                               children: [
                                 // Status badge
-                                StatueBadgeWidget(form.status,t),
+                                StatueBadgeWidget(f.status,t),
                                 (isGrid)
                                     ? Spacer()
                                     : const SizedBox(width: 12),
@@ -1268,7 +888,7 @@ class _AppScreenState extends State<AppScreen> {
                                 ),
                                 const SizedBox(width: 4),
                                 Text(
-                                  "${form.submissionsCount}",
+                                  "${f.submissionsCount}",
                                   style: TextStyle(
                                     color: theme.secondaryTextColor.withOpacity(
                                       0.8,
@@ -1320,7 +940,7 @@ class _AppScreenState extends State<AppScreen> {
                           ),
                           PopupMenuItemData(
                             onTap: () {
-                              print("Delete");
+                              showDialogDeleteForm(context,t,f);
                             },
                             label: "Delete Form",
                             color: theme.errorColor,
@@ -1337,7 +957,6 @@ class _AppScreenState extends State<AppScreen> {
         ),
       );
     }
-
     // Combine collections and forms - collections first
     final totalItems = collections.length + forms.length;
 
@@ -1489,22 +1108,14 @@ class _AppScreenState extends State<AppScreen> {
     return 0;
   }
 
-  popupForCollection(theme theme) {
+  popupForCollection(theme theme,Collection c) {
     return CollectionPopupMenu(
       iconColor: theme.textColor,
       cardColor: theme.cardColor,
       items: [
         PopupMenuItemData(
           onTap: () {
-            print("Open");
-          },
-          label: "Open",
-          color: theme.textColor,
-          icon: HugeIconsStroke.view,
-        ),
-        PopupMenuItemData(
-          onTap: () {
-            print("Rename");
+            showDialogRenameCollection(context,t,c);
           },
           label: "Rename",
           color: theme.textColor,
@@ -1512,7 +1123,7 @@ class _AppScreenState extends State<AppScreen> {
         ),
         PopupMenuItemData(
           onTap: () {
-            print("Delete");
+            showDialogDeleteCollection(context,t,c);
           },
           label: "Delete Collection",
           color: theme.errorColor,

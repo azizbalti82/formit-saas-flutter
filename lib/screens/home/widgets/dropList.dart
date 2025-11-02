@@ -26,3 +26,41 @@ class ItemsViewType extends StatelessWidget {
     ),
   );
 }
+
+class FontFamilySelector extends StatelessWidget {
+  FontFamilySelector({super.key});
+
+  final Provider provider = Get.find<Provider>();
+  final fonts = [
+    'Roboto',
+    'Open Sans',
+    'Lato',
+    'Montserrat',
+    'Poppins',
+    'Raleway',
+    'Ubuntu',
+    'Nunito',
+    'Merriweather',
+    'Playfair Display',
+  ];
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 150,
+    child: FSelect<String>(
+      hint: "Roboto",//provider.currentFont.value,
+      format: (s) => s,
+      children: [
+        for (final font in fonts)
+          FSelectItem(
+            font,
+            font,
+          )
+      ],
+      onChange: (value) {
+        //provider.currentFont.value = value;
+        //SharedPrefService.saveFont(value);
+      },
+    ),
+  );
+}

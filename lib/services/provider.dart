@@ -1,9 +1,9 @@
 import 'dart:ui';
 
-import 'package:formbuilder/backend/models/collection.dart';
+import 'package:formbuilder/backend/models/collection/collection.dart';
 import 'package:get/get.dart';
 
-import '../backend/models/user.dart';
+import '../backend/models/account/user.dart';
 import '../tools/tools.dart';
 
 class Provider extends GetxController {
@@ -16,6 +16,9 @@ class Provider extends GetxController {
   RxBool isGrid = true.obs;
   RxString language = 'en'.obs;
   final RxnString currentFolderId = RxnString();
+  //account settings
+  RxBool pushNotifications = true.obs;
+  RxBool emailNotifications = true.obs;
 
   //quick
   RxString newSelectedStoragePath = ''.obs;

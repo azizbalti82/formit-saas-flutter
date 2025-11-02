@@ -1,10 +1,10 @@
-import '../backend/models/collection.dart';
+import '../backend/models/collection/collection.dart';
 import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:formbuilder/backend/models/user.dart';
-import 'package:formbuilder/screens/home/widgets/itemsViewType.dart';
+import 'package:formbuilder/backend/models/account/user.dart';
+import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/screens/auth/intro.dart';
 import 'package:formbuilder/screens/auth/verifyEmail.dart';
 import 'package:forui/forui.dart';
@@ -12,8 +12,8 @@ import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
 
-import '../../backend/models/collection.dart';
-import '../../backend/models/form.dart';
+import '../backend/models/collection/collection.dart';
+import '../backend/models/form/form.dart';
 import '../../data/constants.dart';
 import '../../main.dart';
 import '../../services/provider.dart';

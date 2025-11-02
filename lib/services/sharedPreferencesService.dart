@@ -1,6 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../backend/models/user.dart';
+import '../backend/models/account/user.dart';
 import '../tools/tools.dart';
 
 class SharedPrefService {

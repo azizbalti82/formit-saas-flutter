@@ -7,13 +7,14 @@ import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:formbuilder/screens/home/appScreen.dart';
+import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:sidebarx/sidebarx.dart';
 
-import '../../backend/models/form.dart';
+import '../../backend/models/form/form.dart';
 import '../../data/constants.dart';
 import '../../main.dart';
 import '../../services/provider.dart';
@@ -211,21 +212,21 @@ class _State extends State<CreatForm> {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           SizedBox(width: 4),
-                          (isCreatingLoading)?
-                          SizedBox(
-                            width: 10,
-                            height: 10,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: t.bgColor,
-                            ),
-                          )
-                          :Icon(
-                            HugeIconsStroke.globe02,
-                            color: t.bgColor,
-                            size: 16,
-                            weight: 30,
-                          ),
+                          (isCreatingLoading)
+                              ? SizedBox(
+                                  width: 10,
+                                  height: 10,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: t.bgColor,
+                                  ),
+                                )
+                              : Icon(
+                                  HugeIconsStroke.globe02,
+                                  color: t.bgColor,
+                                  size: 16,
+                                  weight: 30,
+                                ),
                           SizedBox(width: 10),
                           Text(
                             "Publish",
@@ -301,21 +302,207 @@ class _State extends State<CreatForm> {
         children: [
           Row(
             children: [
-              Text(
-                "Customize",
-                style: TextStyle(color: t.textColor, fontSize: 14,fontWeight: FontWeight.w500),
-              ),
               Spacer(),
-              buildCancelIconButton(t, context, isX: true, iconSized: 15,onclick: (){
-                setState(() {
-                  isCustomizeSideBarOpen = false;
-                });
-              }),
+              buildCancelIconButton(
+                t,
+                context,
+                isX: true,
+                iconSized: 15,
+                onclick: () {
+                  setState(() {
+                    isCustomizeSideBarOpen = false;
+                  });
+                },
+              ),
             ],
           ),
-          SingleChildScrollView(child: Column(children: [])),
+          SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildCustomizationSection("Colors",isFirst:true),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildCustomizationItemColorPicker(
+                        "Background",
+                        "#ffffff",
+                        Colors.white,
+                        t,
+                        () {},
+                      ),
+                    ),
+                    SizedBox(width: 5),
+                    Expanded(
+                      child: _buildCustomizationItemColorPicker(
+                        "Text",
+                        "#0000ff",
+                        Colors.blue,
+                        t,
+                        () {},
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildCustomizationItemColorPicker(
+                        "Accent",
+                        "#ff0000",
+                        Colors.red,
+                        t,
+                        () {},
+                      ),
+                    ),
+                    SizedBox(width: 5),
+                    Expanded(
+                      child: _buildCustomizationItemColorPicker(
+                        "Border",
+                        "#0000ff",
+                        Colors.blue,
+                        t,
+                        () {},
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildCustomizationItemColorPicker(
+                        "Button Background",
+                        "#ff0000",
+                        Colors.red,
+                        t,
+                        () {},
+                      ),
+                    ),
+                    SizedBox(width: 5),
+                    Expanded(
+                      child: _buildCustomizationItemColorPicker(
+                        "Button Text",
+                        "#0000ff",
+                        Colors.blue,
+                        t,
+                        () {},
+                      ),
+                    ),
+                  ],
+                ),
+                _buildCustomizationSection("Branding"),
+                _buildCustomizationItemFontPicker("Font","Arial",t,(font){})
+              ],
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCustomizationSection(String title, {bool isFirst=false}) {
+    return Padding(
+      padding: EdgeInsets.only(top: isFirst?0:20,bottom: 20),
+      child: Text(
+        title,
+        style: TextStyle(
+          color: t.accentColor,
+          fontSize: 14,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    );
+  }
+  Widget _buildCustomizationItemColorPicker(
+    String title,
+    String buttonText,
+    Color initColor,
+    theme t,
+    Function() onPick,
+  ) {
+    Color color = initColor;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: t.textColor.withOpacity(0.8),
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: 5),
+        FTappable(
+          style: FTappableStyle(),
+          semanticsLabel: '$title customization',
+          selected: false,
+          autofocus: false,
+          behavior: HitTestBehavior.translucent,
+          onPress: () {},
+          builder: (context, state, child) => child!,
+          child: FCard.raw(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 8,
+                bottom: 8,
+                top: 8,
+                right: 0,
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 15,
+                    height: 15,
+                    decoration: BoxDecoration(
+                      color: color,
+                      borderRadius: BorderRadius.circular(1000),
+                      border: Border.all(color: t.border.withOpacity(0.3)),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      buttonText,
+                      style: TextStyle(
+                        color: t.secondaryTextColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+  Widget _buildCustomizationItemFontPicker(
+      String title,
+      String currentFont,
+      theme t,
+      Function(String) onFontSelect,
+      ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: t.textColor.withOpacity(0.8),
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: 5),
+        FontFamilySelector()
+      ],
     );
   }
 
@@ -324,18 +511,18 @@ class _State extends State<CreatForm> {
   // --------------------------------------------------------------------------
   _publishOnClick() async {
     //prevent clicking if its already trying to create your form
-    if(isCreatingLoading) return;
+    if (isCreatingLoading) return;
     //start the loading
     setState(() {
       isCreatingLoading = true;
     });
-    try{
+    try {
       await Future.delayed(const Duration(seconds: 3));
       Navigator.pop(context);
       showSuccess("Form created successfully", context);
-    }catch(e) {
+    } catch (e) {
       showError("Error while creating form", context);
-    } finally{
+    } finally {
       setState(() {
         isCreatingLoading = true;
       });
