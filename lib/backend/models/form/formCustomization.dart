@@ -1,145 +1,136 @@
-import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:ui';
 
-class FormCustomizations {
-  // General
-  final String theme;
-  final String font;
-
+class PageCustomization {
   // Colors
-  final String background;
-  final String text;
-  final String buttonBackground;
-  final String buttonText;
-  final String accent;
+  String backgroundColor;
+  String textColor;
+  String accentColor;
+  String borderColor;
+  String buttonBackgroundColor;
+  String buttonTextColor;
 
-  // Layout
-  final String pageWidth;
-  final String baseFontSize;
+  // Page
+  String fontFamily;
+  String fontSize;
+  String pageWidth;
 
   // Logo
-  final String logoWidth;
-  final String logoHeight;
-  final String logoCornerRadius;
+  Uint8List? logoImageBytes;
+  String logoWidth;
+  String logoHeight;
+  String logoRound;
 
   // Cover
-  final String coverHeight;
+  Uint8List? coverImageBytes;
+  String coverHeight;
 
-  // Inputs
-  final String inputWidth;
-  final String inputHeight;
-  final String inputBackground;
-  final String inputPlaceholder;
-  final String inputBorderColor;
-  final String inputBorderWidth;
-  final String inputBorderRadius;
-  final String inputMarginBottom;
-  final String inputHorizontalPadding;
-
-  // Buttons
-  final String buttonWidth;
-  final String buttonHeight;
-  final String buttonAlignment;
-  final String buttonFontSize;
-  final String buttonCornerRadius;
-  final String buttonVerticalMargin;
-  final String buttonHorizontalPadding;
-
-  const FormCustomizations({
-    this.theme = 'Light',
-    this.font = 'Inter',
-    this.background = '#FFFFFF',
-    this.text = '#37352F',
-    this.buttonBackground = '#000000',
-    this.buttonText = '#FFFFFF',
-    this.accent = '#0070D7',
-    this.pageWidth = '700px',
-    this.baseFontSize = '16px',
-    this.logoWidth = '100px',
-    this.logoHeight = '100px',
-    this.logoCornerRadius = '50px',
-    this.coverHeight = '25%',
-    this.inputWidth = '320px',
-    this.inputHeight = '36px',
-    this.inputBackground = '#FFFFFF',
-    this.inputPlaceholder = '#BBBAB8',
-    this.inputBorderColor = '#3D3B3B',
-    this.inputBorderWidth = '1px',
-    this.inputBorderRadius = '8px',
-    this.inputMarginBottom = '10px',
-    this.inputHorizontalPadding = '10px',
-    this.buttonWidth = 'auto',
-    this.buttonHeight = '36px',
-    this.buttonAlignment = 'center',
-    this.buttonFontSize = '16px',
-    this.buttonCornerRadius = '8px',
-    this.buttonVerticalMargin = '10px',
-    this.buttonHorizontalPadding = '14px',
+  PageCustomization({
+    this.backgroundColor = "#ffffff",
+    this.textColor = "#0000ff",
+    this.accentColor = "#ff0000",
+    this.borderColor = "#0000ff",
+    this.buttonBackgroundColor = "#ff0000",
+    this.buttonTextColor = "#0000ff",
+    this.fontFamily = "Arial",
+    this.fontSize = "20px",
+    this.pageWidth = "800px",
+    this.logoImageBytes,
+    this.logoWidth = "300px",
+    this.logoHeight = "200px",
+    this.logoRound = "5px",
+    this.coverImageBytes,
+    this.coverHeight = "50%",
   });
 
-  Map<String, dynamic> toJson() => {
-    'theme': theme,
-    'font': font,
-    'background': background,
-    'text': text,
-    'buttonBackground': buttonBackground,
-    'buttonText': buttonText,
-    'accent': accent,
-    'pageWidth': pageWidth,
-    'baseFontSize': baseFontSize,
-    'logoWidth': logoWidth,
-    'logoHeight': logoHeight,
-    'logoCornerRadius': logoCornerRadius,
-    'coverHeight': coverHeight,
-    'inputWidth': inputWidth,
-    'inputHeight': inputHeight,
-    'inputBackground': inputBackground,
-    'inputPlaceholder': inputPlaceholder,
-    'inputBorderColor': inputBorderColor,
-    'inputBorderWidth': inputBorderWidth,
-    'inputBorderRadius': inputBorderRadius,
-    'inputMarginBottom': inputMarginBottom,
-    'inputHorizontalPadding': inputHorizontalPadding,
-    'buttonWidth': buttonWidth,
-    'buttonHeight': buttonHeight,
-    'buttonAlignment': buttonAlignment,
-    'buttonFontSize': buttonFontSize,
-    'buttonCornerRadius': buttonCornerRadius,
-    'buttonVerticalMargin': buttonVerticalMargin,
-    'buttonHorizontalPadding': buttonHorizontalPadding,
-  };
+  // Convert to JSON for storage/API
+  Map<String, dynamic> toJson() {
+    return {
+      'backgroundColor': backgroundColor,
+      'textColor': textColor,
+      'accentColor': accentColor,
+      'borderColor': borderColor,
+      'buttonBackgroundColor': buttonBackgroundColor,
+      'buttonTextColor': buttonTextColor,
+      'fontFamily': fontFamily,
+      'fontSize': fontSize,
+      'pageWidth': pageWidth,
+      'logoWidth': logoWidth,
+      'logoHeight': logoHeight,
+      'logoRound': logoRound,
+      'coverHeight': coverHeight,
+      // Note: Images should be handled separately (uploaded to storage)
+    };
+  }
 
-  factory FormCustomizations.fromJson(Map<String, dynamic> json) => FormCustomizations(
-    theme: json['theme'] ?? 'Light',
-    font: json['font'] ?? 'Inter',
-    background: json['background'] ?? '#FFFFFF',
-    text: json['text'] ?? '#37352F',
-    buttonBackground: json['buttonBackground'] ?? '#000000',
-    buttonText: json['buttonText'] ?? '#FFFFFF',
-    accent: json['accent'] ?? '#0070D7',
-    pageWidth: json['pageWidth'] ?? '700px',
-    baseFontSize: json['baseFontSize'] ?? '16px',
-    logoWidth: json['logoWidth'] ?? '100px',
-    logoHeight: json['logoHeight'] ?? '100px',
-    logoCornerRadius: json['logoCornerRadius'] ?? '50px',
-    coverHeight: json['coverHeight'] ?? '25%',
-    inputWidth: json['inputWidth'] ?? '320px',
-    inputHeight: json['inputHeight'] ?? '36px',
-    inputBackground: json['inputBackground'] ?? '#FFFFFF',
-    inputPlaceholder: json['inputPlaceholder'] ?? '#BBBAB8',
-    inputBorderColor: json['inputBorderColor'] ?? '#3D3B3B',
-    inputBorderWidth: json['inputBorderWidth'] ?? '1px',
-    inputBorderRadius: json['inputBorderRadius'] ?? '8px',
-    inputMarginBottom: json['inputMarginBottom'] ?? '10px',
-    inputHorizontalPadding: json['inputHorizontalPadding'] ?? '10px',
-    buttonWidth: json['buttonWidth'] ?? 'auto',
-    buttonHeight: json['buttonHeight'] ?? '36px',
-    buttonAlignment: json['buttonAlignment'] ?? 'center',
-    buttonFontSize: json['buttonFontSize'] ?? '16px',
-    buttonCornerRadius: json['buttonCornerRadius'] ?? '8px',
-    buttonVerticalMargin: json['buttonVerticalMargin'] ?? '10px',
-    buttonHorizontalPadding: json['buttonHorizontalPadding'] ?? '14px',
-  );
+  // Create from JSON
+  factory PageCustomization.fromJson(Map<String, dynamic> json) {
+    return PageCustomization(
+      backgroundColor: json['backgroundColor'] ?? "#ffffff",
+      textColor: json['textColor'] ?? "#0000ff",
+      accentColor: json['accentColor'] ?? "#ff0000",
+      borderColor: json['borderColor'] ?? "#0000ff",
+      buttonBackgroundColor: json['buttonBackgroundColor'] ?? "#ff0000",
+      buttonTextColor: json['buttonTextColor'] ?? "#0000ff",
+      fontFamily: json['fontFamily'] ?? "Arial",
+      fontSize: json['fontSize'] ?? "20px",
+      pageWidth: json['pageWidth'] ?? "800px",
+      logoWidth: json['logoWidth'] ?? "300px",
+      logoHeight: json['logoHeight'] ?? "200px",
+      logoRound: json['logoRound'] ?? "5px",
+      coverHeight: json['coverHeight'] ?? "50%",
+    );
+  }
 
-  @override
-  String toString() => jsonEncode(toJson());
+  // Create a copy with modifications
+  PageCustomization copyWith({
+    String? backgroundColor,
+    String? textColor,
+    String? accentColor,
+    String? borderColor,
+    String? buttonBackgroundColor,
+    String? buttonTextColor,
+    String? fontFamily,
+    String? fontSize,
+    String? pageWidth,
+    Uint8List? logoImageBytes,
+    String? logoWidth,
+    String? logoHeight,
+    String? logoRound,
+    Uint8List? coverImageBytes,
+    String? coverHeight,
+  }) {
+    return PageCustomization(
+      backgroundColor: backgroundColor ?? this.backgroundColor,
+      textColor: textColor ?? this.textColor,
+      accentColor: accentColor ?? this.accentColor,
+      borderColor: borderColor ?? this.borderColor,
+      buttonBackgroundColor: buttonBackgroundColor ?? this.buttonBackgroundColor,
+      buttonTextColor: buttonTextColor ?? this.buttonTextColor,
+      fontFamily: fontFamily ?? this.fontFamily,
+      fontSize: fontSize ?? this.fontSize,
+      pageWidth: pageWidth ?? this.pageWidth,
+      logoImageBytes: logoImageBytes ?? this.logoImageBytes,
+      logoWidth: logoWidth ?? this.logoWidth,
+      logoHeight: logoHeight ?? this.logoHeight,
+      logoRound: logoRound ?? this.logoRound,
+      coverImageBytes: coverImageBytes ?? this.coverImageBytes,
+      coverHeight: coverHeight ?? this.coverHeight,
+    );
+  }
+
+  // Helper methods to convert string to Color
+  Color get backgroundColorValue => _hexToColor(backgroundColor);
+  Color get textColorValue => _hexToColor(textColor);
+  Color get accentColorValue => _hexToColor(accentColor);
+  Color get borderColorValue => _hexToColor(borderColor);
+  Color get buttonBackgroundColorValue => _hexToColor(buttonBackgroundColor);
+  Color get buttonTextColorValue => _hexToColor(buttonTextColor);
+
+  static Color _hexToColor(String hexString) {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
 }

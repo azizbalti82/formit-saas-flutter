@@ -32,7 +32,9 @@ enum AppPath {
   home,
   templates,
   trash,
-  collections
+  collections,
+  favorites,
+  archived,
 }
 
 extension AppPathExtension on AppPath {
@@ -48,6 +50,16 @@ extension AppPathExtension on AppPath {
           title: 'Templates',
           type: PathType.section,
         );
+      case AppPath.favorites:
+        return Path(
+          title: 'Favorites',
+          type: PathType.section,
+        );
+        case AppPath.archived:
+      return Path(
+        title: 'Archived',
+        type: PathType.section,
+      );
       case AppPath.trash:
         return Path(
           title: 'Trash',

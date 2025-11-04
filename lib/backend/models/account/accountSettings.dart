@@ -4,7 +4,7 @@ import '../form/formCustomization.dart';
 class AccountSettings {
   final List<String> customDomains;
   final NotificationSettings notificationSettings;
-  final FormCustomizations? defaultFormCustomization;
+  final PageCustomization? defaultFormCustomization;
   final String plan; // e.g. "free", "pro", "Enterprise"
   final String language; // e.g. "English", "German", "French"
 
@@ -31,7 +31,7 @@ class AccountSettings {
         ? NotificationSettings.fromJson(json['notificationSettings'])
         : const NotificationSettings(),
     defaultFormCustomization: json['defaultFormCustomization'] != null
-        ? FormCustomizations.fromJson(json['defaultFormCustomization'])
+        ? PageCustomization.fromJson(json['defaultFormCustomization'])
         : null,
     plan: json['plan'] ?? 'Free',
     language: json['language'] ?? 'en',

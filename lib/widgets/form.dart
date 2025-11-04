@@ -11,7 +11,7 @@ class CustomButton extends StatefulWidget {
   final String text;
   final VoidCallback onPressed;
   final Color? backgroundColor;
-  final Color? textColor;
+  final Color? textColor; // ✅ text + icon + loader color
   final bool isLoading;
   final IconData? icon;
   final bool isFullRow;
@@ -19,7 +19,7 @@ class CustomButton extends StatefulWidget {
   final double? maxWidth;
   final theme t;
   final double? height;
-
+  final EdgeInsetsGeometry? padding; // ✅ optional padding
 
   const CustomButton({
     Key? key,
@@ -27,13 +27,14 @@ class CustomButton extends StatefulWidget {
     required this.onPressed,
     required this.isLoading,
     this.isFullRow = true,
+    this.padding,
     this.icon,
     this.backgroundColor,
     this.textColor,
     this.iconSize,
     this.maxWidth,
     required this.t,
-    this.height
+    this.height,
   }) : super(key: key);
 
   @override
@@ -47,7 +48,6 @@ class _CustomButtonState extends State<CustomButton> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     t = widget.t;
   }
@@ -56,8 +56,10 @@ class _CustomButtonState extends State<CustomButton> {
   Widget build(BuildContext context) {
     return Obx(() {
       t = getTheme();
-      Color bgColor = widget.backgroundColor ?? t.accentColor;
-      Color fgColor = widget.textColor ?? t.bgColor ;
+
+      // ✅ Determine colors
+      final Color bgColor = widget.backgroundColor ?? t.accentColor;
+      final Color fgColor = widget.textColor ?? t.bgColor;
 
       return MouseRegion(
         onEnter: (_) => setState(() => _isHovered = true),
@@ -65,7 +67,7 @@ class _CustomButtonState extends State<CustomButton> {
         cursor: SystemMouseCursors.click,
         child: SizedBox(
           width: widget.isFullRow ? double.infinity : null,
-          height: widget.height?? 50,
+          height: widget.height ?? 50,
           child: ConstrainedBox(
             constraints: BoxConstraints(
               maxWidth: widget.maxWidth ?? double.infinity,
@@ -74,10 +76,14 @@ class _CustomButtonState extends State<CustomButton> {
               onPressed: widget.onPressed,
               style: FilledButton.styleFrom(
                 backgroundColor: bgColor,
-                foregroundColor: fgColor,
+                foregroundColor: fgColor, // ✅ applies to text/icons
+                padding: widget.padding ??
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
-                  side: _isHovered ? BorderSide(color: bgColor, width: 1) : BorderSide.none,
+                  side: _isHovered
+                      ? BorderSide(color: bgColor, width: 1)
+                      : BorderSide.none,
                 ),
                 elevation: 0,
               ),
@@ -86,23 +92,25 @@ class _CustomButtonState extends State<CustomButton> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (widget.icon != null)
-                    Icon(widget.icon,color: fgColor,),
+                    Icon(widget.icon, color: fgColor, size: widget.iconSize),
                   if (widget.isLoading) const SizedBox(width: 8),
                   if (widget.isLoading)
                     SizedBox(
-                      width: 10,
-                      height: 10,
+                      width: 12,
+                      height: 12,
                       child: CircularProgressIndicator(
                         strokeWidth: 2,
-                        color: fgColor,
+                        color: fgColor, // ✅ match text color
                       ),
                     ),
-                  const SizedBox(width: 12),
+                  if (widget.icon != null || widget.isLoading)
+                    const SizedBox(width: 8),
                   Text(
                     widget.text,
                     style: TextStyle(
                       fontSize: 16,
-                      color: fgColor,
+                      color: fgColor, // ✅ match text color
+                      fontWeight: FontWeight.w500,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -112,7 +120,8 @@ class _CustomButtonState extends State<CustomButton> {
           ),
         ),
       );
-    });}
+    });
+  }
 }
 
 class CustomButtonOutline extends StatefulWidget {
@@ -231,7 +240,6 @@ class _CustomButtonOutlineState extends State<CustomButtonOutline> {
     });
   }
 }
-
 
 Widget customInput(
     theme theme,

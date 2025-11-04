@@ -206,6 +206,26 @@ class _AppScreenState extends State<AppScreen> {
           },
         ),
         menuItem(
+          title: 'Favorites',
+          icon: HugeIconsStroke.favourite,
+          onClick: () {
+            handleSideBarCloseMobile();
+            setState(() {
+              currentPath = [AppPath.favorites.data()];
+            });
+          },
+        ),
+        menuItem(
+          title: 'Archived',
+          icon: HugeIconsStroke.archive02,
+          onClick: () {
+            handleSideBarCloseMobile();
+            setState(() {
+              currentPath = [AppPath.archived.data()];
+            });
+          },
+        ),
+        menuItem(
           title: 'Trash',
           icon: HugeIconsStroke.delete02,
           onClick: () {
@@ -501,6 +521,10 @@ class _AppScreenState extends State<AppScreen> {
         ),
       );
     } else if (current == AppPath.templates.data()) {
+      return noResultsImage();
+    }else if (current == AppPath.favorites.data()) {
+      return noResultsImage();
+    }else if (current == AppPath.archived.data()) {
       return noResultsImage();
     } else if (current == AppPath.collections.data()) {
       return noResultsImage();

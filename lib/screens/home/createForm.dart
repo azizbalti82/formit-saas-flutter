@@ -12,18 +12,23 @@ import 'package:formbuilder/widgets/messages.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:sidebarx/sidebarx.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../backend/models/form/form.dart';
+import '../../backend/models/form/formCustomization.dart';
 import '../../data/constants.dart';
 import '../../main.dart';
 import '../../services/provider.dart';
-import '../../services/secureSharedPreferencesService.dart';
 import '../../services/themeService.dart';
 import '../../tools/tools.dart';
 import '../../widgets/basics.dart';
+import '../../widgets/cards.dart';
 import '../../widgets/form.dart';
 import '../../widgets/menu.dart';
+import 'dart:typed_data';
+
+
+enum PreviewSizes { phone, tablet, desktop }
 
 class CreatForm extends StatefulWidget {
   CreatForm({super.key, required this.t});
@@ -40,6 +45,12 @@ class _State extends State<CreatForm> {
   bool showKey = true;
   bool isCreatingLoading = false;
   bool isCustomizeSideBarOpen = false;
+  PreviewSizes previewSize = PreviewSizes.desktop;
+  Uint8List? logoImageBytes;
+  Uint8List? coverImageBytes;
+  PageCustomization pageCustomization = PageCustomization();
+
+
   // --------------------------------------------------------------------------
   // SERVICES
   // --------------------------------------------------------------------------
@@ -72,16 +83,27 @@ class _State extends State<CreatForm> {
       child: Scaffold(
         backgroundColor: t.bgColor,
         appBar: _buildAppBar(t),
-        body: Row(
-          mainAxisSize: MainAxisSize.max,
+        body: Stack(
           children: [
-            isLandscape(context)
-                ? Expanded(
-                    child: _buildLandscapeBody(screenWidth, screenHeight, t),
-                  )
-                : _buildPortraitBody(),
-            SizedBox(width: 20),
-            if (isCustomizeSideBarOpen) _buildCustomizeSidebar(t),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+              child: isLandscape(context)
+                  ? _buildLandscapeBody(screenWidth, screenHeight, t)
+                  : _buildPortraitBody(screenWidth, screenHeight, t),
+            ),
+            Positioned(
+              bottom: 5,
+              right: 0,
+              left: 0,
+              child: _buildAspectRatioChanger(t),
+            ),
+            if (isCustomizeSideBarOpen)
+              Positioned(
+                top: 0,
+                bottom: 0,
+                right: 5,
+                child: _buildCustomizeSidebar(t),
+              ),
           ],
         ),
       ),
@@ -92,25 +114,42 @@ class _State extends State<CreatForm> {
   // LANDSCAPE BODY
   // --------------------------------------------------------------------------
   Widget _buildLandscapeBody(double screenWidth, double screenHeight, theme t) {
+    // Define aspect ratios depending on the selected preview size
+    double aspectRatio;
+    switch (previewSize) {
+      case PreviewSizes.phone:
+        aspectRatio = 9 / 16; // taller, like a phone
+        break;
+      case PreviewSizes.tablet:
+        aspectRatio = 3 / 4; // slightly wider
+        break;
+      case PreviewSizes.desktop:
+        aspectRatio = 16 / 9; // wide screen
+        break;
+    }
+
     return Center(
-      child: Container(
-        height: screenHeight * 0.7,
-        constraints: const BoxConstraints(maxWidth: 500),
-        decoration: BoxDecoration(
-          color: t.cardColor,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(width: 1, color: t.border.withOpacity(0.3)),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: Stack(children: [_buildMainContent()]),
+      child: AspectRatio(
+        aspectRatio: aspectRatio,
+        child: Container(
+          height: screenHeight * 0.6,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: pageCustomization.backgroundColorValue,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(width: 1, color: t.border.withOpacity(0.3)),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: Stack(children: [_buildMainContent()]),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildPortraitBody() {
-    return Center(child: _buildMainContent());
+  Widget _buildPortraitBody(double screenWidth, double screenHeight, theme t) {
+    return _buildLandscapeBody(screenWidth, screenHeight, t);
   }
 
   Widget _buildMainContent() {
@@ -292,35 +331,38 @@ class _State extends State<CreatForm> {
   Widget _buildCustomizeSidebar(theme t) {
     return Container(
       width: 300,
+      height: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       margin: EdgeInsets.only(right: 8, bottom: 12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
         color: t.cardColor,
+        border: Border.all(color: t.border),
       ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Spacer(),
-              buildCancelIconButton(
-                t,
-                context,
-                isX: true,
-                iconSized: 15,
-                onclick: () {
-                  setState(() {
-                    isCustomizeSideBarOpen = false;
-                  });
-                },
-              ),
-            ],
-          ),
-          SingleChildScrollView(
-            child: Column(
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.max,
+          children: [
+            Row(
+              children: [
+                Spacer(),
+                buildCancelIconButton(
+                  t,
+                  context,
+                  isX: true,
+                  iconSized: 15,
+                  onclick: () {
+                    setState(() {
+                      isCustomizeSideBarOpen = false;
+                    });
+                  },
+                ),
+              ],
+            ),
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildCustomizationSection("Colors",isFirst:true),
+                _buildCustomizationSection("Colors", isFirst: true),
                 Row(
                   children: [
                     Expanded(
@@ -392,19 +434,106 @@ class _State extends State<CreatForm> {
                     ),
                   ],
                 ),
-                _buildCustomizationSection("Branding"),
-                _buildCustomizationItemFontPicker("Font","Arial",t,(font){})
+                _buildCustomizationSection("Page"),
+                Row(
+                  children: [
+                    Expanded(child:
+                    _buildCustomizationItemFontPicker(
+                      "Font",
+                      "Arial",
+                      t,
+                          (font) {},
+                    ),),
+                    SizedBox(width: 5),
+                    Expanded(
+                      child: _buildCustomizationItem(
+                        "Font Size",
+                        "20px",
+                        t,
+                            () {},
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                _buildCustomizationItem(
+                    "Page Width",
+                    "800px",
+                    t,
+                        () {},
+                  ),
+                _buildCustomizationSection("Logo"),
+                ProfileImagePicker(
+                  t: t,
+                  imageBytes: logoImageBytes,
+                  size: 50,
+                  onImagePick: () async {
+                    final result = await ImagePicker().pickImage(source: ImageSource.gallery);
+                    if (result != null) {
+                      final bytes = await result.readAsBytes();
+                      setState(() => logoImageBytes = bytes);
+                    }
+                  },
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildCustomizationItem(
+                        "Width",
+                        "300px",
+                        t,
+                        () {},
+                      ),
+                    ),
+                    SizedBox(width: 5),
+                    Expanded(
+                      child: _buildCustomizationItem(
+                        "Height",
+                        "200px",
+                        t,
+                        () {},
+                      ),
+                    ),
+                    SizedBox(width: 5),
+                    Expanded(
+                      child: _buildCustomizationItem("Round", "5px", t, () {}),
+                    ),
+                  ],
+                ),
+                _buildCustomizationSection("Cover"),
+                ProfileImagePicker(
+                  t: t,
+                  imageBytes: coverImageBytes,
+                  size: 50,
+                  onImagePick: () async {
+                    final result = await ImagePicker().pickImage(source: ImageSource.gallery);
+                    if (result != null) {
+                      final bytes = await result.readAsBytes();
+                      setState(() => coverImageBytes = bytes);
+                    }
+                  },
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildCustomizationItem("Height", "50%", t, () {}),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20,)
               ],
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildCustomizationSection(String title, {bool isFirst=false}) {
+  Widget _buildCustomizationSection(String title, {bool isFirst = false}) {
     return Padding(
-      padding: EdgeInsets.only(top: isFirst?0:20,bottom: 20),
+      padding: EdgeInsets.only(top: isFirst ? 0 : 20, bottom: 20),
       child: Text(
         title,
         style: TextStyle(
@@ -415,6 +544,65 @@ class _State extends State<CreatForm> {
       ),
     );
   }
+
+  Widget _buildCustomizationItem(
+    String title,
+    String buttonText,
+    theme t,
+    Function() onPick,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: t.textColor.withOpacity(0.8),
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: 5),
+        FTappable(
+          style: FTappableStyle(),
+          semanticsLabel: '$title customization',
+          selected: false,
+          autofocus: false,
+          behavior: HitTestBehavior.translucent,
+          onPress: () {},
+          builder: (context, state, child) => child!,
+          child: FCard.raw(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 8,
+                bottom: 8,
+                top: 8,
+                right: 0,
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      buttonText,
+                      style: TextStyle(
+                        color: t.secondaryTextColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildCustomizationItemColorPicker(
     String title,
     String buttonText,
@@ -483,12 +671,13 @@ class _State extends State<CreatForm> {
       ],
     );
   }
+
   Widget _buildCustomizationItemFontPicker(
-      String title,
-      String currentFont,
-      theme t,
-      Function(String) onFontSelect,
-      ) {
+    String title,
+    String currentFont,
+    theme t,
+    Function(String) onFontSelect,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -501,7 +690,7 @@ class _State extends State<CreatForm> {
           ),
         ),
         SizedBox(height: 5),
-        FontFamilySelector()
+        FontFamilySelector(),
       ],
     );
   }
@@ -541,5 +730,75 @@ class _State extends State<CreatForm> {
 
   _settingsOnClick() {
     showMsg(Constants.notReadyMsg, context, t);
+  }
+
+  Widget _buildAspectRatioChanger(theme t) {
+    return Wrap(
+      alignment: WrapAlignment.center,
+      children: [
+        CustomButton(
+          text: "Mobile",
+          backgroundColor: (previewSize == PreviewSizes.phone)
+              ? t.textColor
+              : t.bgColor,
+          textColor: (previewSize != PreviewSizes.phone)
+              ? t.textColor
+              : t.bgColor,
+          height: 30,
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          icon: HugeIconsStroke.smartPhone01,
+          onPressed: () {
+            setState(() {
+              previewSize = PreviewSizes.phone;
+            });
+          },
+          t: t,
+          isLoading: false,
+          isFullRow: false,
+        ),
+        SizedBox(width: 5),
+        CustomButton(
+          text: "Tablet",
+          backgroundColor: (previewSize == PreviewSizes.tablet)
+              ? t.textColor
+              : t.bgColor,
+          textColor: (previewSize != PreviewSizes.tablet)
+              ? t.textColor
+              : t.bgColor,
+          height: 30,
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          icon: HugeIconsStroke.tablet01,
+          onPressed: () {
+            setState(() {
+              previewSize = PreviewSizes.tablet;
+            });
+          },
+          t: t,
+          isLoading: false,
+          isFullRow: false,
+        ),
+        SizedBox(width: 5),
+        CustomButton(
+          text: "Desktop",
+          backgroundColor: (previewSize == PreviewSizes.desktop)
+              ? t.textColor
+              : t.bgColor,
+          textColor: (previewSize != PreviewSizes.desktop)
+              ? t.textColor
+              : t.bgColor,
+          height: 30,
+          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          icon: HugeIconsStroke.laptop,
+          onPressed: () {
+            setState(() {
+              previewSize = PreviewSizes.desktop;
+            });
+          },
+          t: t,
+          isLoading: false,
+          isFullRow: false,
+        ),
+      ],
+    );
   }
 }
