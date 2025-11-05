@@ -31,7 +31,7 @@ import 'dart:typed_data';
 enum PreviewSizes { phone, tablet, desktop }
 
 class CreatForm extends StatefulWidget {
-  CreatForm({super.key, required this.t});
+  CreatForm({super.key, required this.t, required type});
   final theme t;
   @override
   State<CreatForm> createState() => _State();

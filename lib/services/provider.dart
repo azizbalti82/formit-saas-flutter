@@ -4,12 +4,14 @@ import 'package:formbuilder/backend/models/collection/collection.dart';
 import 'package:get/get.dart';
 
 import '../backend/models/account/user.dart';
+import '../backend/models/path.dart';
 import '../tools/tools.dart';
 
 class Provider extends GetxController {
   RxInt currentIndex = 0.obs;
   RxBool isSideBarOpen = true.obs;
   Rx<User> user = User(name: "Guest", color: getRandomHighContrastColor()).obs;
+  final RxList<Path> currentPath = <Path>[AppPath.home.data()].obs;
 
   //settings
   RxBool isDark = false.obs;

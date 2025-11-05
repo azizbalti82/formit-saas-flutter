@@ -47,7 +47,6 @@ class _AppScreenState extends State<AppScreen> {
   // STATE VARIABLES
   // --------------------------------------------------------------------------
   late theme t;
-  List<Path> currentPath = [AppPath.home.data()];
   bool logoutLoading = false;
   Uint8List? imageBytes;
 
@@ -182,7 +181,7 @@ class _AppScreenState extends State<AppScreen> {
           onClick: () {
             setState(() {
               handleSideBarCloseMobile();
-              currentPath = [AppPath.home.data()];
+              provider.currentPath.value = [AppPath.home.data()];
               provider.resetCurrentFolderId(fakeCollections);
             });
           },
@@ -201,7 +200,7 @@ class _AppScreenState extends State<AppScreen> {
           onClick: () {
             handleSideBarCloseMobile();
             setState(() {
-              currentPath = [AppPath.templates.data()];
+              provider.currentPath.value = [AppPath.templates.data()];
             });
           },
         ),
@@ -211,7 +210,7 @@ class _AppScreenState extends State<AppScreen> {
           onClick: () {
             handleSideBarCloseMobile();
             setState(() {
-              currentPath = [AppPath.favorites.data()];
+              provider.currentPath.value = [AppPath.favorites.data()];
             });
           },
         ),
@@ -221,7 +220,7 @@ class _AppScreenState extends State<AppScreen> {
           onClick: () {
             handleSideBarCloseMobile();
             setState(() {
-              currentPath = [AppPath.archived.data()];
+              provider.currentPath.value = [AppPath.archived.data()];
             });
           },
         ),
@@ -231,7 +230,7 @@ class _AppScreenState extends State<AppScreen> {
           onClick: () {
             handleSideBarCloseMobile();
             setState(() {
-              currentPath = [AppPath.trash.data()];
+              provider.currentPath.value = [AppPath.trash.data()];
             });
           },
         ),
@@ -429,6 +428,10 @@ class _AppScreenState extends State<AppScreen> {
   }
 
   Widget _buildNewCollectionButton() {
+    if(!weAreInHomeOrCollection()){
+      return SizedBox();
+    }
+
     return FButton.icon(
       onPress: () {
         showDialogNewFolder(context, t);
@@ -455,9 +458,18 @@ class _AppScreenState extends State<AppScreen> {
   }
 
   Widget _buildCreateFormButton() {
+    bool _weAreInHome = weAreInHomeOrCollection();
+    bool _weAreInTemplates = weAreInTemplates();
+    if(!_weAreInHome && !_weAreInTemplates){
+      return SizedBox();
+    }
     return FButton.icon(
       onPress: () {
-        navigateTo(context, CreatForm(t: t), false);
+        if(_weAreInTemplates){
+          navigateTo(context, CreatForm(t: t,type:FormType.template), false);
+        }else if(_weAreInHome){
+          navigateTo(context, CreatForm(t: t,type:FormType.form), false);
+        }
       },
       style: FButtonStyle.primary(),
       child: Row(
@@ -467,7 +479,7 @@ class _AppScreenState extends State<AppScreen> {
           Icon(HugeIconsStroke.add01, color: t.bgColor, size: 16, weight: 30),
           SizedBox(width: 10),
           Text(
-            "Create form",
+            weAreInHomeOrCollection()? "Create form":"Create Template",
             style: TextStyle(
               fontSize: 14,
               color: t.bgColor,
@@ -481,10 +493,7 @@ class _AppScreenState extends State<AppScreen> {
   }
 
   Widget _buildContentArea(double screenHeight, double screenWidth) {
-    Path current = currentPath.lastOrNull ?? AppPath.home.data();
-    print(current.title);
-
-    if (current == AppPath.trash.data()) {
+    if (weAreInTrash()) {
       //By default return the content of home
       if (countTrash(allFolders: fakeCollections) == 0) {
         return noResultsImage();
@@ -520,19 +529,20 @@ class _AppScreenState extends State<AppScreen> {
           ],
         ),
       );
-    } else if (current == AppPath.templates.data()) {
+    } else if (weAreInTemplates()) {
       return noResultsImage();
-    }else if (current == AppPath.favorites.data()) {
+    }else if (weAreInFavorites()) {
       return noResultsImage();
-    }else if (current == AppPath.archived.data()) {
-      return noResultsImage();
-    } else if (current == AppPath.collections.data()) {
+    }else if (weAreInArchived()) {
       return noResultsImage();
     } else {
       //if its home folder clean some things
-      if (current == AppPath.home.data()) {
-        currentPath = [AppPath.home.data()];
-        provider.resetCurrentFolderId(fakeCollections);
+      if (weAreInHome()) {
+        // Schedule the update for after the build
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          provider.currentPath.value = [AppPath.home.data()];
+          provider.resetCurrentFolderId(fakeCollections);
+        });
       }
       //if its a folder (not home) load its children
       if (countFolderChildren(
@@ -645,7 +655,7 @@ class _AppScreenState extends State<AppScreen> {
   }
 
   Widget pathWidgetBuilder() {
-    var paths = currentPath.reversed.toList();
+    var paths = provider.currentPath.value.reversed.toList();
     paths.add(Path(title: 'FormIt', type: PathType.section));
     paths = paths.reversed.toList();
 
@@ -669,7 +679,7 @@ class _AppScreenState extends State<AppScreen> {
                       'Navigate to: ${paths.take(index + 1).join('/')}',
                     );
                     setState(() {
-                      currentPath = paths.take(index + 1).toList().sublist(1);
+                      provider.currentPath.value = paths.take(index + 1).toList().sublist(1);
                       provider.currentFolderId.value = segment.collectionId;
                     });
                   },
@@ -690,7 +700,7 @@ class _AppScreenState extends State<AppScreen> {
         FBreadcrumbItem(
           onPress: () {
             setState(() {
-              currentPath = [];
+              provider.currentPath.value = [];
               provider.currentFolderId.value = first.collectionId;
             });
           },
@@ -710,7 +720,7 @@ class _AppScreenState extends State<AppScreen> {
                       setState(() {
                         // Navigate up to the selected segment
                         final targetIndex = paths.indexOf(segment);
-                        currentPath = paths
+                        provider.currentPath.value = paths
                             .take(targetIndex + 1)
                             .toList()
                             .sublist(1);
@@ -748,7 +758,7 @@ class _AppScreenState extends State<AppScreen> {
           } else {
             provider.currentFolderId.value = collection.id;
           }
-          currentPath.add(
+          provider.currentPath.value.add(
             AppPath.collections.data(
               folderName: collection.name,
               collectionId: collection.id,
@@ -1156,6 +1166,63 @@ class _AppScreenState extends State<AppScreen> {
       ],
     );
   }
+}
+
+bool weAreInHomeOrCollection() {
+  final Provider provider = Get.find<Provider>();
+  Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
+  if(current != AppPath.home.data() && current.type != PathType.collection){
+    return false;
+  }
+  return true;
+}
+
+bool weAreInFavorites() {
+  final Provider provider = Get.find<Provider>();
+  Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
+  if(current != AppPath.favorites.data()){
+    return false;
+  }
+  return true;
+}
+
+bool weAreInTemplates() {
+  final Provider provider = Get.find<Provider>();
+  Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
+  if(current != AppPath.templates.data()){
+    return false;
+  }
+  return true;
+}
+bool weAreInArchived() {
+  final Provider provider = Get.find<Provider>();
+  Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
+  if(current != AppPath.archived.data()){
+    return false;
+  }
+  return true;
+}
+
+bool weAreInTrash() {
+  final Provider provider = Get.find<Provider>();
+  Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
+  if(current != AppPath.trash.data()){
+    return false;
+  }
+  return true;
+}
+bool weAreInHome() {
+  final Provider provider = Get.find<Provider>();
+  Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
+  if(current != AppPath.home.data()){
+    return false;
+  }
+  return true;
+}
+
+enum FormType {
+  template,
+  form
 }
 
 Widget StatueBadgeWidget(FormStatus status,theme theme) {

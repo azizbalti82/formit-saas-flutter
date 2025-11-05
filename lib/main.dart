@@ -21,6 +21,7 @@ import 'package:toastification/toastification.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'backend/models/account/user.dart';
+import 'backend/models/path.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,7 +52,7 @@ Future<void> main() async {
 
   // FIXED: Check kIsWeb before using Platform
   bool isSideBarOpen = kIsWeb
-      ? true  // Default for web
+      ? true // Default for web
       : (Platform.isAndroid || Platform.isIOS)
       ? false
       : await SharedPrefService.getIsSideBarOpen();
@@ -130,9 +131,7 @@ class _MainState extends State<Main> {
             selectionColor: t.accentColor.withOpacity(0.5),
             selectionHandleColor: t.accentColor,
           ),
-          textTheme: GoogleFonts.poppinsTextTheme(
-            Theme.of(context).textTheme,
-          ),
+          textTheme: GoogleFonts.poppinsTextTheme(Theme.of(context).textTheme),
         ),
         // FIXED: Wrap home in a Builder to get proper context
         home: widget.isLogged
@@ -153,38 +152,60 @@ class HomeWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: !isLandscape(context)
-          ? CollectionPopupMenu(
-        iconSize: 25,
-        iconColor: t.textColor,
-        cardColor: t.cardColor,
-        items: [
-          PopupMenuItemData(
-            onTap: () {
-              navigateTo(context, CreatForm(t:t), false);
-            },
-            label: "Create new form",
-            color: t.textColor,
-            icon: Icons.description_outlined,
+      floatingActionButton: Obx(() {
+        final provider = Get.find<Provider>();
+        // Access .value directly inside Obx - this is what makes it reactive!
+        final currentPath = provider.currentPath.lastOrNull ?? AppPath.home.data();
+
+        final isInTemplates = currentPath == AppPath.templates.data();
+        final isInHomeOrCollection = currentPath == AppPath.home.data() ||
+            currentPath.type == PathType.collection;
+
+        return (!isLandscape(context) && (isInHomeOrCollection))
+            ? CollectionPopupMenu(
+          iconSize: 25,
+          iconColor: t.textColor,
+          cardColor: t.cardColor,
+          items: [
+            PopupMenuItemData(
+              onTap: () {
+                navigateTo(
+                    context,
+                    CreatForm(t: t, type: FormType.form),
+                    false,
+                );
+              },
+              label: "Create new form",
+              color: t.textColor,
+              icon: Icons.description_outlined,
+            ),
+            PopupMenuItemData(
+              onTap: () {
+                showDialogNewFolder(context, t);
+              },
+              label: "Create new collection",
+              color: t.textColor,
+              icon: Icons.folder_outlined,
+            ),
+          ],
+          customTrigger: FloatingActionButton(
+            shape: const CircleBorder(),
+            onPressed: null,
+            backgroundColor: t.textColor,
+            child: Icon(Icons.add_rounded, color: t.bgColor),
           ),
-          PopupMenuItemData(
-            onTap: () {
-              // Now context has access to Navigator
-              showDialogNewFolder(context, t);
-            },
-            label: "Create new collection",
-            color: t.textColor,
-            icon: Icons.folder_outlined,
-          ),
-        ],
-        customTrigger: FloatingActionButton(
+        )
+        :(!isLandscape(context) && (isInTemplates))?
+        FloatingActionButton(
           shape: const CircleBorder(),
-          onPressed: null, // Menu handles the tap
+          onPressed: (){
+            navigateTo(context, CreatForm(t: t, type: FormType.template), false);
+          },
           backgroundColor: t.textColor,
           child: Icon(Icons.add_rounded, color: t.bgColor),
-        ),
-      )
-          : null,
+        )
+            : const SizedBox.shrink();
+      }),
       body: AppScreen(t: t),
     );
   }
@@ -217,7 +238,8 @@ class SystemUiStyleWrapper extends StatelessWidget {
         statusBarIconBrightness: t.brightness == Brightness.dark
             ? Brightness.light
             : Brightness.dark,
-        systemNavigationBarColor: navBarColor ??
+        systemNavigationBarColor:
+            navBarColor ??
             (t.brightness == Brightness.light
                 ? FThemes.zinc.light.colors.background
                 : FThemes.zinc.dark.colors.background),
