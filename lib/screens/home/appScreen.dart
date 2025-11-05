@@ -370,13 +370,6 @@ class _AppScreenState extends State<AppScreen> {
             EasyLauncher.url(url: "https://azizbalti.netlify.app");
           },
         ),
-        menuItem(
-          title: 'Developer Website',
-          icon: HugeIconsSolid.developer,
-          onClick: () {
-            EasyLauncher.url(url: "https://azizbalti.netlify.app");
-          },
-        ),
       ],
     );
   }
