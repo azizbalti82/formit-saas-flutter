@@ -7,6 +7,7 @@ import 'package:flutter/material.dart' hide Form;
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:formbuilder/backend/models/account/user.dart';
+import 'package:formbuilder/screens/home/previewForm.dart';
 import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/screens/auth/intro.dart';
 import 'package:formbuilder/screens/auth/verifyEmail.dart';
@@ -823,7 +824,7 @@ class _AppScreenState extends State<AppScreen> {
         autofocus: false,
         behavior: HitTestBehavior.translucent,
         onPress: () {
-          print("Open form: ${f.title}");
+          navigateTo(context, PreviewForm(t: t,f: f,), false);
         },
         builder: (context, state, child) => child!,
         child: Container(
@@ -956,6 +957,14 @@ class _AppScreenState extends State<AppScreen> {
                             label: "Duplicate",
                             color: theme.textColor,
                             icon: HugeIconsStroke.copy01,
+                          ),
+                          PopupMenuItemData(
+                            onTap: () {
+                              print("Move To");
+                            },
+                            label: "Move To",
+                            color: theme.textColor,
+                            icon: HugeIconsStroke.move,
                           ),
                           PopupMenuItemData(
                             onTap: () {
@@ -1218,9 +1227,9 @@ enum FormType {
   form
 }
 
-Widget StatueBadgeWidget(FormStatus status,theme theme) {
+Widget StatueBadgeWidget(FormStatus status,theme theme, {double height=3}) {
   return Container(
-    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+    padding: EdgeInsets.symmetric(horizontal: 8, vertical: height),
     decoration: BoxDecoration(
       color: getStatusColor(status,theme).withOpacity(0.15),
       borderRadius: BorderRadius.circular(4),
