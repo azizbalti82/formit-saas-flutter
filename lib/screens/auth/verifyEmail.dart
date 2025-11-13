@@ -8,7 +8,6 @@ import 'package:formbuilder/screens/auth/signInFinalization.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:get/get.dart';
 import 'package:pin_code/pin_code.dart';
-import 'package:pin_code_fields/pin_code_fields.dart' hide PinCodeFieldShape;
 
 import '../../main.dart';
 import '../../services/provider.dart';

@@ -3,7 +3,9 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart' hide Form;
 import 'package:flutter/material.dart' hide Form;
 import 'package:flutter_svg/svg.dart';
+import 'package:formbuilder/data/fakedata.dart';
 import 'package:formbuilder/services/themeService.dart';
+import 'package:formbuilder/widgets/form.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -17,7 +19,6 @@ import '../tools/tools.dart';
 import 'complex.dart';
 import 'messages.dart';
 import '../../backend/models/form/form.dart';
-
 
 // --------------------------------------------------------------------------
 // Notifications settings DIALOG
@@ -41,14 +42,25 @@ Future showDialogNotificationSettings(BuildContext context, theme t) async {
             FSidebarItem(
               label: Row(
                 children: [
-                  Expanded(child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Push Notifications"),
-                      SizedBox(height: 5,),
-                      Text("Receive alerts directly on your device.",style: TextStyle(fontSize: 13,color: t.secondaryTextColor,),softWrap: true,maxLines: 3,textAlign: TextAlign.start,),
-                    ],
-                  )),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Push Notifications"),
+                        SizedBox(height: 5),
+                        Text(
+                          "Receive alerts directly on your device.",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: t.secondaryTextColor,
+                          ),
+                          softWrap: true,
+                          maxLines: 3,
+                          textAlign: TextAlign.start,
+                        ),
+                      ],
+                    ),
+                  ),
                   SizedBox(
                     width: 20,
                     height: 5,
@@ -57,33 +69,47 @@ Future showDialogNotificationSettings(BuildContext context, theme t) async {
                       child: FSwitch(
                         value: provider.pushNotifications.value,
                         onChange: (value) async {
-                          provider.pushNotifications.value = !provider.pushNotifications.value;
+                          provider.pushNotifications.value =
+                              !provider.pushNotifications.value;
                         },
                       ),
                     ),
                   ),
                 ],
               ),
-              onPress: () async {
-              },
+              onPress: () async {},
             ),
-            SizedBox(height: 10,),
+            SizedBox(height: 10),
             FSidebarItem(
               label: Row(
                 children: [
-                  Expanded(child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text("Email Notifications"),
-                      SizedBox(height: 5,),
-                      Text("Tell us what type of emails you want to receive.",style: TextStyle(fontSize: 13,color: t.secondaryTextColor),softWrap: true,maxLines: 3,textAlign: TextAlign.start,),
-                    ],
-                  )),
-                  Icon(HugeIconsStroke.arrowRight01,color: t.secondaryTextColor,size: 22,)
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("Email Notifications"),
+                        SizedBox(height: 5),
+                        Text(
+                          "Tell us what type of emails you want to receive.",
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: t.secondaryTextColor,
+                          ),
+                          softWrap: true,
+                          maxLines: 3,
+                          textAlign: TextAlign.start,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    HugeIconsStroke.arrowRight01,
+                    color: t.secondaryTextColor,
+                    size: 22,
+                  ),
                 ],
               ),
-              onPress: () async {
-              },
+              onPress: () async {},
             ),
             /*
             FSwitchListTile(
@@ -153,20 +179,22 @@ Future showDialogNewFolder(BuildContext context, theme t) async {
     ),
   );
 }
+
 // --------------------------------------------------------------------------
 // RENAME DIALOG
 // --------------------------------------------------------------------------
-Future showDialogRenameCollection(BuildContext context, theme t,Collection collection) async {
+Future showDialogRenameCollection(
+  BuildContext context,
+  theme t,
+  Collection collection,
+) async {
   final TextEditingController inputController = TextEditingController();
   return dialogBuilder(
     context: context,
     builder: (context, style, animation) => FDialog(
       style: style,
       animation: animation,
-      title: Text(
-        "Rename Collection",
-        style: const TextStyle(fontSize: 22),
-      ),
+      title: Text("Rename Collection", style: const TextStyle(fontSize: 22)),
       body: Column(
         children: [
           const SizedBox(height: 40),
@@ -190,6 +218,265 @@ Future showDialogRenameCollection(BuildContext context, theme t,Collection colle
       ],
     ),
   );
+}
+
+// --------------------------------------------------------------------------
+// SEARCH DIALOG
+// --------------------------------------------------------------------------
+Future showDialogSearch(BuildContext context, theme t) async {
+  final TextEditingController inputController = TextEditingController();
+  final ValueNotifier<bool> isSearching = ValueNotifier<bool>(false);
+  final ValueNotifier<bool> hasSearched = ValueNotifier<bool>(false);
+
+  // Fake lists for results
+  List<Collection> collections = [];
+  List<Form> forms = [];
+
+  // 🔍 Listen to input changes
+  inputController.addListener(() async {
+    final text = inputController.text.trim();
+    if (text.isEmpty) {
+      hasSearched.value = false;
+      return;
+    }
+
+    // Start fake search
+    isSearching.value = true;
+    hasSearched.value = false;
+
+    //search for forms
+    collections = fakeCollections
+        .where((f) => f.name.toLowerCase().contains(text.toLowerCase()))
+        .toList();
+
+    //search for collections
+    forms = getFakeForms()
+        .where((f) => f.title.toLowerCase().contains(text.toLowerCase()))
+        .toList();
+
+    // End fake search
+    isSearching.value = false;
+    hasSearched.value = true;
+  });
+
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      title: Row(
+        children: [
+          Icon(
+            HugeIconsStroke.search01,
+            color: t.secondaryTextColor,
+            size: 18,
+          ),
+          Expanded(
+            child: Material(
+              color: Colors.transparent,
+              child: customInput(
+                backgroundColor: t.brightness == Brightness.light
+                    ? FThemes.zinc.light.colors.background
+                    : FThemes.zinc.dark.colors.background,
+                t,
+                inputController,
+                "Search for Forms & Folders",
+                "",
+                context,
+                haveBorder: false,
+                isFocusable: false,
+              ),
+            ),
+          ),
+        ],
+      ),
+      body: ValueListenableBuilder<bool>(
+        valueListenable: isSearching,
+        builder: (context, searching, _) {
+          if (searching) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 30),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SizedBox(
+                    width: 15,
+                    height: 15,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: t.textColor,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    "Searching...",
+                    style: TextStyle(color: t.secondaryTextColor),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ValueListenableBuilder<bool>(
+            valueListenable: hasSearched,
+            builder: (context, searched, _) {
+              if (!searched) return const SizedBox.shrink();
+
+              // When no results found
+              if (collections.isEmpty && forms.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 24),
+                  child: Column(
+                    children: [
+                      Icon(
+                        HugeIconsStroke.folderOff,
+                        size: 40,
+                        color: t.secondaryTextColor.withOpacity(0.6),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        "No results found",
+                        style: TextStyle(
+                          color: t.secondaryTextColor.withOpacity(0.8),
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              }
+
+              // Otherwise show results
+              return SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (collections.isNotEmpty) ...[
+                      Text(
+                        "Collections",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: t.textColor,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...buildCollectionCards(collections, t, context),
+                      const SizedBox(height: 20),
+                    ],
+                    if (forms.isNotEmpty) ...[
+                      Text(
+                        "Forms",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: t.textColor,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...buildFormCards(forms, t, context),
+                    ],
+                  ],
+                ),
+              );
+            },
+          );
+        },
+      ),
+      actions: [],
+    ),
+  );
+}
+
+List<Widget> buildCollectionCards(
+    List<Collection> collections, theme t, BuildContext context) {
+  return collections.map((collection) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pop(context); // example: close dialog or open page
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: t.cardColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: t.border.withOpacity(0.6), width: 1),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              HugeIconsStroke.folder01,
+              color: t.textColor.withOpacity(0.9),
+              size: 18,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                collection.name,
+                style: TextStyle(
+                  color: t.textColor,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.start,
+
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: t.secondaryTextColor,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }).toList();
+}
+
+List<Widget> buildFormCards(
+    List<Form> forms, theme t, BuildContext context) {
+  return forms.map((form) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.pop(context);
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        decoration: BoxDecoration(
+          color: t.cardColor,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: t.border.withOpacity(0.6), width: 1),
+        ),
+        child: Row(
+          children: [
+            Icon(
+              HugeIconsStroke.file01,
+              color: t.textColor.withOpacity(0.9),
+              size: 18,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                form.title,
+                style: TextStyle(
+                  color: t.textColor,
+                  fontWeight: FontWeight.w500,
+                ),
+                textAlign: TextAlign.start,
+              ),
+            ),
+            Icon(
+              Icons.chevron_right,
+              color: t.secondaryTextColor,
+              size: 20,
+            ),
+          ],
+        ),
+      ),
+    );
+  }).toList();
 }
 
 // --------------------------------------------------------------------------
@@ -224,6 +511,7 @@ class ProfileTabsWidget extends StatefulWidget {
   @override
   State<ProfileTabsWidget> createState() => _ProfileTabsWidgetState();
 }
+
 class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
   // --------------------------------------------------------------------------
   // STATE VARIABLES
@@ -287,9 +575,12 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
           const SizedBox(height: 20),
           _buildNameFields(),
           const SizedBox(height: 10),
-          _buildEmailPasswordCard("Edit Email",verifyEmailType.updateEmail),
+          _buildEmailPasswordCard("Edit Email", verifyEmailType.updateEmail),
           const SizedBox(height: 10),
-          _buildEmailPasswordCard("Edit Password",verifyEmailType.updatePassword),
+          _buildEmailPasswordCard(
+            "Edit Password",
+            verifyEmailType.updatePassword,
+          ),
           const SizedBox(height: 20),
           FButton(
             onPress: () {
@@ -302,6 +593,7 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
       ),
     );
   }
+
   Widget _buildProfileImagePicker() {
     return InkWell(
       onTap: _handleImagePick,
@@ -348,17 +640,14 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
                   color: widget.t.accentColor,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.edit,
-                  size: 16,
-                  color: Colors.white,
-                ),
+                child: const Icon(Icons.edit, size: 16, color: Colors.white),
               ),
             ),
         ],
       ),
     );
   }
+
   Widget _buildNameFields() {
     return Row(
       children: [
@@ -382,7 +671,8 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
       ],
     );
   }
-  Widget _buildEmailPasswordCard(String text,verifyEmailType type) {
+
+  Widget _buildEmailPasswordCard(String text, verifyEmailType type) {
     return GestureDetector(
       onTap: () => _navigateToVerifyEmail(type),
       child: FCard.raw(
@@ -396,7 +686,11 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
-                child: Icon(HugeIconsStroke.edit04,color: widget.t.secondaryTextColor,size: 18,),
+                child: Icon(
+                  HugeIconsStroke.edit04,
+                  color: widget.t.secondaryTextColor,
+                  size: 18,
+                ),
               ),
             ],
           ),
@@ -472,6 +766,7 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
       ),
     );
   }
+
   // --------------------------------------------------------------------------
   // ACTION HANDLERS
   // --------------------------------------------------------------------------
@@ -491,6 +786,7 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
       }
     }
   }
+
   void _navigateToVerifyEmail(verifyEmailType type) {
     navigateTo(
       context,
@@ -502,6 +798,7 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
       false,
     );
   }
+
   Future<void> _showDeleteAccountDialog() async {
     return showDialogDeleteAccount(context, widget.t);
   }
@@ -578,7 +875,11 @@ Future showDialogDeleteAccount(BuildContext context, theme t) async {
 // --------------------------------------------------------------------------
 // DELETE collection DIALOG
 // --------------------------------------------------------------------------
-Future showDialogDeleteCollection(BuildContext context, theme t,Collection c) async {
+Future showDialogDeleteCollection(
+  BuildContext context,
+  theme t,
+  Collection c,
+) async {
   return dialogBuilder(
     context: context,
     builder: (context, style, animation) => FDialog(
@@ -591,7 +892,9 @@ Future showDialogDeleteCollection(BuildContext context, theme t,Collection c) as
       body: const Column(
         children: [
           SizedBox(height: 20),
-          Text("This action will permanently delete this collection, including all forms and subcollections inside it."          ),
+          Text(
+            "This action will permanently delete this collection, including all forms and subcollections inside it.",
+          ),
           SizedBox(height: 20),
         ],
       ),
@@ -642,7 +945,7 @@ Future showDialogDeleteCollection(BuildContext context, theme t,Collection c) as
 // --------------------------------------------------------------------------
 // DELETE form DIALOG
 // --------------------------------------------------------------------------
-Future showDialogDeleteForm(BuildContext context, theme t,Form f) async {
+Future showDialogDeleteForm(BuildContext context, theme t, Form f) async {
   return dialogBuilder(
     context: context,
     builder: (context, style, animation) => FDialog(

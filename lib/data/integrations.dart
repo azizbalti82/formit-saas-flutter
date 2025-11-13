@@ -1,5 +1,4 @@
 import '../backend/models/integration.dart';
-import '../widgets/cards.dart';
 
 final integrations = [
   Integration(

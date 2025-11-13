@@ -252,6 +252,7 @@ Widget customInput(
       int? maxLines,
       Color? backgroundColor,
       bool? haveBorder = true,
+      bool isEnabled=true, bool isFocusable=true,
     }) {
   final ValueNotifier<bool> obscure = ValueNotifier<bool>(isPassword);
 
@@ -259,6 +260,7 @@ Widget customInput(
     valueListenable: obscure,
     builder: (context, value, child) {
       return TextFormField(
+        enabled: isEnabled,
         controller: controller,
         obscureText: isPassword ? value : false,
         maxLines: isPassword
@@ -281,7 +283,11 @@ Widget customInput(
           return null;
         }
             : null,
+
         decoration: InputDecoration(
+          // 👇 remove hover/focus glow when not focusable
+          hoverColor: isFocusable ? null : Colors.transparent,
+          focusColor: isFocusable ? null : Colors.transparent,
           suffixIcon: isPassword
               ? IconButton(
             icon: Icon(

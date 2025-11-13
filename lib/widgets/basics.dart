@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:formbuilder/tools/tools.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 
@@ -65,3 +66,15 @@ Widget buildCancelIconButton(
 }
 
 
+Widget comingSoonImage(BuildContext context, {required double sizePercentage}) {
+  double screenHeight = MediaQuery.of(context).size.height;
+  double screenWidth = MediaQuery.of(context).size.width;
+
+  return Center(
+    child: SvgPicture.asset(
+      "assets/vectors/soon.svg",
+      height: isLandscape(context) ? screenHeight * 0.6 * sizePercentage : null,
+      width: isLandscape(context) ? null : screenWidth * sizePercentage,
+    ),
+  );
+}

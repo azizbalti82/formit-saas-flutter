@@ -1,16 +1,13 @@
 // ignore_for_file: file_names
 
-import 'dart:io';
-
 import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:flutter/material.dart' hide Form;
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:formbuilder/backend/models/account/user.dart';
+import 'package:formbuilder/screens/auth/intro.dart';
 import 'package:formbuilder/screens/home/previewForm.dart';
 import 'package:formbuilder/screens/home/widgets/dropList.dart';
-import 'package:formbuilder/screens/auth/intro.dart';
-import 'package:formbuilder/screens/auth/verifyEmail.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
@@ -18,17 +15,17 @@ import 'package:mesh_gradient/mesh_gradient.dart';
 
 import '../../backend/models/collection/collection.dart';
 import '../../backend/models/form/form.dart';
+import '../../backend/models/path.dart';
 import '../../data/constants.dart';
+import '../../data/fakedata.dart';
 import '../../main.dart';
 import '../../services/provider.dart';
 import '../../services/sharedPreferencesService.dart';
 import '../../services/themeService.dart';
 import '../../tools/tools.dart';
-import '../../widgets/complex.dart';
 import '../../widgets/dialogues.dart';
 import '../../widgets/menu.dart';
 import '../../widgets/messages.dart';
-import '../../backend/models/path.dart';
 import 'createForm.dart';
 
 // ============================================================================
@@ -62,31 +59,7 @@ class _AppScreenState extends State<AppScreen> {
   // --------------------------------------------------------------------------
   // FAKE DATA
   // --------------------------------------------------------------------------
-  final List<Collection> fakeCollections = [
-    // 🌳 Root collection
-    Collection(id: '1', name: 'Root', parentId: null),
 
-    // 📁 Level 1 (children of Root)
-    Collection(id: '2', name: 'Documents', parentId: '1'),
-    Collection(id: '3', name: 'Images', parentId: '1'),
-    Collection(id: '4', name: 'Videos', parentId: '1'),
-
-    // 🗂 Level 2 (children of Documents)
-    Collection(id: '5', name: 'Work', parentId: '2'),
-    Collection(id: '6', name: 'Personal', parentId: '2'),
-
-    // 🖼 Level 2 (children of Images)
-    Collection(id: '7', name: 'Travel', parentId: '3'),
-    Collection(id: '8', name: 'Family', parentId: '3'),
-
-    // 🎬 Level 2 (children of Videos)
-    Collection(id: '9', name: 'Projects', parentId: '4'),
-    Collection(id: '10', name: 'Tutorials', parentId: '4'),
-
-    // 📄 Level 3 (children of Work)
-    Collection(id: '11', name: 'Reports', parentId: '5'),
-    Collection(id: '12', name: 'Presentations', parentId: '5'),
-  ];
   // --------------------------------------------------------------------------
   // LIFECYCLE METHODS
   // --------------------------------------------------------------------------
@@ -192,7 +165,7 @@ class _AppScreenState extends State<AppScreen> {
           icon: HugeIconsStroke.search01,
           onClick: () {
             handleSideBarCloseMobile();
-            showMsg(Constants.notReadyMsg, context, t);
+            showDialogSearch(context,t);
           },
         ),
         menuItem(

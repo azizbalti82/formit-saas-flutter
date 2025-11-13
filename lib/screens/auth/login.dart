@@ -1,8 +1,6 @@
 // ignore_for_file: file_names
 import 'dart:async';
-import 'dart:ui';
 
-import 'package:blurrycontainer/blurrycontainer.dart';
 import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
