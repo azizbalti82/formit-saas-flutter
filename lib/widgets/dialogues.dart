@@ -873,6 +873,75 @@ Future showDialogDeleteAccount(BuildContext context, theme t) async {
 }
 
 // --------------------------------------------------------------------------
+// DELETE form screen DIALOG
+// --------------------------------------------------------------------------
+Future showDialogDeleteScreen(
+    BuildContext context,
+    theme t,
+    Function f,
+    ) async {
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      title: const Text(
+        'Are you absolutely sure?',
+        style: TextStyle(fontSize: 22),
+      ),
+      body: const Column(
+        children: [
+          SizedBox(height: 20),
+          Text(
+            "This action will permanently delete this screen.",
+          ),
+          SizedBox(height: 20),
+        ],
+      ),
+      actions: [
+        FButton(
+          onPress: () {
+            Navigator.of(context).pop();
+            f();
+          },
+          style: FButtonStyle(
+            decoration: FWidgetStateMap.all(
+              BoxDecoration(
+                color: Colors.red,
+                borderRadius: BorderRadius.circular(8),
+              ),
+            ),
+            contentStyle: FButtonContentStyle(
+              textStyle: FWidgetStateMap.all(
+                const TextStyle(color: Colors.white),
+              ),
+              iconStyle: FWidgetStateMap.all(
+                const IconThemeData(color: Colors.white),
+              ),
+            ),
+            iconContentStyle: FButtonIconContentStyle(
+              iconStyle: FWidgetStateMap.all(
+                const IconThemeData(color: Colors.white),
+              ),
+            ),
+            tappableStyle: FTappableStyle(),
+            focusedOutlineStyle: FFocusedOutlineStyle(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ).call,
+          child: const Text('Delete Screen'),
+        ),
+        FButton(
+          style: FButtonStyle.outline(),
+          onPress: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
+    ),
+  );
+}
+// --------------------------------------------------------------------------
 // DELETE collection DIALOG
 // --------------------------------------------------------------------------
 Future showDialogDeleteCollection(

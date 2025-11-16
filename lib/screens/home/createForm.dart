@@ -13,8 +13,9 @@ import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:split_view/split_view.dart';
+import '../../backend/models/form/Screen.dart';
 import '../../backend/models/form/form.dart';
-import '../../backend/models/form/formCustomization.dart';
+import '../../backend/models/form/screenCustomization.dart';
 import '../../data/constants.dart';
 import '../../main.dart';
 import '../../services/provider.dart';
@@ -22,6 +23,7 @@ import '../../services/themeService.dart';
 import '../../tools/tools.dart';
 import '../../widgets/basics.dart';
 import '../../widgets/cards.dart';
+import '../../widgets/dialogues.dart';
 import '../../widgets/form.dart';
 import '../../widgets/menu.dart';
 
@@ -30,6 +32,7 @@ enum PreviewSizes { phone, tablet, desktop }
 class CreatForm extends StatefulWidget {
   CreatForm({super.key, required this.t, required type});
   final theme t;
+
   @override
   State<CreatForm> createState() => _State();
 }
@@ -46,16 +49,22 @@ class _State extends State<CreatForm> {
   PreviewSizes previewSize = PreviewSizes.desktop;
   Uint8List? logoImageBytes;
   Uint8List? coverImageBytes;
-  PageCustomization pageCustomization = PageCustomization();
+  ScreenCustomization pageCustomization = ScreenCustomization();
   int _selectedSectionIndex = 0;
   SplitViewController splitController = SplitViewController(
     limits: [WeightLimit(min: 0.3, max: 0.7), null],
     weights: [0.7, 0.3],
   );
+
+  late Screen selectedScreen;
+  late List<Screen> screens;
+  late List<Screen> endings;
+
   // --------------------------------------------------------------------------
   // SERVICES
   // --------------------------------------------------------------------------
   final Provider provider = Get.find<Provider>();
+
   // --------------------------------------------------------------------------
   // LIFECYCLE METHODS
   // --------------------------------------------------------------------------
@@ -63,6 +72,9 @@ class _State extends State<CreatForm> {
   void initState() {
     super.initState();
     t = widget.t;
+    screens = [Screen.createRegularScreen("Screen_1")];
+    endings = [Screen.createEndingScreen("Ending_1")];
+    selectedScreen = screens.first;
   }
 
   @override
@@ -112,9 +124,9 @@ class _State extends State<CreatForm> {
     );
   }
 
-  // --------------------------------------------------------------------------
-  // LANDSCAPE BODY
-  // --------------------------------------------------------------------------
+  // ==========================================================================
+  // BODY LAYOUTS
+  // ==========================================================================
   Widget _buildLandscapeBody(double screenWidth, double screenHeight, theme t) {
     // Define aspect ratios depending on the selected preview size
     double aspectRatio;
@@ -191,18 +203,8 @@ class _State extends State<CreatForm> {
               ),
             ),
           ),
-        if (_selectedSectionIndex == 1)
-          sectionWorkflow(t: t),
+        if (_selectedSectionIndex == 1) sectionWorkflow(t: t),
       ],
-    );
-  }
-
-  Widget sectionWorkflow({required theme t}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      child: SizedBox(),
     );
   }
 
@@ -224,9 +226,18 @@ class _State extends State<CreatForm> {
     );
   }
 
-  // --------------------------------------------------------------------------
-  // UI COMPONENTS
-  // --------------------------------------------------------------------------
+  Widget sectionWorkflow({required theme t}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: SizedBox(),
+    );
+  }
+
+  // ==========================================================================
+  // APP BAR
+  // ==========================================================================
   PreferredSizeWidget _buildAppBar(theme theme) {
     return AppBar(
       backgroundColor: Colors.transparent,
@@ -236,236 +247,298 @@ class _State extends State<CreatForm> {
       title: LayoutBuilder(
         builder: (context, constraints) {
           return isLandscape(context)
-              ? Row(
-                  children: [
-                    buildCancelIconButton(t, context, isX: true),
-                    Spacer(),
-                    SizedBox(width: 10),
-                    FTooltip(
-                      tipBuilder: (context, controller) =>
-                          const Text('Preview'),
-                      child: IconButton(
-                        onPressed: _previewOnClick,
-                        icon: Icon(
-                          HugeIconsStroke.play,
-                          size: 22,
-                          color: t.textColor,
-                        ),
+              ? _buildLandscapeAppBarContent(theme)
+              : _buildPortraitAppBarContent(theme);
+        },
+      ),
+    );
+  }
+
+  Widget _buildLandscapeAppBarContent(theme theme) {
+    return Row(
+      children: [
+        buildCancelIconButton(t, context, isX: true),
+        Spacer(),
+        SizedBox(width: 10),
+        FTooltip(
+          tipBuilder: (context, controller) => const Text('Preview'),
+          child: IconButton(
+            onPressed: _previewOnClick,
+            icon: Icon(HugeIconsStroke.play, size: 22, color: t.textColor),
+          ),
+        ),
+        FTooltip(
+          tipBuilder: (context, controller) => const Text('FormIt Ai'),
+          child: IconButton(
+            onPressed: _aiOnClick,
+            icon: Icon(HugeIconsStroke.aiMagic, size: 20, color: t.textColor),
+          ),
+        ),
+        if (_selectedSectionIndex == 0) SizedBox(width: 8),
+        if (_selectedSectionIndex == 0)
+          FTooltip(
+            tipBuilder: (context, controller) => const Text('Screen Size'),
+            child: aspectRatioChanger(t),
+          ),
+        if (_selectedSectionIndex == 0) SizedBox(width: 8),
+        FTooltip(
+          tipBuilder: (context, controller) => const Text('Translation'),
+          child: IconButton(
+            onPressed: _translateOnClick,
+            icon: Icon(FIcons.languages, size: 17, color: t.textColor),
+          ),
+        ),
+        FTooltip(
+          tipBuilder: (context, controller) => const Text('Edit History'),
+          child: IconButton(
+            onPressed: _historyOnClick,
+            icon: Icon(
+              HugeIconsStroke.transactionHistory,
+              size: 19,
+              color: t.textColor,
+            ),
+          ),
+        ),
+        FTooltip(
+          tipBuilder: (context, controller) => const Text('Settings'),
+          child: IconButton(
+            onPressed: _settingsOnClick,
+            icon: Icon(
+              HugeIconsStroke.settings01,
+              size: 19,
+              color: t.textColor,
+            ),
+          ),
+        ),
+        if (_selectedSectionIndex == 0) SizedBox(width: 10),
+        if (_selectedSectionIndex == 0)
+          FButton.icon(
+            onPress: _screensOnClick,
+            style: FButtonStyle.outline(),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Screens",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: t.brightness == Brightness.light
+                        ? FontWeight.w600
+                        : FontWeight.w500,
+                    color: t.textColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        if (_selectedSectionIndex == 0) SizedBox(width: 10),
+        if (_selectedSectionIndex == 0)
+          FButton.icon(
+            onPress: _customizeOnClick,
+            style: FButtonStyle.outline(),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Customize",
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: t.brightness == Brightness.light
+                        ? FontWeight.w600
+                        : FontWeight.w500,
+                    color: t.textColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        SizedBox(width: 10),
+        FButton.icon(
+          onPress: _publishOnClick,
+          style: FButtonStyle.primary(),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              SizedBox(width: 4),
+              (isCreatingLoading)
+                  ? SizedBox(
+                      width: 10,
+                      height: 10,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: t.bgColor,
                       ),
+                    )
+                  : Icon(
+                      HugeIconsStroke.globe02,
+                      color: t.bgColor,
+                      size: 16,
+                      weight: 30,
                     ),
-                    FTooltip(
-                      tipBuilder: (context, controller) =>
-                          const Text('FormIt Ai'),
-                      child: IconButton(
-                        onPressed: _aiOnClick,
-                        icon: Icon(
-                          HugeIconsStroke.aiMagic,
-                          size: 20,
-                          color: t.textColor,
-                        ),
-                      ),
+              SizedBox(width: 10),
+              Text(
+                "Publish",
+                style: TextStyle(
+                  fontSize: 14,
+                  color: t.bgColor,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(width: 10),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildPortraitAppBarContent(theme theme) {
+    return Row(
+      children: [
+        buildCancelIconButton(t, context, isX: true),
+        Spacer(),
+        SizedBox(width: 10),
+        if (_selectedSectionIndex == 0) aspectRatioChanger(t),
+        if (_selectedSectionIndex == 0) SizedBox(width: 20),
+        CollectionPopupMenu(
+          icon: HugeIconsStroke.menu01,
+          iconColor: theme.textColor,
+          cardColor: theme.cardColor,
+          items: [
+            PopupMenuItemData(
+              onTap: _publishOnClick,
+              label: "Publish",
+              color: theme.accentColor,
+              icon: Icons.check_rounded,
+            ),
+            if (_selectedSectionIndex == 0)
+              PopupMenuItemData(
+                onTap: _customizeOnClick,
+                label: "Customize",
+                color: theme.textColor,
+                icon: HugeIconsStroke.edit03,
+              ),
+            if (_selectedSectionIndex == 0)
+              PopupMenuItemData(
+                onTap: _screensOnClick,
+                label: "Screens",
+                color: theme.textColor,
+                icon: HugeIconsStroke.smartPhone02,
+              ),
+            PopupMenuItemData(
+              onTap: _settingsOnClick,
+              label: "Settings",
+              color: theme.textColor,
+              icon: HugeIconsStroke.settings02,
+            ),
+            PopupMenuItemData(
+              onTap: _historyOnClick,
+              label: "History",
+              color: theme.textColor,
+              icon: HugeIconsStroke.transactionHistory,
+            ),
+            PopupMenuItemData(
+              onTap: _settingsOnClick,
+              label: "Translate",
+              color: theme.textColor,
+              icon: FIcons.languages,
+            ),
+            PopupMenuItemData(
+              onTap: _aiOnClick,
+              label: "Formit Ai",
+              color: theme.textColor,
+              icon: HugeIconsStroke.aiMagic,
+            ),
+            PopupMenuItemData(
+              onTap: _previewOnClick,
+              label: "Preview",
+              color: theme.textColor,
+              icon: HugeIconsStroke.play,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  // ==========================================================================
+  // SIDEBARS
+  // ==========================================================================
+
+  // --------------------------------------------------------------------------
+  // SCREENS SIDEBAR
+  // --------------------------------------------------------------------------
+  Widget _buildScreensSidebar(theme t) {
+    return Container(
+      width: 250,
+      margin: const EdgeInsets.only(right: 8, bottom: 12),
+      child: SplitView(
+        viewMode: SplitViewMode.Vertical,
+        controller: splitController,
+        indicator: SplitIndicator(
+          viewMode: SplitViewMode.Vertical,
+          color: t.border.withOpacity(0.4),
+        ),
+        activeIndicator: SplitIndicator(
+          viewMode: SplitViewMode.Vertical,
+          color: t.border,
+          isActive: true,
+        ),
+        gripColor: t.border.withOpacity(0),
+        gripColorActive: t.accentColor.withOpacity(0),
+        children: [
+          _buildSidebarSection(
+            title: "Screens",
+            t: t,
+            child: Column(
+              children: screens.map((s) => screenItemWidget(s, t)).toList(),
+            ),
+            footer: FButton.icon(
+              onPress: () {
+                setState(() {
+                  screens.add(
+                    Screen.createRegularScreen("Screen_${screens.length + 1}"),
+                  );
+                });
+              },
+              style: FButtonStyle.outline(),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  SizedBox(width: 4),
+                  Icon(HugeIconsStroke.add01, color: t.textColor, size: 16),
+                  SizedBox(width: 10),
+                  Text(
+                    "Add Screen",
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: t.textColor,
                     ),
-                    if (_selectedSectionIndex == 0)
-                      SizedBox(width: 8),
-                    if (_selectedSectionIndex == 0)
-                      FTooltip(
-                      tipBuilder: (context, controller) =>
-                          const Text('Screen Size'),
-                      child: aspectRatioChanger(t),
-                    ),
-                    if (_selectedSectionIndex == 0)
-                      SizedBox(width: 8),
-                    FTooltip(
-                      tipBuilder: (context, controller) =>
-                          const Text('Translation'),
-                      child: IconButton(
-                        onPressed: _translateOnClick,
-                        icon: Icon(
-                          FIcons.languages,
-                          size: 17,
-                          color: t.textColor,
-                        ),
-                      ),
-                    ),
-                    FTooltip(
-                      tipBuilder: (context, controller) =>
-                          const Text('Edit History'),
-                      child: IconButton(
-                        onPressed: _historyOnClick,
-                        icon: Icon(
-                          HugeIconsStroke.transactionHistory,
-                          size: 19,
-                          color: t.textColor,
-                        ),
-                      ),
-                    ),
-                    FTooltip(
-                      tipBuilder: (context, controller) =>
-                          const Text('Settings'),
-                      child: IconButton(
-                        onPressed: _settingsOnClick,
-                        icon: Icon(
-                          HugeIconsStroke.settings01,
-                          size: 19,
-                          color: t.textColor,
-                        ),
-                      ),
-                    ),
-                    if (_selectedSectionIndex == 0) SizedBox(width: 10),
-                    if (_selectedSectionIndex == 0)
-                      FButton.icon(
-                        onPress: _screensOnClick,
-                        style: FButtonStyle.outline(),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Screens",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: t.brightness == Brightness.light
-                                    ? FontWeight.w600
-                                    : FontWeight.w500,
-                                color: t.textColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (_selectedSectionIndex == 0) SizedBox(width: 10),
-                    if (_selectedSectionIndex == 0)
-                      FButton.icon(
-                        onPress: _customizeOnClick,
-                        style: FButtonStyle.outline(),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Customize",
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: t.brightness == Brightness.light
-                                    ? FontWeight.w600
-                                    : FontWeight.w500,
-                                color: t.textColor,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    SizedBox(width: 10),
-                    FButton.icon(
-                      onPress: _publishOnClick,
-                      style: FButtonStyle.primary(),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          SizedBox(width: 4),
-                          (isCreatingLoading)
-                              ? SizedBox(
-                                  width: 10,
-                                  height: 10,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2,
-                                    color: t.bgColor,
-                                  ),
-                                )
-                              : Icon(
-                                  HugeIconsStroke.globe02,
-                                  color: t.bgColor,
-                                  size: 16,
-                                  weight: 30,
-                                ),
-                          SizedBox(width: 10),
-                          Text(
-                            "Publish",
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: t.bgColor,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                        ],
-                      ),
-                    ),
-                  ],
-                )
-              : Row(
-                  children: [
-                    buildCancelIconButton(t, context, isX: true),
-                    Spacer(),
-                    SizedBox(width: 10),
-                    if (_selectedSectionIndex == 0)
-                      aspectRatioChanger(t),
-                    if (_selectedSectionIndex == 0)
-                      SizedBox(width: 20),
-                    CollectionPopupMenu(
-                      icon: HugeIconsStroke.menu01,
-                      iconColor: theme.textColor,
-                      cardColor: theme.cardColor,
-                      items: [
-                        PopupMenuItemData(
-                          onTap: _publishOnClick,
-                          label: "Publish",
-                          color: theme.accentColor,
-                          icon: Icons.check_rounded,
-                        ),
-                        if (_selectedSectionIndex == 0)
-                          PopupMenuItemData(
-                            onTap: _customizeOnClick,
-                            label: "Customize",
-                            color: theme.textColor,
-                            icon: HugeIconsStroke.edit03,
-                          ),
-                        if (_selectedSectionIndex == 0)
-                          PopupMenuItemData(
-                            onTap: _screensOnClick,
-                            label: "Screens",
-                            color: theme.textColor,
-                            icon: HugeIconsStroke.smartPhone02,
-                          ),
-                        PopupMenuItemData(
-                          onTap: _settingsOnClick,
-                          label: "Settings",
-                          color: theme.textColor,
-                          icon: HugeIconsStroke.settings02,
-                        ),
-                        PopupMenuItemData(
-                          onTap: _historyOnClick,
-                          label: "History",
-                          color: theme.textColor,
-                          icon: HugeIconsStroke.transactionHistory,
-                        ),
-                        PopupMenuItemData(
-                          onTap: _settingsOnClick,
-                          label: "Translate",
-                          color: theme.textColor,
-                          icon: FIcons.languages,
-                        ),
-                        PopupMenuItemData(
-                          onTap: _aiOnClick,
-                          label: "Formit Ai",
-                          color: theme.textColor,
-                          icon: HugeIconsStroke.aiMagic,
-                        ),
-                        PopupMenuItemData(
-                          onTap: _previewOnClick,
-                          label: "Preview",
-                          color: theme.textColor,
-                          icon: HugeIconsStroke.play,
-                        ),
-                      ],
-                    ),
-                  ],
-                );
+                  ),
+                  SizedBox(width: 10),
+                ],
+              ),
+            ),
+          ),
+          _buildSidebarSection(
+            title: "Endings",
+            t: t,
+            child: Column(
+              children: endings.map((s) => screenItemWidget(s, t)).toList(),
+            ),
+            footer: SizedBox(),
+          ),
+        ],
+        onWeightChanged: (weights) {
+          print("Vertical Split Weights: $weights");
         },
       ),
     );
   }
 
   // --------------------------------------------------------------------------
-  // SIDEBAR
+  // CUSTOMIZE SIDEBAR
   // --------------------------------------------------------------------------
   Widget _buildCustomizeSidebar(theme t) {
     return Container(
@@ -484,6 +557,21 @@ class _State extends State<CreatForm> {
           children: [
             Row(
               children: [
+                Icon(
+                  selectedScreen.isEnding
+                      ? HugeIconsSolid.changeScreenMode
+                      : HugeIconsStroke.changeScreenMode,
+                  size: 20,
+                  color: t.textColor,
+                ),
+                SizedBox(width: 5),
+                Text(
+                  selectedScreen.id,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                    color: t.textColor,
+                  ),
+                ),
                 Spacer(),
                 buildCancelIconButton(
                   t,
@@ -498,6 +586,7 @@ class _State extends State<CreatForm> {
                 ),
               ],
             ),
+            SizedBox(height: 15),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -670,67 +759,6 @@ class _State extends State<CreatForm> {
     );
   }
 
-  Widget _buildScreensSidebar(theme t) {
-    return Expanded(
-      child: Container(
-        width: 250,
-        margin: const EdgeInsets.only(right: 8, bottom: 12),
-        child: SplitView(
-          viewMode: SplitViewMode.Vertical,
-          controller: splitController,
-          indicator: SplitIndicator(
-            viewMode: SplitViewMode.Vertical,
-            color: t.border.withOpacity(0.4),
-          ),
-          activeIndicator: SplitIndicator(
-            viewMode: SplitViewMode.Vertical,
-            color: t.border,
-            isActive: true,
-          ),
-          gripColor: t.border.withOpacity(0),
-          gripColorActive: t.accentColor.withOpacity(0),
-          children: [
-            _buildSidebarSection(
-              title: "Screens",
-              t: t,
-              child: Column(children: []),
-              footer: FButton.icon(
-                onPress: () {},
-                style: FButtonStyle.outline(),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 4),
-                    Icon(HugeIconsStroke.add01, color: t.textColor, size: 16),
-                    SizedBox(width: 10),
-                    Text(
-                      "Add Screen",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: t.textColor,
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                  ],
-                ),
-              ),
-            ),
-            _buildSidebarSection(
-              title: "Endings",
-              t: t,
-              child: Column(children: []),
-              footer: SizedBox(),
-            ),
-          ],
-          onWeightChanged: (weights) {
-            print("Vertical Split Weights: $weights");
-          },
-        ),
-      ),
-    );
-  }
-
   Widget _buildSidebarSection({
     required String title,
     required theme t,
@@ -755,9 +783,9 @@ class _State extends State<CreatForm> {
                   Row(
                     children: [
                       Text(
-                        title,
+                        "$title (${(title != "Screens") ? endings.length : screens.length})",
                         style: TextStyle(
-                          fontWeight: FontWeight.w600,
+                          fontWeight: FontWeight.w700,
                           color: t.textColor,
                         ),
                       ),
@@ -767,12 +795,23 @@ class _State extends State<CreatForm> {
                           width: 24,
                           height: 24,
                           child: IconButton(
-                            onPressed: () {},
-                            icon: Icon(HugeIconsSolid.addCircle, size: 24),
+                            onPressed: () {
+                              setState(() {
+                                endings.add(
+                                  Screen.createEndingScreen(
+                                    "Ending_${endings.length + 1}",
+                                  ),
+                                );
+                              });
+                            },
+                            icon: Icon(
+                              HugeIconsSolid.addCircle,
+                              size: 24,
+                              color: t.textColor,
+                            ),
                             padding: EdgeInsets.zero,
-                            alignment: Alignment
-                                .center, // 👈 ensures perfect centering
-                            splashRadius: 24, // optional: keeps ripple tight
+                            alignment: Alignment.center,
+                            splashRadius: 24,
                           ),
                         )
                       else
@@ -797,6 +836,92 @@ class _State extends State<CreatForm> {
           ),
           footer,
         ],
+      ),
+    );
+  }
+
+  Widget screenItemWidget(Screen s, theme t) {
+    return FTappable(
+      style: FTappableStyle(),
+      semanticsLabel: 'Forms Collection',
+      selected: false,
+      autofocus: false,
+      behavior: HitTestBehavior.translucent,
+      onPress: () {
+        setState(() {
+          selectedScreen = s;
+        });
+      },
+      builder: (context, state, child) => child!,
+      child: Container(
+        decoration: BoxDecoration(
+          color: (selectedScreen.id == s.id) ? t.textColor : Colors.transparent,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        margin: EdgeInsets.only(bottom: 5),
+        padding: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        child: Row(
+          children: [
+            Icon(
+              s.isEnding
+                  ? HugeIconsSolid.changeScreenMode
+                  : HugeIconsStroke.changeScreenMode,
+              size: 20,
+              color: (selectedScreen.id == s.id) ? t.bgColor : t.textColor,
+            ),
+            SizedBox(width: 5),
+            Text(
+              s.id,
+              style: TextStyle(
+                color: (selectedScreen.id == s.id) ? t.bgColor : t.textColor,
+              ),
+            ),
+            Spacer(),
+            CollectionPopupMenu(
+              iconColor: (selectedScreen.id == s.id) ? t.bgColor : t.textColor,
+              cardColor: t.cardColor,
+              iconSize: 18,
+              items: [
+                PopupMenuItemData(
+                  onTap: () {
+                    setState(() {});
+                  },
+                  label: "Duplicate",
+                  color: t.textColor,
+                  icon: HugeIconsStroke.copy02,
+                ),
+                if(s.isEnding&&endings.length>1 || !s.isEnding&&screens.length>1)
+                PopupMenuItemData(
+                  onTap: () {
+                    if (s.isEnding) {
+                      showDialogDeleteScreen(context, t, () {
+                        setState(() {
+                          endings.remove(s);
+                          //check if nothing is selected select the first one
+                          if(s.id==selectedScreen.id){
+                            selectedScreen = endings.first;
+                          }
+                        });
+                      });
+                    } else {
+                      showDialogDeleteScreen(context, t, () {
+                        setState(() {
+                          screens.remove(s);
+                          if(s.id==selectedScreen.id){
+                            selectedScreen = screens.first;
+                          }
+                        });
+                      });
+                    }
+                  },
+                  label: "Delete",
+                  color: t.errorColor,
+                  icon: HugeIconsStroke.delete01,
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -965,9 +1090,63 @@ class _State extends State<CreatForm> {
     );
   }
 
+  // ==========================================================================
+  // UTILITY WIDGETS
+  // ==========================================================================
+
   // --------------------------------------------------------------------------
+  // ASPECT RATIO CHANGER
+  // --------------------------------------------------------------------------
+  aspectRatioChanger(theme theme) {
+    return CollectionPopupMenu(
+      icon: (previewSize == PreviewSizes.phone)
+          ? HugeIconsStroke.smartPhone01
+          : (previewSize == PreviewSizes.tablet)
+          ? HugeIconsStroke.tablet01
+          : (previewSize == PreviewSizes.desktop)
+          ? HugeIconsStroke.laptop
+          : HugeIconsStroke.laptop,
+      iconColor: theme.textColor,
+      cardColor: theme.cardColor,
+      iconSize: 18,
+      items: [
+        PopupMenuItemData(
+          onTap: () {
+            setState(() {
+              previewSize = PreviewSizes.phone;
+            });
+          },
+          label: "Phone",
+          color: theme.textColor,
+          icon: HugeIconsStroke.smartPhone01,
+        ),
+        PopupMenuItemData(
+          onTap: () {
+            setState(() {
+              previewSize = PreviewSizes.tablet;
+            });
+          },
+          label: "Tablet",
+          color: theme.textColor,
+          icon: HugeIconsStroke.tablet01,
+        ),
+        PopupMenuItemData(
+          onTap: () {
+            setState(() {
+              previewSize = PreviewSizes.desktop;
+            });
+          },
+          label: "Desktop",
+          color: theme.textColor,
+          icon: HugeIconsStroke.laptop,
+        ),
+      ],
+    );
+  }
+
+  // ==========================================================================
   // ACTION HANDLERS
-  // --------------------------------------------------------------------------
+  // ==========================================================================
   _publishOnClick() async {
     //prevent clicking if its already trying to create your form
     if (isCreatingLoading) return;
@@ -1018,52 +1197,5 @@ class _State extends State<CreatForm> {
 
   _historyOnClick() {
     showMsg("history", context, t);
-  }
-
-  aspectRatioChanger(theme theme) {
-    return CollectionPopupMenu(
-      icon: (previewSize == PreviewSizes.phone)
-          ? HugeIconsStroke.smartPhone01
-          : (previewSize == PreviewSizes.tablet)
-          ? HugeIconsStroke.tablet01
-          : (previewSize == PreviewSizes.desktop)
-          ? HugeIconsStroke.laptop
-          : HugeIconsStroke.laptop,
-      iconColor: theme.textColor,
-      cardColor: theme.cardColor,
-      iconSize: 18,
-      items: [
-        PopupMenuItemData(
-          onTap: () {
-            setState(() {
-              previewSize = PreviewSizes.phone;
-            });
-          },
-          label: "Phone",
-          color: theme.textColor,
-          icon: HugeIconsStroke.smartPhone01,
-        ),
-        PopupMenuItemData(
-          onTap: () {
-            setState(() {
-              previewSize = PreviewSizes.tablet;
-            });
-          },
-          label: "Tablet",
-          color: theme.textColor,
-          icon: HugeIconsStroke.tablet01,
-        ),
-        PopupMenuItemData(
-          onTap: () {
-            setState(() {
-              previewSize = PreviewSizes.desktop;
-            });
-          },
-          label: "Desktop",
-          color: theme.textColor,
-          icon: HugeIconsStroke.laptop,
-        ),
-      ],
-    );
   }
 }

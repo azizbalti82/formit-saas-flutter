@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
-class PageCustomization {
+class ScreenCustomization {
   // Colors
   String backgroundColor;
   String textColor;
@@ -25,7 +25,7 @@ class PageCustomization {
   Uint8List? coverImageBytes;
   String coverHeight;
 
-  PageCustomization({
+  ScreenCustomization({
     this.backgroundColor = "#ffffff",
     this.textColor = "#0000ff",
     this.accentColor = "#ff0000",
@@ -64,8 +64,8 @@ class PageCustomization {
   }
 
   // Create from JSON
-  factory PageCustomization.fromJson(Map<String, dynamic> json) {
-    return PageCustomization(
+  factory ScreenCustomization.fromJson(Map<String, dynamic> json) {
+    return ScreenCustomization(
       backgroundColor: json['backgroundColor'] ?? "#ffffff",
       textColor: json['textColor'] ?? "#0000ff",
       accentColor: json['accentColor'] ?? "#ff0000",
@@ -83,7 +83,7 @@ class PageCustomization {
   }
 
   // Create a copy with modifications
-  PageCustomization copyWith({
+  ScreenCustomization copyWith({
     String? backgroundColor,
     String? textColor,
     String? accentColor,
@@ -100,7 +100,7 @@ class PageCustomization {
     Uint8List? coverImageBytes,
     String? coverHeight,
   }) {
-    return PageCustomization(
+    return ScreenCustomization(
       backgroundColor: backgroundColor ?? this.backgroundColor,
       textColor: textColor ?? this.textColor,
       accentColor: accentColor ?? this.accentColor,
