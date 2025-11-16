@@ -19,7 +19,7 @@ import '../../widgets/form.dart';
 import '../../widgets/menu.dart';
 import '../../widgets/table.dart';
 
-enum PreviewFormSections { responses, insights, share, settings }
+enum PreviewFormSections { responses, insights, share, integrations }
 
 class PreviewForm extends StatefulWidget {
   PreviewForm({super.key, required this.t, this.goTo, required this.f});
@@ -54,7 +54,7 @@ class _State extends State<PreviewForm> {
     super.initState();
     t = widget.t;
     f = widget.f;
-    _selectedSectionIndex = 0;
+    _selectedSectionIndex = widget.goTo==PreviewFormSections.insights? 1 :widget.goTo==PreviewFormSections.share? 2 :widget.goTo==PreviewFormSections.integrations? 3 :0;
     _selectedSubmissionsTypeIndex = 0;
 
     formUrlController = TextEditingController(

@@ -41,14 +41,15 @@ class Screen {
   bool isEnding;
   EndingSettings? endingSettings;
   ScreenCustomization screenCustomization;
+  Workflow workflow;
 
   Screen({
     required this.id,
     this.isEnding = false,
     this.endingSettings,
     ScreenCustomization? screenCustomization,
+    required this.workflow,
   }) : screenCustomization = screenCustomization ?? ScreenCustomization() {
-    // If this is an ending screen, ensure endingSettings exists
     if (isEnding && endingSettings == null) {
       endingSettings = EndingSettings();
     }
@@ -61,6 +62,9 @@ class Screen {
       'isEnding': isEnding,
       'endingSettings': endingSettings?.toJson(),
       'ScreenCustomization': screenCustomization.toJson(),
+
+      /// NEW FIELD ↓↓↓
+      'workflow': workflow.toJson(),
     };
   }
 
@@ -75,6 +79,9 @@ class Screen {
       screenCustomization: json['ScreenCustomization'] != null
           ? ScreenCustomization.fromJson(json['ScreenCustomization'])
           : null,
+
+      /// NEW FIELD ↓↓↓
+      workflow:  Workflow.fromJson(json['workflow'])
     );
   }
 
@@ -84,40 +91,100 @@ class Screen {
     bool? isEnding,
     EndingSettings? endingSettings,
     ScreenCustomization? screenCustomization,
+
+    /// NEW FIELD ↓↓↓
+    Workflow? workflow,
   }) {
     return Screen(
       id: id ?? this.id,
       isEnding: isEnding ?? this.isEnding,
       endingSettings: endingSettings ?? this.endingSettings,
       screenCustomization: screenCustomization ?? this.screenCustomization,
+
+      /// NEW FIELD ↓↓↓
+      workflow: workflow ?? this.workflow,
     );
   }
 
-  // Helper method to validate screen
   bool isValid() {
-    // If it's an ending screen, endingSettings must be present
     if (isEnding && endingSettings == null) {
       return false;
     }
     return true;
   }
 
-  // Helper method to create a default regular screen
-  static Screen createRegularScreen(String id) {
+  static Screen createRegularScreen(String id,int index) {
     return Screen(
       id: id,
       isEnding: false,
       screenCustomization: ScreenCustomization(),
+      workflow: Workflow(position: Offset(200.0*index,0), connects: null),
     );
   }
 
-  // Helper method to create a default ending screen
-  static Screen createEndingScreen(String id, {bool isRedirect = false}) {
+  static Screen createEndingScreen(String id, {bool isRedirect = false,required int index}) {
     return Screen(
       id: id,
       isEnding: true,
       endingSettings: EndingSettings(isRedirect: isRedirect),
       screenCustomization: ScreenCustomization(),
+      workflow: Workflow(position: Offset(200.0*index,200), connects: null),
     );
   }
 }
+
+class Connect {
+  final String screenId;            // the screen this node connects TO
+
+  Connect({
+    required this.screenId,
+  });
+
+  // You can add a toMap/fromMap if you will save it in Firestore or Hive
+  Map<String, dynamic> toMap() {
+    return {
+      'screenId': screenId,
+    };
+  }
+
+  factory Connect.fromMap(Map<String, dynamic> map) {
+    return Connect(
+      screenId: map['screenId'],
+    );
+  }
+}
+
+class Workflow {
+  Offset position;
+  List<Connect> connects;
+
+  Workflow({
+    required this.position,
+    List<Connect>? connects,
+  }) : connects = connects ?? [];
+
+  Map<String, dynamic> toJson() {
+    return {
+      'position': {
+        'dx': position.dx,
+        'dy': position.dy,
+      },
+      'connects': connects.map((c) => c.toMap()).toList(),
+    };
+  }
+
+  factory Workflow.fromJson(Map<String, dynamic> json) {
+    return Workflow(
+      position: Offset(
+        json['position']['dx'],
+        json['position']['dy'],
+      ),
+      connects: (json['connects'] as List<dynamic>?)
+          ?.map((e) => Connect.fromMap(e))
+          .toList()
+          ?? [],
+    );
+  }
+}
+
+

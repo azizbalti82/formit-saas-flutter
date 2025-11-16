@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
@@ -252,7 +253,11 @@ Widget customInput(
       int? maxLines,
       Color? backgroundColor,
       bool? haveBorder = true,
-      bool isEnabled=true, bool isFocusable=true,
+      bool isEnabled = true,
+      bool isFocusable = true,
+      bool isNum = false,       // new
+      int? minNum,              // new
+      int? maxNum,              // new
     }) {
   final ValueNotifier<bool> obscure = ValueNotifier<bool>(isPassword);
 
@@ -263,12 +268,29 @@ Widget customInput(
         enabled: isEnabled,
         controller: controller,
         obscureText: isPassword ? value : false,
-        maxLines: isPassword
-            ? 1
-            : (maxLines ?? 2),
+        maxLines: isPassword ? 1 : (maxLines ?? 2),
         minLines: 1,
         style: TextStyle(color: theme.textColor),
-        keyboardType: isEmail ? TextInputType.emailAddress : TextInputType.text,
+        keyboardType: isNum
+            ? TextInputType.number
+            : isEmail
+            ? TextInputType.emailAddress
+            : TextInputType.text,
+        inputFormatters: isNum
+            ? [
+          FilteringTextInputFormatter.digitsOnly,
+          if (minNum != null || maxNum != null)
+            TextInputFormatter.withFunction((oldValue, newValue) {
+              if (newValue.text.isEmpty) return newValue;
+              final intValue = int.tryParse(newValue.text) ?? 0;
+              if ((minNum != null && intValue < minNum!) ||
+                  (maxNum != null && intValue > maxNum!)) {
+                return oldValue;
+              }
+              return newValue;
+            }),
+        ]
+            : null,
         autovalidateMode: isEmail ? AutovalidateMode.onUserInteraction : null,
         validator: isEmail
             ? (val) {
@@ -276,16 +298,14 @@ Widget customInput(
             return "Please enter your email";
           }
           final emailRegex =
-          RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$"); // basic email validation
+          RegExp(r"^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$");
           if (!emailRegex.hasMatch(val)) {
             return "Enter a valid email";
           }
           return null;
         }
             : null,
-
         decoration: InputDecoration(
-          // 👇 remove hover/focus glow when not focusable
           hoverColor: isFocusable ? null : Colors.transparent,
           focusColor: isFocusable ? null : Colors.transparent,
           suffixIcon: isPassword
@@ -303,35 +323,47 @@ Widget customInput(
             color: theme.secondaryTextColor.withOpacity(0.4),
           ),
           filled: true,
-          fillColor: backgroundColor?? theme.cardColor,
+          fillColor: backgroundColor ?? theme.cardColor,
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 16.0,
             vertical: 16.0,
           ),
-          border: haveBorder!=null&&haveBorder? OutlineInputBorder(
+          border: haveBorder != null && haveBorder
+              ? OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: theme.border, width: 1),
-          ) : InputBorder.none, // Set to InputBorder.none when no border
-          enabledBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
+          )
+              : InputBorder.none,
+          enabledBorder: haveBorder != null && haveBorder
+              ? OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: theme.border, width: 1),
-          ) : InputBorder.none, // Set to InputBorder.none when no border
-          focusedBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
+          )
+              : InputBorder.none,
+          focusedBorder: haveBorder != null && haveBorder
+              ? OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: theme.border, width: 1),
-          ) : InputBorder.none, // Set to InputBorder.none when no border
-          errorBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
+          )
+              : InputBorder.none,
+          errorBorder: haveBorder != null && haveBorder
+              ? OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: Colors.red, width: 1),
-          ) : InputBorder.none, // Add this for error state
-          focusedErrorBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
+          )
+              : InputBorder.none,
+          focusedErrorBorder: haveBorder != null && haveBorder
+              ? OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: Colors.red, width: 1),
-          ) : InputBorder.none, // Add this for focused error state
-          disabledBorder: haveBorder!=null&&haveBorder? OutlineInputBorder(
+          )
+              : InputBorder.none,
+          disabledBorder: haveBorder != null && haveBorder
+              ? OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
             borderSide: BorderSide(color: theme.border, width: 1),
-          ) : InputBorder.none, // Add this for disabled state
+          )
+              : InputBorder.none,
         ),
         textAlignVertical: TextAlignVertical.center,
       );

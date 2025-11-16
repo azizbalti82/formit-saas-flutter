@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 class ScreenCustomization {
-  // Colors
   String backgroundColor;
   String textColor;
   String accentColor;
@@ -10,40 +9,36 @@ class ScreenCustomization {
   String buttonBackgroundColor;
   String buttonTextColor;
 
-  // Page
   String fontFamily;
-  String fontSize;
-  String pageWidth;
+  int fontSize;
+  int pageWidth;
 
-  // Logo
   Uint8List? logoImageBytes;
-  String logoWidth;
-  String logoHeight;
-  String logoRound;
+  int logoWidth;
+  int logoHeight;
+  int logoRound;
 
-  // Cover
   Uint8List? coverImageBytes;
-  String coverHeight;
+  int coverHeight;     // now INT (50 instead of "50%")
 
   ScreenCustomization({
-    this.backgroundColor = "#ffffff",
-    this.textColor = "#0000ff",
-    this.accentColor = "#ff0000",
-    this.borderColor = "#0000ff",
-    this.buttonBackgroundColor = "#ff0000",
-    this.buttonTextColor = "#0000ff",
+    this.backgroundColor = "ffffffff",
+    this.textColor = "ff000000",
+    this.accentColor = "ff2196f3",
+    this.borderColor = "ffcccccc",
+    this.buttonBackgroundColor = "ff4caf50",
+    this.buttonTextColor = "ffffffff",
     this.fontFamily = "Arial",
-    this.fontSize = "20px",
-    this.pageWidth = "800px",
+    this.fontSize = 20,
+    this.pageWidth = 800,
     this.logoImageBytes,
-    this.logoWidth = "300px",
-    this.logoHeight = "200px",
-    this.logoRound = "5px",
+    this.logoWidth = 300,
+    this.logoHeight = 200,
+    this.logoRound = 5,
     this.coverImageBytes,
-    this.coverHeight = "50%",
+    this.coverHeight = 50, // default 50
   });
 
-  // Convert to JSON for storage/API
   Map<String, dynamic> toJson() {
     return {
       'backgroundColor': backgroundColor,
@@ -59,30 +54,27 @@ class ScreenCustomization {
       'logoHeight': logoHeight,
       'logoRound': logoRound,
       'coverHeight': coverHeight,
-      // Note: Images should be handled separately (uploaded to storage)
     };
   }
 
-  // Create from JSON
   factory ScreenCustomization.fromJson(Map<String, dynamic> json) {
     return ScreenCustomization(
-      backgroundColor: json['backgroundColor'] ?? "#ffffff",
-      textColor: json['textColor'] ?? "#0000ff",
-      accentColor: json['accentColor'] ?? "#ff0000",
-      borderColor: json['borderColor'] ?? "#0000ff",
-      buttonBackgroundColor: json['buttonBackgroundColor'] ?? "#ff0000",
-      buttonTextColor: json['buttonTextColor'] ?? "#0000ff",
+      backgroundColor: json['backgroundColor'] ?? "ffffffff",
+      textColor: json['textColor'] ?? "ff000000",
+      accentColor: json['accentColor'] ?? "ff2196f3",
+      borderColor: json['borderColor'] ?? "ffcccccc",
+      buttonBackgroundColor: json['buttonBackgroundColor'] ?? "ff4caf50",
+      buttonTextColor: json['buttonTextColor'] ?? "ffffffff",
       fontFamily: json['fontFamily'] ?? "Arial",
-      fontSize: json['fontSize'] ?? "20px",
-      pageWidth: json['pageWidth'] ?? "800px",
-      logoWidth: json['logoWidth'] ?? "300px",
-      logoHeight: json['logoHeight'] ?? "200px",
-      logoRound: json['logoRound'] ?? "5px",
-      coverHeight: json['coverHeight'] ?? "50%",
+      fontSize: (json['fontSize'] ?? 20) as int,
+      pageWidth: (json['pageWidth'] ?? 800) as int,
+      logoWidth: (json['logoWidth'] ?? 300) as int,
+      logoHeight: (json['logoHeight'] ?? 200) as int,
+      logoRound: (json['logoRound'] ?? 5) as int,
+      coverHeight: (json['coverHeight'] ?? 50) as int,
     );
   }
 
-  // Create a copy with modifications
   ScreenCustomization copyWith({
     String? backgroundColor,
     String? textColor,
@@ -91,14 +83,14 @@ class ScreenCustomization {
     String? buttonBackgroundColor,
     String? buttonTextColor,
     String? fontFamily,
-    String? fontSize,
-    String? pageWidth,
+    int? fontSize,
+    int? pageWidth,
     Uint8List? logoImageBytes,
-    String? logoWidth,
-    String? logoHeight,
-    String? logoRound,
+    int? logoWidth,
+    int? logoHeight,
+    int? logoRound,
     Uint8List? coverImageBytes,
-    String? coverHeight,
+    int? coverHeight,
   }) {
     return ScreenCustomization(
       backgroundColor: backgroundColor ?? this.backgroundColor,
@@ -119,7 +111,6 @@ class ScreenCustomization {
     );
   }
 
-  // Helper methods to convert string to Color
   Color get backgroundColorValue => _hexToColor(backgroundColor);
   Color get textColorValue => _hexToColor(textColor);
   Color get accentColorValue => _hexToColor(accentColor);
@@ -128,9 +119,7 @@ class ScreenCustomization {
   Color get buttonTextColorValue => _hexToColor(buttonTextColor);
 
   static Color _hexToColor(String hexString) {
-    final buffer = StringBuffer();
-    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
-    buffer.write(hexString.replaceFirst('#', ''));
-    return Color(int.parse(buffer.toString(), radix: 16));
+    final clean = hexString.replaceFirst('#', '');
+    return Color(int.parse(clean, radix: 16));
   }
 }

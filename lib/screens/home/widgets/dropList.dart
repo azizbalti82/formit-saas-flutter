@@ -27,8 +27,10 @@ class ItemsViewType extends StatelessWidget {
 }
 
 class FontFamilySelector extends StatelessWidget {
-  FontFamilySelector({super.key});
+  FontFamilySelector({super.key,required this.f, required this.selectedValue});
 
+  final Function(String value) f;
+  final String selectedValue;
   final Provider provider = Get.find<Provider>();
   final fonts = [
     'Roboto',
@@ -47,7 +49,7 @@ class FontFamilySelector extends StatelessWidget {
   Widget build(BuildContext context) => SizedBox(
     width: 150,
     child: FSelect<String>(
-      hint: "Roboto",//provider.currentFont.value,
+      hint: selectedValue,
       format: (s) => s,
       children: [
         for (final font in fonts)
@@ -56,9 +58,10 @@ class FontFamilySelector extends StatelessWidget {
             font,
           )
       ],
-      onChange: (value) {
-        //provider.currentFont.value = value;
-        //SharedPrefService.saveFont(value);
+      onChange: (v){
+        if(v!=null){
+          f(v);
+        }
       },
     ),
   );

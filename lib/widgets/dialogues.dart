@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart' hide Form;
 import 'package:flutter/material.dart' hide Form;
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:formbuilder/data/fakedata.dart';
 import 'package:formbuilder/services/themeService.dart';
@@ -1067,6 +1068,115 @@ Future showDialogDeleteForm(BuildContext context, theme t, Form f) async {
           ).call,
           child: const Text('Delete Form'),
         ),
+        FButton(
+          style: FButtonStyle.outline(),
+          onPress: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
+    ),
+  );
+}
+
+Future showDialogColorPicker(
+    BuildContext context,
+    theme t,
+    Color currentColor,
+    Function(Color) onColorSelected,
+    ) async {
+  Color tempColor = currentColor;
+
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      body: Column(
+        children: [
+          const SizedBox(height: 20),
+          // The Color Picker
+          Material(
+            color: Colors.transparent,
+            child: ColorPicker(
+              pickerColor: currentColor,
+              onColorChanged: (c) => tempColor = c,
+              enableAlpha: false,
+              labelTypes: const [],
+              pickerAreaBorderRadius: BorderRadius.circular(10),
+              portraitOnly: true,
+              hexInputBar: true,
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+      actions: [
+        // Confirm Button
+        FButton(
+          onPress: () {
+            onColorSelected(tempColor);
+            Navigator.of(context).pop();
+          },
+          style: FButtonStyle.primary(),
+          child: const Text('Select Color'),
+        ),
+
+        // Cancel Button
+        FButton(
+          style: FButtonStyle.outline(),
+          onPress: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+      ],
+    ),
+  );
+}
+
+
+Future<void> showDialogValuePicker(
+    BuildContext context,
+    theme t,
+    String title,
+    int currentValue,
+    String ending,
+    int minNum,
+    int maxNum,
+    Function(dynamic) onSelected,
+    ) {
+  TextEditingController value = TextEditingController(text: currentValue.toString());
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      body: Column(
+        children: [
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: Material(
+                color: Colors.transparent,
+                child: customInput(t,value,"new value", value.text, context,maxLines: 1,isNum:true,minNum:minNum,maxNum:maxNum),
+              ),),
+              SizedBox(width: 10,),
+              Text(ending,style: TextStyle(fontSize: 18,color: t.textColor),)
+            ],
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+      actions: [
+        // Confirm Button
+        FButton(
+          onPress: () {
+            onSelected(value.text);
+            Navigator.of(context).pop();
+          },
+          style: FButtonStyle.primary(),
+          child: const Text('Save'),
+        ),
+
+        // Cancel Button
         FButton(
           style: FButtonStyle.outline(),
           onPress: () => Navigator.of(context).pop(),

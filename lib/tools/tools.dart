@@ -108,3 +108,15 @@ Future<void> doAfter3Seconds(Function action) async {
   await Future.delayed(const Duration(seconds: 3));
   action();
 }
+
+Color colorFromHex(String hex) {
+  hex = hex.replaceAll('#', '');
+
+  // If only RGB is provided, add FF for opacity
+  if (hex.length == 6) {
+    hex = 'FF$hex';
+  }
+
+  return Color(int.parse(hex, radix: 16));
+}
+

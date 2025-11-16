@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide colorFromHex;
 import 'package:formbuilder/screens/home/appScreen.dart';
 import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/widgets/messages.dart';
@@ -13,7 +14,7 @@ import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:split_view/split_view.dart';
-import '../../backend/models/form/Screen.dart';
+import '../../backend/models/form/screen.dart';
 import '../../backend/models/form/form.dart';
 import '../../backend/models/form/screenCustomization.dart';
 import '../../data/constants.dart';
@@ -22,6 +23,7 @@ import '../../services/provider.dart';
 import '../../services/themeService.dart';
 import '../../tools/tools.dart';
 import '../../widgets/basics.dart';
+import '../../widgets/canva.dart';
 import '../../widgets/cards.dart';
 import '../../widgets/dialogues.dart';
 import '../../widgets/form.dart';
@@ -47,14 +49,14 @@ class _State extends State<CreatForm> {
   bool isCustomizeSideBarOpen = false;
   bool isScreensSideBarOpen = true;
   PreviewSizes previewSize = PreviewSizes.desktop;
-  Uint8List? logoImageBytes;
-  Uint8List? coverImageBytes;
   ScreenCustomization pageCustomization = ScreenCustomization();
   int _selectedSectionIndex = 0;
   SplitViewController splitController = SplitViewController(
     limits: [WeightLimit(min: 0.3, max: 0.7), null],
     weights: [0.7, 0.3],
   );
+  int maxInt = 9223372036854775807;
+  bool isAutoConnect = false;
 
   late Screen selectedScreen;
   late List<Screen> screens;
@@ -72,8 +74,8 @@ class _State extends State<CreatForm> {
   void initState() {
     super.initState();
     t = widget.t;
-    screens = [Screen.createRegularScreen("Screen_1")];
-    endings = [Screen.createEndingScreen("Ending_1")];
+    screens = [Screen.createRegularScreen("Screen_1", 0)];
+    endings = [Screen.createEndingScreen("Ending_1", index: 0)];
     selectedScreen = screens.first;
   }
 
@@ -132,13 +134,13 @@ class _State extends State<CreatForm> {
     double aspectRatio;
     switch (previewSize) {
       case PreviewSizes.phone:
-        aspectRatio = 9 / 16; // taller, like a phone
+        aspectRatio = 9 / 16;
         break;
       case PreviewSizes.tablet:
-        aspectRatio = 3 / 4; // slightly wider
+        aspectRatio = 3 / 4;
         break;
       case PreviewSizes.desktop:
-        aspectRatio = 16 / 9; // wide screen
+        aspectRatio = 16 / 9;
         break;
     }
 
@@ -179,31 +181,39 @@ class _State extends State<CreatForm> {
           },
         ),
         SizedBox(height: 10),
-        if (_selectedSectionIndex == 0)
-          Expanded(
-            child: Center(
-              child: AspectRatio(
-                aspectRatio: aspectRatio,
-                child: Container(
-                  height: screenHeight * 0.6,
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: pageCustomization.backgroundColorValue,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      width: 1,
-                      color: t.border.withOpacity(0.3),
+        Expanded(
+          child: IndexedStack(
+            index: _selectedSectionIndex,
+            children: [
+              // Content tab
+              Center(
+                child: AspectRatio(
+                  aspectRatio: aspectRatio,
+                  child: Container(
+                    height: screenHeight * 0.6,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: colorFromHex(
+                        selectedScreen.screenCustomization.backgroundColor,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        width: 1,
+                        color: t.border.withOpacity(0.3),
+                      ),
                     ),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: _buildMainContent(),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: _buildMainContent(),
+                    ),
                   ),
                 ),
               ),
-            ),
+              // Workflow tab (Canvas)
+              sectionWorkflow(t: t),
+            ],
           ),
-        if (_selectedSectionIndex == 1) sectionWorkflow(t: t),
+        ),
       ],
     );
   }
@@ -227,11 +237,76 @@ class _State extends State<CreatForm> {
   }
 
   Widget sectionWorkflow({required theme t}) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      margin: const EdgeInsets.symmetric(vertical: 10),
-      child: SizedBox(),
+    print("aaasba");
+    List<Screen> allScreens = screens.toList();
+    allScreens.addAll(endings);
+    return Stack(
+      children: [
+        InteractiveCanvas(
+          isAutoConnect : isAutoConnect,
+          screens: allScreens,
+          t: t,
+          onScreenMoved: (Offset position, String itemMovedId, bool isEnding) {
+            if (isEnding) {
+              endings.firstWhere((s) => s.id == itemMovedId).workflow.position =
+                  position;
+            } else {
+              screens.firstWhere((s) => s.id == itemMovedId).workflow.position =
+                  position;
+            }
+          },
+        ),
+        Positioned(
+          bottom: 10,
+          left: 10,
+          child: Container(
+            decoration: BoxDecoration(
+              color: t.cardColor,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(
+              children: [
+                FTooltip(
+                  tipBuilder: (context, controller) =>
+                      const Text('Zoom In'),
+                  child: IconButton(
+                    onPressed: () {},
+                    icon: Icon(FIcons.zoomIn, color: t.textColor),
+                  ),
+                ),
+                FTooltip(
+                  tipBuilder: (context, controller) =>
+                  const Text('Zoom Out'),
+                  child: IconButton(
+                    onPressed: () {},
+                    icon: Icon(FIcons.zoomOut, color: t.textColor),
+                  ),
+                ),
+                FTooltip(
+                  tipBuilder: (context, controller) =>
+                  const Text('Center View'),
+                  child: IconButton(
+                    onPressed: () {},
+                    icon: Icon(FIcons.focus, color: t.textColor),
+                  ),
+                ),
+                FTooltip(
+                  tipBuilder: (context, controller) =>
+                  const Text('Auto Connect'),
+                  child: IconButton(
+                    onPressed: () {
+                      setState(() {
+                        isAutoConnect = !isAutoConnect;
+                      });
+                    },
+                    icon: Icon(FIcons.workflow, color: t.textColor),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -281,13 +356,22 @@ class _State extends State<CreatForm> {
             child: aspectRatioChanger(t),
           ),
         if (_selectedSectionIndex == 0) SizedBox(width: 8),
-        FTooltip(
-          tipBuilder: (context, controller) => const Text('Translation'),
-          child: IconButton(
-            onPressed: _translateOnClick,
-            icon: Icon(FIcons.languages, size: 17, color: t.textColor),
+        if (_selectedSectionIndex == 0)
+          FTooltip(
+            tipBuilder: (context, controller) => const Text('Translation'),
+            child: IconButton(
+              onPressed: _translateOnClick,
+              icon: Icon(FIcons.languages, size: 17, color: t.textColor),
+            ),
+          )
+        else
+          FTooltip(
+            tipBuilder: (context, controller) => const Text('Messages'),
+            child: IconButton(
+              onPressed: _messagesOnClick,
+              icon: Icon(FIcons.send, size: 17, color: t.textColor),
+            ),
           ),
-        ),
         FTooltip(
           tipBuilder: (context, controller) => const Text('Edit History'),
           child: IconButton(
@@ -400,6 +484,11 @@ class _State extends State<CreatForm> {
         SizedBox(width: 10),
         if (_selectedSectionIndex == 0) aspectRatioChanger(t),
         if (_selectedSectionIndex == 0) SizedBox(width: 20),
+        IconButton(
+          onPressed: _previewOnClick,
+          icon: Icon(HugeIconsStroke.play),
+        ),
+        SizedBox(width: 10),
         CollectionPopupMenu(
           icon: HugeIconsStroke.menu01,
           iconColor: theme.textColor,
@@ -437,23 +526,25 @@ class _State extends State<CreatForm> {
               color: theme.textColor,
               icon: HugeIconsStroke.transactionHistory,
             ),
-            PopupMenuItemData(
-              onTap: _settingsOnClick,
-              label: "Translate",
-              color: theme.textColor,
-              icon: FIcons.languages,
-            ),
+            if (_selectedSectionIndex == 0)
+              PopupMenuItemData(
+                onTap: _settingsOnClick,
+                label: "Translate",
+                color: theme.textColor,
+                icon: FIcons.languages,
+              )
+            else
+              PopupMenuItemData(
+                onTap: _settingsOnClick,
+                label: "Messages",
+                color: theme.textColor,
+                icon: FIcons.send,
+              ),
             PopupMenuItemData(
               onTap: _aiOnClick,
               label: "Formit Ai",
               color: theme.textColor,
               icon: HugeIconsStroke.aiMagic,
-            ),
-            PopupMenuItemData(
-              onTap: _previewOnClick,
-              label: "Preview",
-              color: theme.textColor,
-              icon: HugeIconsStroke.play,
             ),
           ],
         ),
@@ -497,7 +588,10 @@ class _State extends State<CreatForm> {
               onPress: () {
                 setState(() {
                   screens.add(
-                    Screen.createRegularScreen("Screen_${screens.length + 1}"),
+                    Screen.createRegularScreen(
+                      "Screen_${screens.length + 1}",
+                      screens.length,
+                    ),
                   );
                 });
               },
@@ -559,7 +653,7 @@ class _State extends State<CreatForm> {
               children: [
                 Icon(
                   selectedScreen.isEnding
-                      ? HugeIconsSolid.changeScreenMode
+                      ? HugeIconsSolid.flag03
                       : HugeIconsStroke.changeScreenMode,
                   size: 20,
                   color: t.textColor,
@@ -596,20 +690,34 @@ class _State extends State<CreatForm> {
                     Expanded(
                       child: _buildCustomizationItemColorPicker(
                         "Background",
-                        "#ffffff",
-                        Colors.white,
+                        '#${selectedScreen.screenCustomization.backgroundColor}',
+                        colorFromHex(
+                          selectedScreen.screenCustomization.backgroundColor,
+                        ),
                         t,
-                        () {},
+                        (selectedColor) {
+                          selectedScreen.screenCustomization = selectedScreen
+                              .screenCustomization
+                              .copyWith(
+                                backgroundColor: selectedColor.toHexString(),
+                              );
+                        },
                       ),
                     ),
                     SizedBox(width: 5),
                     Expanded(
                       child: _buildCustomizationItemColorPicker(
                         "Text",
-                        "#0000ff",
-                        Colors.blue,
+                        '#${selectedScreen.screenCustomization.textColor}',
+                        colorFromHex(
+                          selectedScreen.screenCustomization.textColor,
+                        ),
                         t,
-                        () {},
+                        (selectedColor) {
+                          selectedScreen.screenCustomization = selectedScreen
+                              .screenCustomization
+                              .copyWith(textColor: selectedColor.toHexString());
+                        },
                       ),
                     ),
                   ],
@@ -620,20 +728,36 @@ class _State extends State<CreatForm> {
                     Expanded(
                       child: _buildCustomizationItemColorPicker(
                         "Accent",
-                        "#ff0000",
-                        Colors.red,
+                        '#${selectedScreen.screenCustomization.accentColor}',
+                        colorFromHex(
+                          selectedScreen.screenCustomization.accentColor,
+                        ),
                         t,
-                        () {},
+                        (selectedColor) {
+                          selectedScreen.screenCustomization = selectedScreen
+                              .screenCustomization
+                              .copyWith(
+                                accentColor: selectedColor.toHexString(),
+                              );
+                        },
                       ),
                     ),
                     SizedBox(width: 5),
                     Expanded(
                       child: _buildCustomizationItemColorPicker(
                         "Border",
-                        "#0000ff",
-                        Colors.blue,
+                        '#${selectedScreen.screenCustomization.borderColor}',
+                        colorFromHex(
+                          selectedScreen.screenCustomization.borderColor,
+                        ),
                         t,
-                        () {},
+                        (selectedColor) {
+                          selectedScreen.screenCustomization = selectedScreen
+                              .screenCustomization
+                              .copyWith(
+                                borderColor: selectedColor.toHexString(),
+                              );
+                        },
                       ),
                     ),
                   ],
@@ -644,20 +768,39 @@ class _State extends State<CreatForm> {
                     Expanded(
                       child: _buildCustomizationItemColorPicker(
                         "Button Background",
-                        "#ff0000",
-                        Colors.red,
+                        '#${selectedScreen.screenCustomization.buttonBackgroundColor}',
+                        colorFromHex(
+                          selectedScreen
+                              .screenCustomization
+                              .buttonBackgroundColor,
+                        ),
                         t,
-                        () {},
+                        (selectedColor) {
+                          selectedScreen.screenCustomization = selectedScreen
+                              .screenCustomization
+                              .copyWith(
+                                buttonBackgroundColor: selectedColor
+                                    .toHexString(),
+                              );
+                        },
                       ),
                     ),
                     SizedBox(width: 5),
                     Expanded(
                       child: _buildCustomizationItemColorPicker(
                         "Button Text",
-                        "#0000ff",
-                        Colors.blue,
+                        '#${selectedScreen.screenCustomization.buttonTextColor}',
+                        colorFromHex(
+                          selectedScreen.screenCustomization.buttonTextColor,
+                        ),
                         t,
-                        () {},
+                        (selectedColor) {
+                          selectedScreen.screenCustomization = selectedScreen
+                              .screenCustomization
+                              .copyWith(
+                                buttonTextColor: selectedColor.toHexString(),
+                              );
+                        },
                       ),
                     ),
                   ],
@@ -677,19 +820,42 @@ class _State extends State<CreatForm> {
                     Expanded(
                       child: _buildCustomizationItem(
                         "Font Size",
-                        "20px",
+                        "px",
+                        selectedScreen.screenCustomization.fontSize,
                         t,
-                        () {},
+                        1,
+                        100,
+                        (selectedValue) {
+                          setState(() {
+                            selectedScreen.screenCustomization = selectedScreen
+                                .screenCustomization
+                                .copyWith(fontSize: selectedValue);
+                          });
+                        },
                       ),
                     ),
                   ],
                 ),
                 SizedBox(height: 12),
-                _buildCustomizationItem("Page Width", "800px", t, () {}),
+                _buildCustomizationItem(
+                  "Page Width",
+                  "px",
+                  selectedScreen.screenCustomization.pageWidth,
+                  t,
+                  50,
+                  maxInt,
+                  (selectedValue) {
+                    setState(() {
+                      selectedScreen.screenCustomization = selectedScreen
+                          .screenCustomization
+                          .copyWith(pageWidth: selectedValue);
+                    });
+                  },
+                ),
                 _buildCustomizationSection("Logo"),
                 ProfileImagePicker(
                   t: t,
-                  imageBytes: logoImageBytes,
+                  imageBytes: selectedScreen.screenCustomization.logoImageBytes,
                   size: 50,
                   onImagePick: () async {
                     final result = await ImagePicker().pickImage(
@@ -697,7 +863,11 @@ class _State extends State<CreatForm> {
                     );
                     if (result != null) {
                       final bytes = await result.readAsBytes();
-                      setState(() => logoImageBytes = bytes);
+                      setState(
+                        () =>
+                            selectedScreen.screenCustomization.logoImageBytes =
+                                bytes,
+                      );
                     }
                   },
                 ),
@@ -707,30 +877,65 @@ class _State extends State<CreatForm> {
                     Expanded(
                       child: _buildCustomizationItem(
                         "Width",
-                        "300px",
+                        "px",
+                        selectedScreen.screenCustomization.logoWidth,
                         t,
-                        () {},
+                        0,
+                        maxInt,
+
+                        (selectedValue) {
+                          setState(() {
+                            selectedScreen.screenCustomization = selectedScreen
+                                .screenCustomization
+                                .copyWith(logoWidth: selectedValue);
+                          });
+                        },
                       ),
                     ),
                     SizedBox(width: 5),
                     Expanded(
                       child: _buildCustomizationItem(
                         "Height",
-                        "200px",
+                        "px",
+                        selectedScreen.screenCustomization.logoHeight,
                         t,
-                        () {},
+                        0,
+                        maxInt,
+
+                        (selectedValue) {
+                          setState(() {
+                            selectedScreen.screenCustomization = selectedScreen
+                                .screenCustomization
+                                .copyWith(logoHeight: selectedValue);
+                          });
+                        },
                       ),
                     ),
                     SizedBox(width: 5),
                     Expanded(
-                      child: _buildCustomizationItem("Round", "5px", t, () {}),
+                      child: _buildCustomizationItem(
+                        "Round",
+                        "px",
+                        selectedScreen.screenCustomization.logoRound,
+                        t,
+                        0,
+                        maxInt,
+                        (selectedValue) {
+                          setState(() {
+                            selectedScreen.screenCustomization = selectedScreen
+                                .screenCustomization
+                                .copyWith(logoRound: selectedValue);
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),
                 _buildCustomizationSection("Cover"),
                 ProfileImagePicker(
                   t: t,
-                  imageBytes: coverImageBytes,
+                  imageBytes:
+                      selectedScreen.screenCustomization.coverImageBytes,
                   size: 50,
                   onImagePick: () async {
                     final result = await ImagePicker().pickImage(
@@ -738,7 +943,11 @@ class _State extends State<CreatForm> {
                     );
                     if (result != null) {
                       final bytes = await result.readAsBytes();
-                      setState(() => coverImageBytes = bytes);
+                      setState(
+                        () =>
+                            selectedScreen.screenCustomization.coverImageBytes =
+                                bytes,
+                      );
                     }
                   },
                 ),
@@ -746,7 +955,22 @@ class _State extends State<CreatForm> {
                 Row(
                   children: [
                     Expanded(
-                      child: _buildCustomizationItem("Height", "50%", t, () {}),
+                      child: _buildCustomizationItem(
+                        "Height",
+                        "%",
+                        selectedScreen.screenCustomization.coverHeight,
+                        t,
+                        0,
+                        100,
+
+                        (selectedValue) {
+                          setState(() {
+                            selectedScreen.screenCustomization = selectedScreen
+                                .screenCustomization
+                                .copyWith(coverHeight: selectedValue);
+                          });
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -800,6 +1024,7 @@ class _State extends State<CreatForm> {
                                 endings.add(
                                   Screen.createEndingScreen(
                                     "Ending_${endings.length + 1}",
+                                    index: endings.length,
                                   ),
                                 );
                               });
@@ -864,7 +1089,7 @@ class _State extends State<CreatForm> {
           children: [
             Icon(
               s.isEnding
-                  ? HugeIconsSolid.changeScreenMode
+                  ? HugeIconsSolid.flag03
                   : HugeIconsStroke.changeScreenMode,
               size: 20,
               color: (selectedScreen.id == s.id) ? t.bgColor : t.textColor,
@@ -884,40 +1109,52 @@ class _State extends State<CreatForm> {
               items: [
                 PopupMenuItemData(
                   onTap: () {
-                    setState(() {});
+                    setState(() {
+                      //create a new copy
+                      if (s.isEnding) {
+                        endings.add(
+                          s.copyWith(id: "Ending_${endings.length + 1}"),
+                        );
+                      } else {
+                        screens.add(
+                          s.copyWith(id: "Screen_${screens.length + 1}"),
+                        );
+                      }
+                    });
                   },
                   label: "Duplicate",
                   color: t.textColor,
                   icon: HugeIconsStroke.copy02,
                 ),
-                if(s.isEnding&&endings.length>1 || !s.isEnding&&screens.length>1)
-                PopupMenuItemData(
-                  onTap: () {
-                    if (s.isEnding) {
-                      showDialogDeleteScreen(context, t, () {
-                        setState(() {
-                          endings.remove(s);
-                          //check if nothing is selected select the first one
-                          if(s.id==selectedScreen.id){
-                            selectedScreen = endings.first;
-                          }
+                if (s.isEnding && endings.length > 1 ||
+                    !s.isEnding && screens.length > 1)
+                  PopupMenuItemData(
+                    onTap: () {
+                      if (s.isEnding) {
+                        showDialogDeleteScreen(context, t, () {
+                          setState(() {
+                            endings.remove(s);
+                            //check if nothing is selected select the first one
+                            if (s.id == selectedScreen.id) {
+                              selectedScreen = endings.first;
+                            }
+                          });
                         });
-                      });
-                    } else {
-                      showDialogDeleteScreen(context, t, () {
-                        setState(() {
-                          screens.remove(s);
-                          if(s.id==selectedScreen.id){
-                            selectedScreen = screens.first;
-                          }
+                      } else {
+                        showDialogDeleteScreen(context, t, () {
+                          setState(() {
+                            screens.remove(s);
+                            if (s.id == selectedScreen.id) {
+                              selectedScreen = screens.first;
+                            }
+                          });
                         });
-                      });
-                    }
-                  },
-                  label: "Delete",
-                  color: t.errorColor,
-                  icon: HugeIconsStroke.delete01,
-                ),
+                      }
+                    },
+                    label: "Delete",
+                    color: t.errorColor,
+                    icon: HugeIconsStroke.delete01,
+                  ),
               ],
             ),
           ],
@@ -942,9 +1179,12 @@ class _State extends State<CreatForm> {
 
   Widget _buildCustomizationItem(
     String title,
-    String buttonText,
+    String ending,
+    int value,
     theme t,
-    Function() onPick,
+    int minNum,
+    int maxNum,
+    Function(int newValue) onPick,
   ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -959,12 +1199,24 @@ class _State extends State<CreatForm> {
         ),
         SizedBox(height: 5),
         FTappable(
-          style: FTappableStyle(),
           semanticsLabel: '$title customization',
           selected: false,
           autofocus: false,
           behavior: HitTestBehavior.translucent,
-          onPress: () {},
+          onPress: () {
+            showDialogValuePicker(
+              context,
+              t,
+              title,
+              value,
+              ending,
+              minNum,
+              maxNum,
+              (value) {
+                onPick(int.parse(value));
+              },
+            );
+          },
           builder: (context, state, child) => child!,
           child: FCard.raw(
             child: Padding(
@@ -979,7 +1231,7 @@ class _State extends State<CreatForm> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      buttonText,
+                      "$value$ending",
                       style: TextStyle(
                         color: t.secondaryTextColor,
                         fontSize: 12,
@@ -1003,7 +1255,7 @@ class _State extends State<CreatForm> {
     String buttonText,
     Color initColor,
     theme t,
-    Function() onPick,
+    Function(Color color) onPick,
   ) {
     Color color = initColor;
     return Column(
@@ -1024,7 +1276,13 @@ class _State extends State<CreatForm> {
           selected: false,
           autofocus: false,
           behavior: HitTestBehavior.translucent,
-          onPress: () {},
+          onPress: () {
+            showDialogColorPicker(context, t, color, (color) {
+              setState(() {
+                onPick(color);
+              });
+            });
+          },
           builder: (context, state, child) => child!,
           child: FCard.raw(
             child: Padding(
@@ -1085,7 +1343,15 @@ class _State extends State<CreatForm> {
           ),
         ),
         SizedBox(height: 5),
-        FontFamilySelector(),
+        FontFamilySelector(
+          key: ValueKey(selectedScreen.id),
+          selectedValue: selectedScreen.screenCustomization.fontFamily,
+          f: (v) {
+            selectedScreen.screenCustomization = selectedScreen
+                .screenCustomization
+                .copyWith(fontFamily: v);
+          },
+        ),
       ],
     );
   }
@@ -1172,7 +1438,7 @@ class _State extends State<CreatForm> {
   }
 
   _aiOnClick() {
-    showMsg("ai", context, t);
+    showMsg(Constants.notReadyMsg, context, t);
   }
 
   _customizeOnClick() {
@@ -1188,7 +1454,7 @@ class _State extends State<CreatForm> {
   }
 
   _translateOnClick() {
-    showMsg("translate", context, t);
+    showMsg(Constants.notReadyMsg, context, t);
   }
 
   _settingsOnClick() {
@@ -1196,6 +1462,10 @@ class _State extends State<CreatForm> {
   }
 
   _historyOnClick() {
-    showMsg("history", context, t);
+    showMsg(Constants.notReadyMsg, context, t);
+  }
+
+  _messagesOnClick() {
+    showMsg(Constants.notReadyMsg, context, t);
   }
 }

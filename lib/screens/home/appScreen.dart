@@ -917,7 +917,7 @@ class _AppScreenState extends State<AppScreen> {
                           ),
                           PopupMenuItemData(
                             onTap: () {
-                              print("View responses");
+                              navigateTo(context, PreviewForm(t: t,f: f,), false);
                             },
                             label: "View Responses",
                             color: theme.textColor,
@@ -941,7 +941,7 @@ class _AppScreenState extends State<AppScreen> {
                           ),
                           PopupMenuItemData(
                             onTap: () {
-                              print("Share");
+                              navigateTo(context, PreviewForm(t: t,f: f,goTo: PreviewFormSections.share,), false);
                             },
                             label: "Share",
                             color: theme.textColor,
