@@ -8,6 +8,7 @@ class ScreenCustomization {
   String borderColor;
   String buttonBackgroundColor;
   String buttonTextColor;
+  bool logoHasBorder;
 
   String fontFamily;
   int fontSize;
@@ -32,11 +33,12 @@ class ScreenCustomization {
     this.fontSize = 20,
     this.pageWidth = 800,
     this.logoImageBytes,
-    this.logoWidth = 300,
-    this.logoHeight = 200,
-    this.logoRound = 5,
+    this.logoWidth = 100,
+    this.logoHeight = 100,
+    this.logoRound = 100,
     this.coverImageBytes,
-    this.coverHeight = 50, // default 50
+    this.coverHeight = 25,
+    this.logoHasBorder = true
   });
 
   Map<String, dynamic> toJson() {
@@ -54,6 +56,7 @@ class ScreenCustomization {
       'logoHeight': logoHeight,
       'logoRound': logoRound,
       'coverHeight': coverHeight,
+      'logoHasBorder':logoHasBorder
     };
   }
 
@@ -68,10 +71,11 @@ class ScreenCustomization {
       fontFamily: json['fontFamily'] ?? "Arial",
       fontSize: (json['fontSize'] ?? 20) as int,
       pageWidth: (json['pageWidth'] ?? 800) as int,
-      logoWidth: (json['logoWidth'] ?? 300) as int,
-      logoHeight: (json['logoHeight'] ?? 200) as int,
-      logoRound: (json['logoRound'] ?? 5) as int,
-      coverHeight: (json['coverHeight'] ?? 50) as int,
+      logoWidth: (json['logoWidth'] ?? 100) as int,
+      logoHeight: (json['logoHeight'] ?? 100) as int,
+      logoRound: (json['logoRound'] ?? 100) as int,
+      coverHeight: (json['coverHeight'] ?? 25) as int,
+        logoHasBorder:(json['logoHasBorder'] ?? true) as bool,
     );
   }
 
@@ -91,6 +95,7 @@ class ScreenCustomization {
     int? logoRound,
     Uint8List? coverImageBytes,
     int? coverHeight,
+    bool? logoHasBorder,
   }) {
     return ScreenCustomization(
       backgroundColor: backgroundColor ?? this.backgroundColor,
@@ -108,6 +113,7 @@ class ScreenCustomization {
       logoRound: logoRound ?? this.logoRound,
       coverImageBytes: coverImageBytes ?? this.coverImageBytes,
       coverHeight: coverHeight ?? this.coverHeight,
+        logoHasBorder : logoHasBorder??this.logoHasBorder,
     );
   }
 

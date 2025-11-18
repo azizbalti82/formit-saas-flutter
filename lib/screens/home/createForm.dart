@@ -1,8 +1,10 @@
 // ignore_for_file: file_names
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:easy_url_launcher/easy_url_launcher.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide colorFromHex;
@@ -27,6 +29,7 @@ import '../../widgets/canva.dart';
 import '../../widgets/cards.dart';
 import '../../widgets/dialogues.dart';
 import '../../widgets/form.dart';
+import '../../widgets/image.dart';
 import '../../widgets/menu.dart';
 
 enum PreviewSizes { phone, tablet, desktop }
@@ -48,7 +51,7 @@ class _State extends State<CreatForm> {
   bool isCreatingLoading = false;
   bool isCustomizeSideBarOpen = false;
   bool isScreensSideBarOpen = true;
-  PreviewSizes previewSize = PreviewSizes.desktop;
+  PreviewSizes previewSize = PreviewSizes.tablet;
   ScreenCustomization pageCustomization = ScreenCustomization();
   int _selectedSectionIndex = 0;
   SplitViewController splitController = SplitViewController(
@@ -102,9 +105,7 @@ class _State extends State<CreatForm> {
           children: [
             Padding(
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-              child: isLandscape(context)
-                  ? _buildLandscapeBody(screenWidth, screenHeight, t)
-                  : _buildPortraitBody(screenWidth, screenHeight, t),
+              child: _buildLandscapeBody(screenWidth, screenHeight, t),
             ),
             if (isScreensSideBarOpen && _selectedSectionIndex == 0)
               Positioned(
@@ -126,9 +127,6 @@ class _State extends State<CreatForm> {
     );
   }
 
-  // ==========================================================================
-  // BODY LAYOUTS
-  // ==========================================================================
   Widget _buildLandscapeBody(double screenWidth, double screenHeight, theme t) {
     // Define aspect ratios depending on the selected preview size
     double aspectRatio;
@@ -218,32 +216,102 @@ class _State extends State<CreatForm> {
     );
   }
 
-  Widget _buildPortraitBody(double screenWidth, double screenHeight, theme t) {
-    return _buildLandscapeBody(screenWidth, screenHeight, t);
-  }
-
   Widget _buildMainContent() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [],
-          ),
-        ),
+    final bool hasCover =
+        selectedScreen.screenCustomization.coverImageBytes != null;
+    final bool hasLogo =
+        selectedScreen.screenCustomization.logoImageBytes != null;
+
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          // Add spacing below for the overlapping logo
+          if (hasLogo && !hasCover)
+            SizedBox(
+              height: selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
+            ),
+          if (hasLogo || hasCover)
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                // Cover Image (or placeholder if only logo exists)
+                if (hasCover)
+                  GeneralImageViewer(
+                    heightPercentage:
+                        selectedScreen.screenCustomization.coverHeight * 0.01,
+                    sourceType: ImageSourceType.bytes,
+                    imageBytes:
+                        selectedScreen.screenCustomization.coverImageBytes,
+                    borderRadius: 0,
+                    fit: BoxFit.fitWidth,
+                  )
+                else if (hasLogo)
+                  SizedBox(
+                    width: double.infinity,
+                    height:
+                        (selectedScreen.screenCustomization.logoHeight * 0.5),
+                  ),
+
+                if (hasLogo)
+                  Positioned(
+                        bottom: hasCover ? -(selectedScreen.screenCustomization.logoHeight * 0.5) : 0,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: GeneralImageViewer(
+                            sourceType: ImageSourceType.bytes,
+                            imageBytes: selectedScreen
+                                .screenCustomization
+                                .logoImageBytes,
+                            width:
+                                selectedScreen.screenCustomization.logoWidth *
+                                1.0,
+                            height:
+                                selectedScreen.screenCustomization.logoHeight *
+                                1.0,
+                            aspectRatio: 1,
+                            borderRadius:
+                                selectedScreen.screenCustomization.logoRound *
+                                1.0,
+                            fit: BoxFit.cover,
+                            placeholder: Container(
+                              color: Colors.grey.shade300,
+                              child: Center(child: Icon(Icons.image, size: 40)),
+                            ),
+                            errorWidget: Icon(Icons.broken_image),
+                            showBorder: selectedScreen
+                                .screenCustomization
+                                .logoHasBorder,
+                            borderColor: colorFromHex(
+                              selectedScreen
+                                  .screenCustomization
+                                  .backgroundColor,
+                            ),
+                            borderWidth: 2.5,
+                          ),
+                        )
+                  ),
+              ],
+            ),
+
+          // Add spacing below for the overlapping logo
+          if (hasLogo && hasCover)
+            SizedBox(
+              height: selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
+            ),
+        ],
       ),
     );
   }
 
   Widget sectionWorkflow({required theme t}) {
-    print("aaasba");
     List<Screen> allScreens = screens.toList();
     allScreens.addAll(endings);
     return Stack(
       children: [
         InteractiveCanvas(
-          isAutoConnect : isAutoConnect,
+          isAutoConnect: isAutoConnect,
           screens: allScreens,
           t: t,
           onScreenMoved: (Offset position, String itemMovedId, bool isEnding) {
@@ -267,16 +335,14 @@ class _State extends State<CreatForm> {
             child: Row(
               children: [
                 FTooltip(
-                  tipBuilder: (context, controller) =>
-                      const Text('Zoom In'),
+                  tipBuilder: (context, controller) => const Text('Zoom In'),
                   child: IconButton(
                     onPressed: () {},
                     icon: Icon(FIcons.zoomIn, color: t.textColor),
                   ),
                 ),
                 FTooltip(
-                  tipBuilder: (context, controller) =>
-                  const Text('Zoom Out'),
+                  tipBuilder: (context, controller) => const Text('Zoom Out'),
                   child: IconButton(
                     onPressed: () {},
                     icon: Icon(FIcons.zoomOut, color: t.textColor),
@@ -284,7 +350,7 @@ class _State extends State<CreatForm> {
                 ),
                 FTooltip(
                   tipBuilder: (context, controller) =>
-                  const Text('Center View'),
+                      const Text('Center View'),
                   child: IconButton(
                     onPressed: () {},
                     icon: Icon(FIcons.focus, color: t.textColor),
@@ -292,7 +358,7 @@ class _State extends State<CreatForm> {
                 ),
                 FTooltip(
                   tipBuilder: (context, controller) =>
-                  const Text('Auto Connect'),
+                      const Text('Auto Connect'),
                   child: IconButton(
                     onPressed: () {
                       setState(() {
@@ -853,23 +919,104 @@ class _State extends State<CreatForm> {
                   },
                 ),
                 _buildCustomizationSection("Logo"),
-                ProfileImagePicker(
-                  t: t,
-                  imageBytes: selectedScreen.screenCustomization.logoImageBytes,
-                  size: 50,
-                  onImagePick: () async {
-                    final result = await ImagePicker().pickImage(
-                      source: ImageSource.gallery,
-                    );
-                    if (result != null) {
-                      final bytes = await result.readAsBytes();
-                      setState(
-                        () =>
+                Row(
+                  children: [
+                    ProfileImagePicker(
+                      t: t,
+                      imageBytes:
+                          selectedScreen.screenCustomization.logoImageBytes,
+                      size: 50,
+                      onImagePick: () async {
+                        try {
+                          // Use FilePicker to allow all image formats
+                          final result = await FilePicker.platform.pickFiles(
+                            type: FileType.custom,
+                            allowedExtensions: [
+                              // Raster formats
+                              'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp',
+                              // Vector and other formats
+                              'svg', 'ico', 'tiff', 'tif', 'heic', 'heif',
+                              // Additional formats
+                              'avif', 'jfif', 'pjpeg', 'pjp', 'apng', 'dib',
+                            ],
+                            allowMultiple: false,
+                            withData:
+                                true, // This ensures bytes are loaded on web
+                          );
+
+                          if (result != null && result.files.isNotEmpty) {
+                            final file = result.files.single;
+                            Uint8List? bytes;
+
+                            // Try to get bytes directly (works on web)
+                            if (file.bytes != null) {
+                              bytes = file.bytes!;
+                            }
+                            // If bytes are null, read from path (mobile/desktop)
+                            else if (file.path != null) {
+                              final fileData = File(file.path!);
+                              bytes = await fileData.readAsBytes();
+                            }
+
+                            if (bytes != null) {
+                              // Store it in your model
+                              setState(() {
+                                selectedScreen
+                                        .screenCustomization
+                                        .logoImageBytes =
+                                    bytes;
+                              });
+
+                              print("Image loaded successfully: ${file.name}");
+                            } else {
+                              print("Could not read file data");
+                              showError('Could not read image file', context);
+                            }
+                          } else {
+                            print("No file selected or result is null");
+                          }
+                        } catch (e) {
+                          // Handle errors
+                          print("Error picking image: $e");
+                          showError('Failed to pick image: $e', context);
+                        }
+                      },
+                    ),
+                    if (selectedScreen.screenCustomization.logoImageBytes !=
+                        null)
+                      FTappable(
+                        onPress: () {
+                          setState(() {
                             selectedScreen.screenCustomization.logoImageBytes =
-                                bytes,
-                      );
-                    }
-                  },
+                                null;
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: t.errorColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(FIcons.x, color: Colors.white, size: 10),
+                              SizedBox(width: 2),
+                              Text(
+                                "Remove",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 SizedBox(height: 12),
                 Row(
@@ -931,7 +1078,28 @@ class _State extends State<CreatForm> {
                     ),
                   ],
                 ),
+                SizedBox(height: 12),
+                _buildCustomizationItemToggle(
+                  "Border",
+                  selectedScreen.screenCustomization.logoHasBorder
+                      ? "Enabled"
+                      : "Disabled",
+
+                  t,
+                  () {
+                    setState(() {
+                      selectedScreen.screenCustomization = selectedScreen
+                          .screenCustomization
+                          .copyWith(
+                            logoHasBorder: !selectedScreen
+                                .screenCustomization
+                                .logoHasBorder,
+                          );
+                    });
+                  },
+                ),
                 _buildCustomizationSection("Cover"),
+                /*
                 ProfileImagePicker(
                   t: t,
                   imageBytes:
@@ -950,6 +1118,106 @@ class _State extends State<CreatForm> {
                       );
                     }
                   },
+                ),
+                 */
+                Row(
+                  children: [
+                    ProfileImagePicker(
+                      t: t,
+                      imageBytes:
+                          selectedScreen.screenCustomization.coverImageBytes,
+                      size: 50,
+                      onImagePick: () async {
+                        try {
+                          // Use FilePicker to allow all image formats
+                          final result = await FilePicker.platform.pickFiles(
+                            type: FileType.custom,
+                            allowedExtensions: [
+                              // Raster formats
+                              'jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp',
+                              // Vector and other formats
+                              'svg', 'ico', 'tiff', 'tif', 'heic', 'heif',
+                              // Additional formats
+                              'avif', 'jfif', 'pjpeg', 'pjp', 'apng', 'dib',
+                            ],
+                            allowMultiple: false,
+                            withData:
+                                true, // This ensures bytes are loaded on web
+                          );
+
+                          if (result != null && result.files.isNotEmpty) {
+                            final file = result.files.single;
+                            Uint8List? bytes;
+
+                            // Try to get bytes directly (works on web)
+                            if (file.bytes != null) {
+                              bytes = file.bytes!;
+                            }
+                            // If bytes are null, read from path (mobile/desktop)
+                            else if (file.path != null) {
+                              final fileData = File(file.path!);
+                              bytes = await fileData.readAsBytes();
+                            }
+
+                            if (bytes != null) {
+                              // Store it in your model
+                              setState(() {
+                                selectedScreen
+                                        .screenCustomization
+                                        .coverImageBytes =
+                                    bytes;
+                              });
+
+                              print("Image loaded successfully: ${file.name}");
+                            } else {
+                              print("Could not read file data");
+                              showError('Could not read image file', context);
+                            }
+                          } else {
+                            print("No file selected or result is null");
+                          }
+                        } catch (e) {
+                          // Handle errors
+                          print("Error picking image: $e");
+                          showError('Failed to pick image: $e', context);
+                        }
+                      },
+                    ),
+                    if (selectedScreen.screenCustomization.coverImageBytes !=
+                        null)
+                      FTappable(
+                        onPress: () {
+                          setState(() {
+                            selectedScreen.screenCustomization.coverImageBytes =
+                                null;
+                          });
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: t.errorColor,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(FIcons.x, color: Colors.white, size: 10),
+                              SizedBox(width: 2),
+                              Text(
+                                "Remove",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
                 SizedBox(height: 12),
                 Row(
@@ -1232,6 +1500,65 @@ class _State extends State<CreatForm> {
                   Expanded(
                     child: Text(
                       "$value$ending",
+                      style: TextStyle(
+                        color: t.secondaryTextColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildCustomizationItemToggle(
+    String title,
+    String value,
+    theme t,
+    Function onPick,
+  ) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+            color: t.textColor.withOpacity(0.8),
+            fontSize: 12,
+            fontWeight: FontWeight.w400,
+          ),
+        ),
+        SizedBox(height: 5),
+        FTappable(
+          semanticsLabel: '$title customization',
+          selected: false,
+          autofocus: false,
+          behavior: HitTestBehavior.translucent,
+          onPress: () {
+            onPick();
+          },
+          builder: (context, state, child) => child!,
+          child: FCard.raw(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                left: 8,
+                bottom: 8,
+                top: 8,
+                right: 0,
+              ),
+              child: Row(
+                children: [
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      value,
                       style: TextStyle(
                         color: t.secondaryTextColor,
                         fontSize: 12,

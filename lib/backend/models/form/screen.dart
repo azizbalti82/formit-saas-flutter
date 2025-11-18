@@ -81,7 +81,7 @@ class Screen {
           : null,
 
       /// NEW FIELD ↓↓↓
-      workflow:  Workflow.fromJson(json['workflow'])
+      workflow: Workflow.fromJson(json['workflow']),
     );
   }
 
@@ -113,44 +113,42 @@ class Screen {
     return true;
   }
 
-  static Screen createRegularScreen(String id,int index) {
+  static Screen createRegularScreen(String id, int index) {
     return Screen(
       id: id,
       isEnding: false,
       screenCustomization: ScreenCustomization(),
-      workflow: Workflow(position: Offset(200.0*index,0), connects: null),
+      workflow: Workflow(position: Offset(200.0 * index, 0), connects: null),
     );
   }
 
-  static Screen createEndingScreen(String id, {bool isRedirect = false,required int index}) {
+  static Screen createEndingScreen(
+    String id, {
+    bool isRedirect = false,
+    required int index,
+  }) {
     return Screen(
       id: id,
       isEnding: true,
       endingSettings: EndingSettings(isRedirect: isRedirect),
       screenCustomization: ScreenCustomization(),
-      workflow: Workflow(position: Offset(200.0*index,200), connects: null),
+      workflow: Workflow(position: Offset(200.0 * index, 200), connects: null),
     );
   }
 }
 
 class Connect {
-  final String screenId;            // the screen this node connects TO
+  final String screenId; // the screen this node connects TO
 
-  Connect({
-    required this.screenId,
-  });
+  Connect({required this.screenId});
 
   // You can add a toMap/fromMap if you will save it in Firestore or Hive
   Map<String, dynamic> toMap() {
-    return {
-      'screenId': screenId,
-    };
+    return {'screenId': screenId};
   }
 
   factory Connect.fromMap(Map<String, dynamic> map) {
-    return Connect(
-      screenId: map['screenId'],
-    );
+    return Connect(screenId: map['screenId']);
   }
 }
 
@@ -158,33 +156,24 @@ class Workflow {
   Offset position;
   List<Connect> connects;
 
-  Workflow({
-    required this.position,
-    List<Connect>? connects,
-  }) : connects = connects ?? [];
+  Workflow({required this.position, List<Connect>? connects})
+    : connects = connects ?? [];
 
   Map<String, dynamic> toJson() {
     return {
-      'position': {
-        'dx': position.dx,
-        'dy': position.dy,
-      },
+      'position': {'dx': position.dx, 'dy': position.dy},
       'connects': connects.map((c) => c.toMap()).toList(),
     };
   }
 
   factory Workflow.fromJson(Map<String, dynamic> json) {
     return Workflow(
-      position: Offset(
-        json['position']['dx'],
-        json['position']['dy'],
-      ),
-      connects: (json['connects'] as List<dynamic>?)
-          ?.map((e) => Connect.fromMap(e))
-          .toList()
-          ?? [],
+      position: Offset(json['position']['dx'], json['position']['dy']),
+      connects:
+          (json['connects'] as List<dynamic>?)
+              ?.map((e) => Connect.fromMap(e))
+              .toList() ??
+          [],
     );
   }
 }
-
-
