@@ -21,7 +21,6 @@ class CollectionPopupMenu extends StatefulWidget {
   @override
   State<CollectionPopupMenu> createState() => _CollectionPopupMenuState();
 }
-
 class _CollectionPopupMenuState extends State<CollectionPopupMenu> {
   late final CustomPopupMenuController _controller;
 

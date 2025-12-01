@@ -2,6 +2,8 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:formbuilder/backend/models/form/screenCustomization.dart';
 
+import 'docItem.dart';
+
 // ============================================================================
 // ENDING SETTINGS MODEL
 // ============================================================================
@@ -42,6 +44,7 @@ class Screen {
   EndingSettings? endingSettings;
   ScreenCustomization screenCustomization;
   Workflow workflow;
+  List<DocItem> content;
 
   Screen({
     required this.id,
@@ -49,7 +52,8 @@ class Screen {
     this.endingSettings,
     ScreenCustomization? screenCustomization,
     required this.workflow,
-  }) : screenCustomization = screenCustomization ?? ScreenCustomization() {
+
+  }) : content =  [DocItem()],screenCustomization = screenCustomization ?? ScreenCustomization() {
     if (isEnding && endingSettings == null) {
       endingSettings = EndingSettings();
     }

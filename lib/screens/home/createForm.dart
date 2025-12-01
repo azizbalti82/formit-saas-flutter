@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide colorFromHex;
+import 'package:formbuilder/backend/models/form/docItem.dart';
 import 'package:formbuilder/screens/home/appScreen.dart';
 import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/widgets/messages.dart';
@@ -31,6 +32,7 @@ import '../../widgets/dialogues.dart';
 import '../../widgets/form.dart';
 import '../../widgets/image.dart';
 import '../../widgets/menu.dart';
+import '../../widgets/screenContent.dart';
 
 enum PreviewSizes { phone, tablet, desktop }
 
@@ -222,9 +224,11 @@ class _State extends State<CreatForm> {
     final bool hasLogo =
         selectedScreen.screenCustomization.logoImageBytes != null;
 
-    return SingleChildScrollView(
+    return SizedBox(
+        width: selectedScreen.screenCustomization.pageWidth*1.0,
+        child:  SingleChildScrollView(
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
         children: [
           // Add spacing below for the overlapping logo
           if (hasLogo && !hasCover)
@@ -239,10 +243,10 @@ class _State extends State<CreatForm> {
                 if (hasCover)
                   GeneralImageViewer(
                     heightPercentage:
-                        selectedScreen.screenCustomization.coverHeight * 0.01,
+                    selectedScreen.screenCustomization.coverHeight * 0.01,
                     sourceType: ImageSourceType.bytes,
                     imageBytes:
-                        selectedScreen.screenCustomization.coverImageBytes,
+                    selectedScreen.screenCustomization.coverImageBytes,
                     borderRadius: 0,
                     fit: BoxFit.fitWidth,
                   )
@@ -250,47 +254,47 @@ class _State extends State<CreatForm> {
                   SizedBox(
                     width: double.infinity,
                     height:
-                        (selectedScreen.screenCustomization.logoHeight * 0.5),
+                    (selectedScreen.screenCustomization.logoHeight * 0.5),
                   ),
 
                 if (hasLogo)
                   Positioned(
-                        bottom: hasCover ? -(selectedScreen.screenCustomization.logoHeight * 0.5) : 0,
-                        left: 0,
-                        right: 0,
-                        child: Center(
-                          child: GeneralImageViewer(
-                            sourceType: ImageSourceType.bytes,
-                            imageBytes: selectedScreen
-                                .screenCustomization
-                                .logoImageBytes,
-                            width:
-                                selectedScreen.screenCustomization.logoWidth *
-                                1.0,
-                            height:
-                                selectedScreen.screenCustomization.logoHeight *
-                                1.0,
-                            aspectRatio: 1,
-                            borderRadius:
-                                selectedScreen.screenCustomization.logoRound *
-                                1.0,
-                            fit: BoxFit.cover,
-                            placeholder: Container(
-                              color: Colors.grey.shade300,
-                              child: Center(child: Icon(Icons.image, size: 40)),
-                            ),
-                            errorWidget: Icon(Icons.broken_image),
-                            showBorder: selectedScreen
-                                .screenCustomization
-                                .logoHasBorder,
-                            borderColor: colorFromHex(
-                              selectedScreen
-                                  .screenCustomization
-                                  .backgroundColor,
-                            ),
-                            borderWidth: 2.5,
+                      bottom: hasCover ? -(selectedScreen.screenCustomization.logoHeight * 0.5) : 0,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: GeneralImageViewer(
+                          sourceType: ImageSourceType.bytes,
+                          imageBytes: selectedScreen
+                              .screenCustomization
+                              .logoImageBytes,
+                          width:
+                          selectedScreen.screenCustomization.logoWidth *
+                              1.0,
+                          height:
+                          selectedScreen.screenCustomization.logoHeight *
+                              1.0,
+                          aspectRatio: 1,
+                          borderRadius:
+                          selectedScreen.screenCustomization.logoRound *
+                              1.0,
+                          fit: BoxFit.cover,
+                          placeholder: Container(
+                            color: Colors.grey.shade300,
+                            child: Center(child: Icon(Icons.image, size: 40)),
                           ),
-                        )
+                          errorWidget: Icon(Icons.broken_image),
+                          showBorder: selectedScreen
+                              .screenCustomization
+                              .logoHasBorder,
+                          borderColor: colorFromHex(
+                            selectedScreen
+                                .screenCustomization
+                                .backgroundColor,
+                          ),
+                          borderWidth: 2.5,
+                        ),
+                      )
                   ),
               ],
             ),
@@ -300,8 +304,11 @@ class _State extends State<CreatForm> {
             SizedBox(
               height: selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
             ),
+          SizedBox(height: 20,),
+          ...selectedScreen.content.map((c)=>contentItemBuilder(c))
         ],
       ),
+    ),
     );
   }
 
@@ -394,7 +401,6 @@ class _State extends State<CreatForm> {
       ),
     );
   }
-
   Widget _buildLandscapeAppBarContent(theme theme) {
     return Row(
       children: [
@@ -541,7 +547,6 @@ class _State extends State<CreatForm> {
       ],
     );
   }
-
   Widget _buildPortraitAppBarContent(theme theme) {
     return Row(
       children: [
@@ -617,14 +622,9 @@ class _State extends State<CreatForm> {
       ],
     );
   }
-
   // ==========================================================================
   // SIDEBARS
   // ==========================================================================
-
-  // --------------------------------------------------------------------------
-  // SCREENS SIDEBAR
-  // --------------------------------------------------------------------------
   Widget _buildScreensSidebar(theme t) {
     return Container(
       width: 250,
@@ -696,7 +696,6 @@ class _State extends State<CreatForm> {
       ),
     );
   }
-
   // --------------------------------------------------------------------------
   // CUSTOMIZE SIDEBAR
   // --------------------------------------------------------------------------
@@ -1682,11 +1681,6 @@ class _State extends State<CreatForm> {
       ],
     );
   }
-
-  // ==========================================================================
-  // UTILITY WIDGETS
-  // ==========================================================================
-
   // --------------------------------------------------------------------------
   // ASPECT RATIO CHANGER
   // --------------------------------------------------------------------------
@@ -1794,5 +1788,29 @@ class _State extends State<CreatForm> {
 
   _messagesOnClick() {
     showMsg(Constants.notReadyMsg, context, t);
+  }
+
+  Widget contentItemBuilder(DocItem c) {
+    /// the default one is Text
+    if(c.type == DocItemType.Text){
+      //this is the default one it is a text and a builder if you write '/'
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: FlatAutoComplete(
+          key: ObjectKey(selectedScreen),
+          screenStyle:selectedScreen.screenCustomization,
+          t: t,
+          items: DocItemType.values,
+          onSubmit: (value) {
+            print('Selected: $value');
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Action: $value')),
+            );
+          },
+        ),
+      );
+    }
+
+    return SizedBox();
   }
 }
