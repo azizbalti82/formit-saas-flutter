@@ -38,7 +38,10 @@ Widget buildCancelIconButton(
       double? iconSized,
       void Function()? onclick,
     }) {
-  return Container(
+  return InkWell(
+    borderRadius: BorderRadius.circular(20),
+    onTap: ()=>onclick!=null ? onclick() : Navigator.pop(context),
+    child: Container(
     width: iconSized != null ? iconSized * 1.5 : 45,
     height: iconSized != null ? iconSized * 1.5 : 45,
     decoration: BoxDecoration(
@@ -48,21 +51,16 @@ Widget buildCancelIconButton(
       borderRadius: BorderRadius.circular(50),
     ),
     child: Center( // Center is simpler than Align here
-      child: IconButton(
-        onPressed: () => onclick!=null ? onclick() : Navigator.pop(context),
-        padding: EdgeInsets.zero, // 👈 remove default padding
-        constraints: const BoxConstraints(), // 👈 remove min size constraints
-        icon: Icon(
+      child: Icon(
           isX == true
               ? Icons.close_rounded
               : HugeIconsStroke.arrowLeft01,
           size: iconSized ?? 24,
           color: t.textColor,
           fill: 1,
-        ),
       ),
     ),
-  );
+  ));
 }
 
 

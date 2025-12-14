@@ -941,6 +941,20 @@ class _AppScreenState extends State<AppScreen> {
                           ),
                           PopupMenuItemData(
                             onTap: () {
+                            },
+                            label: "Add to favorites",
+                            color: theme.textColor,
+                            icon: HugeIconsStroke.heartAdd,
+                          ),
+                          PopupMenuItemData(
+                            onTap: () {
+                            },
+                            label: "Add to archive",
+                            color: theme.textColor,
+                            icon: HugeIconsStroke.archive,
+                          ),
+                          PopupMenuItemData(
+                            onTap: () {
                               navigateTo(context, PreviewForm(t: t,f: f,goTo: PreviewFormSections.share,), false);
                             },
                             label: "Share",

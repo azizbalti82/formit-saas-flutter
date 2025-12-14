@@ -3,9 +3,7 @@ import 'package:flutter/widgets.dart';
 enum DocItemType {
   Text,
   Input,
-  Image,
   Checklist,
-  Divider,
 }
 
 class DocItem {

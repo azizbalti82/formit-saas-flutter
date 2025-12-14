@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide colorFromHex;
 import 'package:formbuilder/backend/models/form/docItem.dart';
 import 'package:formbuilder/screens/home/appScreen.dart';
+import 'package:formbuilder/screens/home/formSettings.dart';
 import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:forui/forui.dart';
@@ -21,6 +22,7 @@ import '../../backend/models/form/screen.dart';
 import '../../backend/models/form/form.dart';
 import '../../backend/models/form/screenCustomization.dart';
 import '../../data/constants.dart';
+import '../../data/fonts.dart';
 import '../../main.dart';
 import '../../services/provider.dart';
 import '../../services/themeService.dart';
@@ -219,96 +221,99 @@ class _State extends State<CreatForm> {
   }
 
   Widget _buildMainContent() {
-    final bool hasCover =
-        selectedScreen.screenCustomization.coverImageBytes != null;
-    final bool hasLogo =
-        selectedScreen.screenCustomization.logoImageBytes != null;
+    final bool hasCover = selectedScreen.screenCustomization.coverImageBytes != null;
+    final bool hasLogo = selectedScreen.screenCustomization.logoImageBytes != null;
 
-    return SizedBox(
-        width: selectedScreen.screenCustomization.pageWidth*1.0,
-        child:  SingleChildScrollView(
-      child: Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          // Add spacing below for the overlapping logo
-          if (hasLogo && !hasCover)
-            SizedBox(
-              height: selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
+    return Align(
+          alignment: Alignment.topCenter,
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: selectedScreen.screenCustomization.pageWidth*1.0,
             ),
-          if (hasLogo || hasCover)
-            Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Cover Image (or placeholder if only logo exists)
-                if (hasCover)
-                  GeneralImageViewer(
-                    heightPercentage:
-                    selectedScreen.screenCustomization.coverHeight * 0.01,
-                    sourceType: ImageSourceType.bytes,
-                    imageBytes:
-                    selectedScreen.screenCustomization.coverImageBytes,
-                    borderRadius: 0,
-                    fit: BoxFit.fitWidth,
-                  )
-                else if (hasLogo)
-                  SizedBox(
-                    width: double.infinity,
-                    height:
-                    (selectedScreen.screenCustomization.logoHeight * 0.5),
-                  ),
-
-                if (hasLogo)
-                  Positioned(
-                      bottom: hasCover ? -(selectedScreen.screenCustomization.logoHeight * 0.5) : 0,
-                      left: 0,
-                      right: 0,
-                      child: Center(
-                        child: GeneralImageViewer(
-                          sourceType: ImageSourceType.bytes,
-                          imageBytes: selectedScreen
-                              .screenCustomization
-                              .logoImageBytes,
-                          width:
-                          selectedScreen.screenCustomization.logoWidth *
-                              1.0,
-                          height:
-                          selectedScreen.screenCustomization.logoHeight *
-                              1.0,
-                          aspectRatio: 1,
-                          borderRadius:
-                          selectedScreen.screenCustomization.logoRound *
-                              1.0,
-                          fit: BoxFit.cover,
-                          placeholder: Container(
-                            color: Colors.grey.shade300,
-                            child: Center(child: Icon(Icons.image, size: 40)),
+            child:SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  // Add spacing below for the overlapping logo
+                  if (hasLogo && !hasCover)
+                    SizedBox(
+                      height: selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
+                    ),
+                  if (hasLogo || hasCover)
+                    Stack(
+                      clipBehavior: Clip.none,
+                      children: [
+                        // Cover Image (or placeholder if only logo exists)
+                        if (hasCover)
+                          GeneralImageViewer(
+                            heightPercentage:
+                            selectedScreen.screenCustomization.coverHeight * 0.01,
+                            sourceType: ImageSourceType.bytes,
+                            imageBytes:
+                            selectedScreen.screenCustomization.coverImageBytes,
+                            borderRadius: 0,
+                            fit: BoxFit.fitWidth,
+                          )
+                        else if (hasLogo)
+                          SizedBox(
+                            width: double.infinity,
+                            height:
+                            (selectedScreen.screenCustomization.logoHeight * 0.5),
                           ),
-                          errorWidget: Icon(Icons.broken_image),
-                          showBorder: selectedScreen
-                              .screenCustomization
-                              .logoHasBorder,
-                          borderColor: colorFromHex(
-                            selectedScreen
-                                .screenCustomization
-                                .backgroundColor,
-                          ),
-                          borderWidth: 2.5,
-                        ),
-                      )
-                  ),
-              ],
-            ),
 
-          // Add spacing below for the overlapping logo
-          if (hasLogo && hasCover)
-            SizedBox(
-              height: selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
+                        if (hasLogo)
+                          Positioned(
+                              bottom: hasCover ? -(selectedScreen.screenCustomization.logoHeight * 0.5) : 0,
+                              left: 0,
+                              right: 0,
+                              child: Center(
+                                child: GeneralImageViewer(
+                                  sourceType: ImageSourceType.bytes,
+                                  imageBytes: selectedScreen
+                                      .screenCustomization
+                                      .logoImageBytes,
+                                  width:
+                                  selectedScreen.screenCustomization.logoWidth *
+                                      1.0,
+                                  height:
+                                  selectedScreen.screenCustomization.logoHeight *
+                                      1.0,
+                                  aspectRatio: 1,
+                                  borderRadius:
+                                  selectedScreen.screenCustomization.logoRound *
+                                      1.0,
+                                  fit: BoxFit.cover,
+                                  placeholder: Container(
+                                    color: Colors.grey.shade300,
+                                    child: Center(child: Icon(Icons.image, size: 40)),
+                                  ),
+                                  errorWidget: Icon(Icons.broken_image),
+                                  showBorder: selectedScreen
+                                      .screenCustomization
+                                      .logoHasBorder,
+                                  borderColor: colorFromHex(
+                                    selectedScreen
+                                        .screenCustomization
+                                        .backgroundColor,
+                                  ),
+                                  borderWidth: 2.5,
+                                ),
+                              )
+                          ),
+                      ],
+                    ),
+
+                  // Add spacing below for the overlapping logo
+                  if (hasLogo && hasCover)
+                    SizedBox(
+                      height: selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
+                    ),
+                  SizedBox(height: 20,),
+                  ...selectedScreen.content.map((c)=>contentItemBuilder(c))
+                ],
+              ),
             ),
-          SizedBox(height: 20,),
-          ...selectedScreen.content.map((c)=>contentItemBuilder(c))
-        ],
-      ),
-    ),
+          ) // everything inside uses this font
     );
   }
 
@@ -907,7 +912,7 @@ class _State extends State<CreatForm> {
                   "px",
                   selectedScreen.screenCustomization.pageWidth,
                   t,
-                  50,
+                  0,
                   maxInt,
                   (selectedValue) {
                     setState(() {
@@ -1673,9 +1678,11 @@ class _State extends State<CreatForm> {
           key: ValueKey(selectedScreen.id),
           selectedValue: selectedScreen.screenCustomization.fontFamily,
           f: (v) {
-            selectedScreen.screenCustomization = selectedScreen
-                .screenCustomization
-                .copyWith(fontFamily: v);
+            setState(() {
+              selectedScreen.screenCustomization = selectedScreen
+                  .screenCustomization
+                  .copyWith(fontFamily: v);
+            });
           },
         ),
       ],
@@ -1730,7 +1737,38 @@ class _State extends State<CreatForm> {
       ],
     );
   }
+  Widget contentItemBuilder(DocItem c) {
+    /// the default one is Text
+    if(c.type == DocItemType.Text){
+      //this is the default one it is a text and a builder if you write '/'
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: FlatAutoComplete(
+          font: selectedScreen.screenCustomization.fontFamily.toLowerCase(),
+            key: ObjectKey(selectedScreen.screenCustomization),
+            screenStyle:selectedScreen.screenCustomization,
+            t: t,
+            items: DocItemType.values,
+            onSubmit: (value) {
+              if(value=="Text"){
+                print('Selected: $value');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Action: $value')),
+                );
+              }else if(value=="Text"){
 
+              }else if(value=="Text"){
+
+              }else {
+
+              }
+            }
+        ),
+      );
+    }
+
+    return SizedBox();
+  }
   // ==========================================================================
   // ACTION HANDLERS
   // ==========================================================================
@@ -1761,7 +1799,6 @@ class _State extends State<CreatForm> {
   _aiOnClick() {
     showMsg(Constants.notReadyMsg, context, t);
   }
-
   _customizeOnClick() {
     setState(() {
       isCustomizeSideBarOpen = !isCustomizeSideBarOpen;
@@ -1779,7 +1816,7 @@ class _State extends State<CreatForm> {
   }
 
   _settingsOnClick() {
-    showMsg(Constants.notReadyMsg, context, t);
+    navigateTo(context, FormSettings(t: t), false);
   }
 
   _historyOnClick() {
@@ -1788,29 +1825,5 @@ class _State extends State<CreatForm> {
 
   _messagesOnClick() {
     showMsg(Constants.notReadyMsg, context, t);
-  }
-
-  Widget contentItemBuilder(DocItem c) {
-    /// the default one is Text
-    if(c.type == DocItemType.Text){
-      //this is the default one it is a text and a builder if you write '/'
-      return Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: FlatAutoComplete(
-          key: ObjectKey(selectedScreen),
-          screenStyle:selectedScreen.screenCustomization,
-          t: t,
-          items: DocItemType.values,
-          onSubmit: (value) {
-            print('Selected: $value');
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Action: $value')),
-            );
-          },
-        ),
-      );
-    }
-
-    return SizedBox();
   }
 }

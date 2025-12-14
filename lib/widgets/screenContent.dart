@@ -5,10 +5,12 @@ import 'package:forui/assets.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 
 import '../backend/models/form/docItem.dart';
+import '../data/fonts.dart';
 import '../services/themeService.dart';
 
 class FlatAutoComplete extends StatefulWidget {
   final List<DocItemType> items;
+  final String font;
   final Function(String) onSubmit;
   final String? placeholder;
   final theme t;
@@ -16,6 +18,7 @@ class FlatAutoComplete extends StatefulWidget {
 
   const FlatAutoComplete({
     super.key,
+    required this.font,
     required this.items,
     required this.onSubmit,
     required this.t,
@@ -113,12 +116,13 @@ class _FlatAutoCompleteState extends State<FlatAutoComplete> {
                           ),
                           SizedBox(width: 10,),
                           Text(
-                            item.name,
+                            item.name.toLowerCase(),
                             style: TextStyle(
                                 fontSize: 14,
-                                color: t.textColor
+                                color: t.textColor,
                             ),
-                          ),
+                          )
+
                         ],
                       )
                     ),
@@ -200,9 +204,12 @@ class _FlatAutoCompleteState extends State<FlatAutoComplete> {
           focusNode: _focusNode,
           maxLines: null, // 👈 allows multiline
           keyboardType: TextInputType.multiline, // 👈 optional but recommended
-          style: TextStyle(
-            color: widget.screenStyle.textColorValue,
-            fontSize: widget.screenStyle.fontSize * 1.0,
+          style: AppFonts.getFont(
+            widget.font,
+            base: TextStyle(
+                color: widget.screenStyle.textColorValue,
+                fontSize: widget.screenStyle.fontSize * 1.0,
+            ),
           ),
           decoration: InputDecoration(
             hintText: widget.placeholder,
@@ -221,17 +228,15 @@ class _FlatAutoCompleteState extends State<FlatAutoComplete> {
   }
 
   IconData? iconBuilder(DocItemType item) {
-    if(item==DocItemType.Image){
-      return HugeIconsStroke.image01;
-    }else if(item==DocItemType.Text){
+    if(item==DocItemType.Text){
       return HugeIconsStroke.text;
     }else if(item==DocItemType.Checklist){
       return HugeIconsSolid.solidLine02;
-    }else if(item==DocItemType.Divider){
-      return HugeIconsSolid.solidLine01;
     }else if(item==DocItemType.Input){
       return HugeIconsStroke.textSquare;
-    }
+    }/*else if(item==DocItemType.Image){
+      return HugeIconsStroke.image01;
+    }*/
     return null;
   }
 }
