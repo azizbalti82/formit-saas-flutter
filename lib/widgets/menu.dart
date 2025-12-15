@@ -8,19 +8,23 @@ class CollectionPopupMenu extends StatefulWidget {
   final double iconSize;
   final Widget? customTrigger;
   final IconData? icon;
+  final bool isFromFormBuilder;
 
-  const CollectionPopupMenu({
+  CollectionPopupMenu({
     Key? key,
     required this.iconColor,
     required this.cardColor,
     required this.items,
     this.iconSize = 20,
-    this.customTrigger, this.icon,
+    this.customTrigger,
+    this.icon,
+    this.isFromFormBuilder = false
   }) : super(key: key);
 
   @override
   State<CollectionPopupMenu> createState() => _CollectionPopupMenuState();
 }
+
 class _CollectionPopupMenuState extends State<CollectionPopupMenu> {
   late final CustomPopupMenuController _controller;
 
@@ -28,11 +32,14 @@ class _CollectionPopupMenuState extends State<CollectionPopupMenu> {
   void initState() {
     super.initState();
     _controller = CustomPopupMenuController();
+
   }
 
   /// Programmatically open the menu
   void openMenu() {
     _controller.showMenu();
+    print(widget.isFromFormBuilder);
+
   }
 
   /// Programmatically close the menu
@@ -43,40 +50,43 @@ class _CollectionPopupMenuState extends State<CollectionPopupMenu> {
   @override
   Widget build(BuildContext context) {
     return CustomPopupMenu(
-      controller: _controller,
-      arrowColor: widget.cardColor,
-      child: widget.customTrigger ?? Icon(
-        widget.icon ?? Icons.more_vert,
-        color: widget.iconColor,
-        size: widget.iconSize,
-      ),
-      menuBuilder: () => ClipRRect(
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
-          color: widget.cardColor,
-          child: IntrinsicWidth(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch, // all items same width
-              children: widget.items
-                  .map(
-                    (item) => actionRow(
-                  onTap: () {
-                    closeMenu(); // safely close menu
-                    item.onTap(); // run your action
-                  },
-                  color: item.color,
-                  label: item.label,
-                  icon: item.icon,
-                ),
-              )
-                  .toList(),
+        controller: _controller,
+        arrowColor: widget.cardColor,
+        child:
+            widget.customTrigger ??
+            Icon(
+              widget.icon ?? Icons.more_vert,
+              color: widget.iconColor,
+              size: widget.iconSize,
+            ),
+        menuBuilder: () => ClipRRect(
+          borderRadius: BorderRadius.circular(16),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 16),
+            color: widget.cardColor,
+            child: IntrinsicWidth(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment:
+                    CrossAxisAlignment.stretch, // all items same width
+                children: widget.items
+                    .map(
+                      (item) => actionRow(
+                        onTap: () {
+                          closeMenu(); // safely close menu
+                          item.onTap(); // run your action
+                        },
+                        color: item.color,
+                        label: item.label,
+                        icon: item.icon,
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
           ),
         ),
-      ),
-      pressType: PressType.singleClick,
+        pressType: PressType.singleClick,
     );
   }
 }

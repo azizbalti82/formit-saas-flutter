@@ -39,7 +39,7 @@ Widget buildCancelIconButton(
       void Function()? onclick,
     }) {
   return InkWell(
-    borderRadius: BorderRadius.circular(20),
+    borderRadius: BorderRadius.circular(100),
     onTap: ()=>onclick!=null ? onclick() : Navigator.pop(context),
     child: Container(
     width: iconSized != null ? iconSized * 1.5 : 45,

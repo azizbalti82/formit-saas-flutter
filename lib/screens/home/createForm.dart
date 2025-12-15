@@ -1742,14 +1742,25 @@ class _State extends State<CreatForm> {
     if(c.type == DocItemType.Text){
       //this is the default one it is a text and a builder if you write '/'
       return Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 5),
         child: FlatAutoComplete(
           font: selectedScreen.screenCustomization.fontFamily.toLowerCase(),
             key: ObjectKey(selectedScreen.screenCustomization),
             screenStyle:selectedScreen.screenCustomization,
             t: t,
             items: DocItemType.values,
+            onHover: () {
+              print('TextField hovered!');
+              // Do something on hover
+            },
+            onClick: () {
+              print('TextField clicked!');
+              // Do something on click
+            },
             onSubmit: (value) {
+              setState(() {
+                selectedScreen.content.add(DocItem());
+              });
               if(value=="Text"){
                 print('Selected: $value');
                 ScaffoldMessenger.of(context).showSnackBar(
