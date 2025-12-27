@@ -10,49 +10,33 @@ import 'package:get/get.dart';
 import '../services/provider.dart';
 import '../services/themeService.dart';
 
-void navigateTo(BuildContext context, Widget destination, isReplace) {
-  PageRouteBuilder p = PageRouteBuilder(
+void navigateTo(BuildContext context, Widget destination, bool isReplace) {
+  final route = PageRouteBuilder(
     pageBuilder: (context, animation, secondaryAnimation) => destination,
+    transitionDuration: const Duration(milliseconds: 300),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const curve = Curves.easeInOut;
-      var tween = Tween<Offset>(
-        begin: const Offset(0.0, 0.1),
-        end: Offset.zero,
-      ).chain(CurveTween(curve: curve));
-      var fadeTween = Tween<double>(
-        begin: 0.0,
-        end: 1.0,
-      ).chain(CurveTween(curve: curve));
+      final curvedAnimation = CurvedAnimation(
+        parent: animation,
+        curve: Curves.easeOutCubic,
+      );
 
       return SlideTransition(
-        position: animation.drive(tween),
+        position: Tween<Offset>(
+          begin: const Offset(0.0, 0.05),
+          end: Offset.zero,
+        ).animate(curvedAnimation),
         child: FadeTransition(
-          opacity: animation.drive(fadeTween),
+          opacity: Tween<double>(begin: 0.0, end: 1.0).animate(curvedAnimation),
           child: child,
         ),
       );
     },
   );
-  if (isReplace) {
-    Navigator.pushReplacement(context, p);
-  } else {
-    Navigator.push(context, p);
-  }
-}
 
-navigate(BuildContext c, Widget screen, {bool? isReplace}) {
-  //remove focus on all selected inputs
-  FocusManager.instance.primaryFocus?.unfocus();
-  if (isReplace != null && isReplace) {
-    Navigator.pushReplacement(
-      c,
-      MaterialPageRoute(builder: (context) => screen),
-    );
-  } else {
-    Navigator.push(c, MaterialPageRoute(builder: (context) => screen));
-  }
+  isReplace
+      ? Navigator.pushReplacement(context, route)
+      : Navigator.push(context, route);
 }
-
 theme getTheme() {
   Provider provider = Get.find<Provider>();
   return provider.isDark.value ? darkTheme:lightTheme;

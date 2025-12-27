@@ -473,17 +473,17 @@ class _State extends State<VerifyEmail> {
     switch (widget.type) {
       case verifyEmailType.resetPassword:
       case verifyEmailType.updatePassword:
-        navigate(
+      navigateTo(
           context,
           NewPassword(email: latestEmail, t: t),
-          isReplace: true,
+          true,
         );
         break;
       case verifyEmailType.createAccount:
-        navigate(
+        navigateTo(
           context,
           SignInFinalization(t: t),
-          isReplace: true,
+          true,
         );
         break;
       case verifyEmailType.updateEmail:

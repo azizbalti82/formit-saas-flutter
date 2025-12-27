@@ -71,7 +71,7 @@ Widget comingSoonImage(BuildContext context, {required double sizePercentage}) {
   return Center(
     child: SvgPicture.asset(
       "assets/vectors/soon.svg",
-      height: isLandscape(context) ? screenHeight * 0.6 * sizePercentage : null,
+      height: isLandscape(context) ? screenHeight * 0.7 * sizePercentage : null,
       width: isLandscape(context) ? null : screenWidth * sizePercentage,
     ),
   );

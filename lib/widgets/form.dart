@@ -255,9 +255,10 @@ Widget customInput(
       bool? haveBorder = true,
       bool isEnabled = true,
       bool isFocusable = true,
-      bool isNum = false,       // new
-      int? minNum,              // new
-      int? maxNum,              // new
+      bool isNum = false,
+      int? minNum,
+      int? maxNum,
+      FocusNode? focusNode,  // Added this parameter
     }) {
   final ValueNotifier<bool> obscure = ValueNotifier<bool>(isPassword);
 
@@ -267,6 +268,7 @@ Widget customInput(
       return TextFormField(
         enabled: isEnabled,
         controller: controller,
+        focusNode: focusNode,  // Added this line
         obscureText: isPassword ? value : false,
         maxLines: isPassword ? 1 : (maxLines ?? 2),
         minLines: 1,

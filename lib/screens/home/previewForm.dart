@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 import 'package:flutter/cupertino.dart' hide Form;
 import 'package:flutter/material.dart' hide Form;
+import 'package:formbuilder/data/constants.dart';
 import 'package:formbuilder/data/integrations.dart';
 import 'package:formbuilder/screens/home/appScreen.dart';
 import 'package:formbuilder/widgets/messages.dart';
@@ -18,6 +19,7 @@ import '../../widgets/cards.dart';
 import '../../widgets/form.dart';
 import '../../widgets/menu.dart';
 import '../../widgets/table.dart';
+import 'formSettings.dart';
 
 enum PreviewFormSections { responses, insights, share, integrations }
 
@@ -794,11 +796,11 @@ class _State extends State<PreviewForm> {
   }
 
   _settingsFormOnClick() {
-    showSuccess("Settings", context);
+    navigateTo(context, FormSettings(t: t), false);
   }
 
   _customizeFormLinkPreviewOnClick() {
-    showSuccess("customize", context);
+    showMsg(Constants.notReadyMsg, context,t);
   }
 
   _makeFormTemplateOnClick() {
@@ -1101,7 +1103,7 @@ class _State extends State<PreviewForm> {
                 Icon(HugeIconsStroke.grid, color: t.textColor, size: 20),
                 SizedBox(width: 10),
                 Text(
-                  "Connect Integrations",
+                  "Connect Integrations (soon)",
                   style: TextStyle(
                     color: t.textColor,
                     fontSize: 20,
@@ -1116,7 +1118,8 @@ class _State extends State<PreviewForm> {
               style: TextStyle(color: t.secondaryTextColor),
             ),
             SizedBox(height: 30),
-            IntegrationsGrid(integrations: integrations, t: t),
+            //IntegrationsGrid(integrations: integrations, t: t),
+            comingSoonImage(context, sizePercentage: 0.5),
           ],
         ),
       );
@@ -1140,7 +1143,7 @@ class _State extends State<PreviewForm> {
                     Icon(HugeIconsStroke.eye, color: t.textColor, size: 20),
                     const SizedBox(width: 10),
                     Text(
-                      "Link Preview",
+                      "Link Preview (soon)",
                       style: TextStyle(
                         color: t.textColor,
                         fontSize: 20,

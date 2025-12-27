@@ -310,6 +310,13 @@ class _AppScreenState extends State<AppScreen> {
       children: [
         SizedBox(height: 5),
         menuItem(
+          title: 'Tutorials',
+          icon: HugeIconsStroke.graduateMale,
+          onClick: () {
+            EasyLauncher.url(url: "https://azizbalti.netlify.app");
+          },
+        ),
+        menuItem(
           title: 'Contact support',
           icon: HugeIconsStroke.message01,
           onClick: () {

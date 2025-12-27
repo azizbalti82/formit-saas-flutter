@@ -80,6 +80,7 @@ Future showDialogNotificationSettings(BuildContext context, theme t) async {
               ),
               onPress: () async {},
             ),
+            /*
             SizedBox(height: 10),
             FSidebarItem(
               label: Row(
@@ -112,6 +113,8 @@ Future showDialogNotificationSettings(BuildContext context, theme t) async {
               ),
               onPress: () async {},
             ),
+
+             */
             /*
             FSwitchListTile(
               title: const Text(""),
@@ -228,10 +231,16 @@ Future showDialogSearch(BuildContext context, theme t) async {
   final TextEditingController inputController = TextEditingController();
   final ValueNotifier<bool> isSearching = ValueNotifier<bool>(false);
   final ValueNotifier<bool> hasSearched = ValueNotifier<bool>(false);
+  final FocusNode focusNode = FocusNode();
 
   // Fake lists for results
   List<Collection> collections = [];
   List<Form> forms = [];
+
+  // Auto focus after 300ms
+  Future.delayed(const Duration(milliseconds: 300), () {
+    focusNode.requestFocus();
+  });
 
   // 🔍 Listen to input changes
   inputController.addListener(() async {
@@ -286,6 +295,7 @@ Future showDialogSearch(BuildContext context, theme t) async {
                 context,
                 haveBorder: false,
                 isFocusable: false,
+                focusNode: focusNode,
               ),
             ),
           ),
@@ -388,7 +398,6 @@ Future showDialogSearch(BuildContext context, theme t) async {
     ),
   );
 }
-
 List<Widget> buildCollectionCards(
     List<Collection> collections, theme t, BuildContext context) {
   return collections.map((collection) {
