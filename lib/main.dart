@@ -214,38 +214,45 @@ class HomeWrapper extends StatelessWidget {
 // --------------------------------------------------------------------------
 // SYSTEM UI STYLE WRAPPER
 // --------------------------------------------------------------------------
+
 class SystemUiStyleWrapper extends StatelessWidget {
   final Widget child;
-  final Color? statusBarColor;
-  final Color? navBarColor;
   final theme t;
+  final Color? customColor;
 
   const SystemUiStyleWrapper({
     super.key,
     required this.child,
-    this.statusBarColor,
-    this.navBarColor,
     required this.t,
+    this.customColor
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = t.brightness == Brightness.dark;
+    final backgroundColor = isDark
+        ? FThemes.zinc.dark.colors.background
+        : FThemes.zinc.light.colors.background;
+
+    // Force it on every frame (not ideal but works on stubborn Samsung)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    });
+
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle(
-        statusBarColor: t.brightness == Brightness.light
-            ? FThemes.zinc.light.colors.background
-            : FThemes.zinc.dark.colors.background,
-        statusBarIconBrightness: t.brightness == Brightness.dark
-            ? Brightness.light
-            : Brightness.dark,
-        systemNavigationBarColor:
-            navBarColor ??
-            (t.brightness == Brightness.light
-                ? FThemes.zinc.light.colors.background
-                : FThemes.zinc.dark.colors.background),
-        systemNavigationBarIconBrightness: t.brightness,
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+        systemNavigationBarContrastEnforced: false,
+        systemStatusBarContrastEnforced: false,
+        systemNavigationBarDividerColor: Colors.transparent,
       ),
-      child: SafeArea(child: child),
+      child: Container(
+        color: customColor ?? backgroundColor,
+        child: SafeArea(child: child),
+      ),
     );
   }
 }

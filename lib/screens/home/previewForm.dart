@@ -552,6 +552,9 @@ class _State extends State<PreviewForm> {
     };
 
     return SystemUiStyleWrapper(
+      customColor:t.brightness == Brightness.light
+          ? Colors.white
+          : t.bgColor ,
       t: t,
       child: Scaffold(
         backgroundColor: t.brightness == Brightness.light
@@ -863,34 +866,36 @@ class _State extends State<PreviewForm> {
                 Spacer(),
                 isLandscape(context)
                     ? FButton.icon(
-                        onPress: _exportSubmissionsOnClick,
-                        style: FButtonStyle.ghost(),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Icon(FIcons.download),
-                            SizedBox(width: 5),
-                            Text(
-                              "Download CSV",
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: t.brightness == Brightness.light
-                                    ? FontWeight.w600
-                                    : FontWeight.w500,
-                                color: t.textColor,
-                              ),
-                            ),
-                          ],
+                  onPress: _exportSubmissionsOnClick,
+                  style: FButtonStyle.ghost(),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(FIcons.download),
+                      SizedBox(width: 5),
+                      Text(
+                        "Download CSV",
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: t.brightness == Brightness.light
+                              ? FontWeight.w600
+                              : FontWeight.w500,
+                          color: t.textColor,
                         ),
-                      )
-                    : IconButton(
-                        onPressed: _exportSubmissionsOnClick,
-                        icon: Icon(FIcons.download),
                       ),
+                    ],
+                  ),
+                )
+                    : IconButton(
+                  onPressed: _exportSubmissionsOnClick,
+                  icon: Icon(FIcons.download),
+                ),
               ],
             ),
           if (submissions.isNotEmpty) SizedBox(height: 5),
-          SubmissionsTableWidget(t: t, data: submissions),
+    Expanded(child:
+    SubmissionsTableWidget(t: t, data: submissions),
+    )
         ],
       );
     } else if (_selectedSectionIndex == 1) {
@@ -1069,14 +1074,15 @@ class _State extends State<PreviewForm> {
               children: [
                 Icon(HugeIconsStroke.connect, color: t.textColor, size: 20),
                 const SizedBox(width: 10),
-                Text(
+                Expanded(child: Text(
                   "Embed Form (soon)",
                   style: TextStyle(
                     color: t.textColor,
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                   ),
-                ),
+                  softWrap: true,
+                ),)
               ],
             ),
             const SizedBox(height: 8),
@@ -1102,14 +1108,15 @@ class _State extends State<PreviewForm> {
               children: [
                 Icon(HugeIconsStroke.grid, color: t.textColor, size: 20),
                 SizedBox(width: 10),
-                Text(
+                Expanded(child: Text(
                   "Connect Integrations (soon)",
                   style: TextStyle(
                     color: t.textColor,
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
                   ),
-                ),
+                  softWrap: true,
+                ),)
               ],
             ),
             SizedBox(height: 8),

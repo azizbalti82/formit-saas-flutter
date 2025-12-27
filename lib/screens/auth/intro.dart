@@ -79,6 +79,9 @@ class _AppScreenState extends State<StartScreen> {
 
   Widget _buildScaffold(theme currentTheme, BuildContext context) {
     return SystemUiStyleWrapper(
+      customColor:t.brightness == Brightness.light
+          ? Colors.white
+          : t.bgColor ,
       t: currentTheme,
       child: Scaffold(
         backgroundColor: currentTheme.bgColor,

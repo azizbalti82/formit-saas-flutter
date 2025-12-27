@@ -1,6 +1,7 @@
 // ignore_for_file: file_names
 
 import 'package:easy_url_launcher/easy_url_launcher.dart';
+import 'package:flutter/cupertino.dart' hide Form;
 import 'package:flutter/material.dart' hide Form;
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -47,6 +48,7 @@ class _AppScreenState extends State<AppScreen> {
   late theme t;
   bool logoutLoading = false;
   Uint8List? imageBytes;
+  int _selectedTemplateTypeIndex = 0;
 
   // --------------------------------------------------------------------------
   // CONTROLLERS
@@ -185,16 +187,6 @@ class _AppScreenState extends State<AppScreen> {
             handleSideBarCloseMobile();
             setState(() {
               provider.currentPath.value = [AppPath.favorites.data()];
-            });
-          },
-        ),
-        menuItem(
-          title: 'Archived',
-          icon: HugeIconsStroke.archive02,
-          onClick: () {
-            handleSideBarCloseMobile();
-            setState(() {
-              provider.currentPath.value = [AppPath.archived.data()];
             });
           },
         ),
@@ -390,6 +382,10 @@ class _AppScreenState extends State<AppScreen> {
         if (!provider.isSideBarOpen.value) collapseWidget(),
         if (!provider.isSideBarOpen.value) SizedBox(width: 10),
         Expanded(child: pathWidgetBuilder()),
+        IconButton(onPressed: (){
+          showNotifications(context,t);
+        }, icon: Icon(HugeIconsStroke.notification01,color: t.textColor,)),
+        SizedBox(width: 10,),
         Row(
           children: [
             if (isLandscape(context)) _buildNewCollectionButton(),
@@ -504,12 +500,57 @@ class _AppScreenState extends State<AppScreen> {
         ),
       );
     } else if (weAreInTemplates()) {
-      return noResultsImage();
+      final Map<int, Widget> segments = {
+        0: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: isLandscape(context) ? 10 : 5,
+            vertical: 8,
+          ),
+          child: Text(
+            "My Templates",
+            style: TextStyle(
+              color: (_selectedTemplateTypeIndex == 0)
+                  ? t.bgColor
+                  : t.secondaryTextColor,
+            ),
+          ),
+        ),
+        1: Text(
+          'Public Templates',
+          style: TextStyle(
+            color: (_selectedTemplateTypeIndex == 1)
+                ? t.bgColor
+                : t.secondaryTextColor,
+          ),
+        ),
+      };
+
+      return Column(
+        children: [
+          CupertinoSlidingSegmentedControl<int>(
+            groupValue: _selectedTemplateTypeIndex,
+            thumbColor: t.textColor,
+            backgroundColor: t.cardColor,
+            children: segments,
+            onValueChanged: (value) {
+              setState(() => _selectedTemplateTypeIndex = value!);
+            },
+          ),
+          SizedBox(height: 10),
+          Expanded(
+            child: IndexedStack(
+              index: _selectedTemplateTypeIndex,
+              children: [
+     noResultsImage(),
+     noResultsImage()
+    ],
+            ),
+          ),
+        ],
+      );
     }else if (weAreInFavorites()) {
       return noResultsImage();
-    }else if (weAreInArchived()) {
-      return noResultsImage();
-    } else {
+    }else {
       //if its home folder clean some things
       if (weAreInHome()) {
         // Schedule the update for after the build
@@ -1186,14 +1227,6 @@ bool weAreInTemplates() {
   final Provider provider = Get.find<Provider>();
   Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
   if(current != AppPath.templates.data()){
-    return false;
-  }
-  return true;
-}
-bool weAreInArchived() {
-  final Provider provider = Get.find<Provider>();
-  Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
-  if(current != AppPath.archived.data()){
     return false;
   }
   return true;

@@ -78,6 +78,9 @@ class _State extends State<FormSettings> {
     double screenHeight = screenSize.height;
 
     return SystemUiStyleWrapper(
+      customColor:t.brightness == Brightness.light
+          ? Colors.white
+          : t.bgColor ,
       t: t,
       child: Scaffold(
         backgroundColor: t.brightness == Brightness.light? Colors.white : t.bgColor,

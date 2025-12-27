@@ -54,7 +54,7 @@ class _State extends State<CreatForm> {
   bool showKey = true;
   bool isCreatingLoading = false;
   bool isCustomizeSideBarOpen = false;
-  bool isScreensSideBarOpen = true;
+  bool isScreensSideBarOpen = GetPlatform.isAndroid?false:true;
   PreviewSizes previewSize = PreviewSizes.tablet;
   ScreenCustomization pageCustomization = ScreenCustomization();
   int _selectedSectionIndex = 0;
@@ -101,11 +101,23 @@ class _State extends State<CreatForm> {
     double screenHeight = screenSize.height;
 
     return SystemUiStyleWrapper(
+        customColor:t.brightness == Brightness.light
+            ? Colors.white
+            : t.bgColor ,
       t: t,
-      child: Scaffold(
+      child: GestureDetector(
+        onTap: () {
+            if(!isLandscape(context)){
+              setState(() {
+                isScreensSideBarOpen = false;
+                isCustomizeSideBarOpen = false;
+              });
+            };
+          },
+          child: Scaffold(
         backgroundColor: t.bgColor,
         appBar: _buildAppBar(t),
-        body: Stack(
+        body:Stack(
           children: [
             Padding(
               padding: EdgeInsets.symmetric(vertical: 20, horizontal: 12),
@@ -127,7 +139,7 @@ class _State extends State<CreatForm> {
               ),
           ],
         ),
-      ),
+      ),)
     );
   }
 
@@ -349,7 +361,8 @@ class _State extends State<CreatForm> {
                 FTooltip(
                   tipBuilder: (context, controller) => const Text('Zoom In'),
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                    },
                     icon: Icon(FIcons.zoomIn, color: t.textColor),
                   ),
                 ),
@@ -558,11 +571,21 @@ class _State extends State<CreatForm> {
         buildCancelIconButton(t, context, isX: true),
         Spacer(),
         SizedBox(width: 10),
+        if (_selectedSectionIndex == 0)
+          Container(
+          child:Row(
+            children: [
+              IconButton(onPressed: _customizeOnClick, icon: Icon(HugeIconsStroke.edit03, size: 20, color: t.textColor)),
+              IconButton(onPressed: _screensOnClick, icon: Icon(HugeIconsStroke.smartPhone02, size: 20, color: t.textColor))
+            ],
+          ),
+        ),
+        if (_selectedSectionIndex == 0) SizedBox(width: 10),
         if (_selectedSectionIndex == 0) aspectRatioChanger(t),
-        if (_selectedSectionIndex == 0) SizedBox(width: 20),
+        if (_selectedSectionIndex == 0) SizedBox(width: 10),
         IconButton(
           onPressed: _previewOnClick,
-          icon: Icon(HugeIconsStroke.play),
+          icon: Icon(HugeIconsStroke.play, size: 24, color: t.textColor),
         ),
         SizedBox(width: 10),
         CollectionPopupMenu(
@@ -576,20 +599,7 @@ class _State extends State<CreatForm> {
               color: theme.accentColor,
               icon: Icons.check_rounded,
             ),
-            if (_selectedSectionIndex == 0)
-              PopupMenuItemData(
-                onTap: _customizeOnClick,
-                label: "Customize",
-                color: theme.textColor,
-                icon: HugeIconsStroke.edit03,
-              ),
-            if (_selectedSectionIndex == 0)
-              PopupMenuItemData(
-                onTap: _screensOnClick,
-                label: "Screens",
-                color: theme.textColor,
-                icon: HugeIconsStroke.smartPhone02,
-              ),
+
             PopupMenuItemData(
               onTap: _settingsOnClick,
               label: "Settings",
@@ -1347,6 +1357,9 @@ class _State extends State<CreatForm> {
       onPress: () {
         setState(() {
           selectedScreen = s;
+          if(!isLandscape(context)){
+            isScreensSideBarOpen = false;
+          }
         });
       },
       builder: (context, state, child) => child!,
@@ -1702,7 +1715,7 @@ class _State extends State<CreatForm> {
           : HugeIconsStroke.laptop,
       iconColor: theme.textColor,
       cardColor: theme.cardColor,
-      iconSize: 18,
+      iconSize: !isLandscape(context)?20:18,
       items: [
         PopupMenuItemData(
           onTap: () {
@@ -1813,12 +1826,14 @@ class _State extends State<CreatForm> {
   _customizeOnClick() {
     setState(() {
       isCustomizeSideBarOpen = !isCustomizeSideBarOpen;
+      isScreensSideBarOpen = false;
     });
   }
 
   _screensOnClick() {
     setState(() {
       isScreensSideBarOpen = !isScreensSideBarOpen;
+      isCustomizeSideBarOpen = false;
     });
   }
 

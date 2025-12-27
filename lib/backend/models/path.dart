@@ -34,7 +34,6 @@ enum AppPath {
   trash,
   collections,
   favorites,
-  archived,
 }
 
 extension AppPathExtension on AppPath {
@@ -55,11 +54,6 @@ extension AppPathExtension on AppPath {
           title: 'Favorites',
           type: PathType.section,
         );
-        case AppPath.archived:
-      return Path(
-        title: 'Archived',
-        type: PathType.section,
-      );
       case AppPath.trash:
         return Path(
           title: 'Trash',

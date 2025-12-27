@@ -185,6 +185,38 @@ Future showDialogNewFolder(BuildContext context, theme t) async {
 }
 
 // --------------------------------------------------------------------------
+// notifications DIALOG
+// --------------------------------------------------------------------------
+Future showNotifications(BuildContext context, theme t) async {
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      title: const Text(
+        "Notifications",
+        style: TextStyle(fontSize: 22),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 40),
+          Text("You don't have any notification yet",style: TextStyle(color: t.secondaryTextColor,fontSize: 16),),
+          const SizedBox(height: 40),
+        ],
+      ),
+      actions: [
+        FButton(
+          onPress: () {
+            Navigator.pop(context);
+          },
+          child: const Text('Close'),
+        ),
+      ],
+    ),
+  );
+}
+
+// --------------------------------------------------------------------------
 // RENAME DIALOG
 // --------------------------------------------------------------------------
 Future showDialogRenameCollection(

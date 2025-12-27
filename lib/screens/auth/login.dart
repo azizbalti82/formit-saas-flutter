@@ -75,6 +75,7 @@ class _State extends State<Login> {
     double screenHeight = screenSize.height;
 
     return SystemUiStyleWrapper(
+      customColor:Colors.black ,
       t: t,
       child: Scaffold(
         backgroundColor: t.bgColor,
