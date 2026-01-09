@@ -11,7 +11,7 @@ import 'package:get/get.dart';
 import '../../main.dart';
 import '../../services/provider.dart';
 import '../../services/themeService.dart';
-import '../../tools/tools.dart';
+import '../../services/tools.dart';
 import '../../widgets/basics.dart';
 import '../../widgets/form.dart';
 
@@ -34,9 +34,7 @@ class _State extends State<SignInFinalization> {
   // --------------------------------------------------------------------------
   // CONTROLLERS
   // --------------------------------------------------------------------------
-  TextEditingController firstNameController = TextEditingController();
-  TextEditingController lastNameController = TextEditingController();
-
+  TextEditingController nameController = TextEditingController();
   // --------------------------------------------------------------------------
   // SERVICES
   // --------------------------------------------------------------------------
@@ -53,8 +51,7 @@ class _State extends State<SignInFinalization> {
 
   @override
   void dispose() {
-    firstNameController.dispose();
-    lastNameController.dispose();
+    nameController.dispose();
     super.dispose();
   }
 
@@ -273,17 +270,8 @@ class _State extends State<SignInFinalization> {
       children: [
         customInput(
           t,
-          firstNameController,
-          "First name",
-          "",
-          context,
-          maxLines: 1,
-        ),
-        const SizedBox(height: 16),
-        customInput(
-          t,
-          lastNameController,
-          "Last name",
+          nameController,
+          "Name",
           "",
           context,
           maxLines: 1,
@@ -335,10 +323,9 @@ class _State extends State<SignInFinalization> {
   Future<void> _handleCreateAccount() async {
     if (isSignInLoading) return;
 
-    String firstName = firstNameController.text.trim();
-    String lastName = lastNameController.text.trim();
+    String name = nameController.text.trim();
 
-    if (!_validateInputs(firstName, lastName)) {
+    if (!_validateInputs(name)) {
       return;
     }
 
@@ -347,7 +334,7 @@ class _State extends State<SignInFinalization> {
     });
 
     try {
-      await _performAccountCreation(firstName, lastName);
+      await _performAccountCreation(name);
     } catch (e) {
       if (mounted) {
         showError(e.toString(), context);
@@ -361,31 +348,22 @@ class _State extends State<SignInFinalization> {
     }
   }
 
-  bool _validateInputs(String firstName, String lastName) {
-    if (firstName.isEmpty) {
-      showError("First name is required", context);
+  bool _validateInputs(String name) {
+    if (name.isEmpty) {
+      showError("name is required", context);
       return false;
     }
 
-    if (lastName.isEmpty) {
-      showError("Last name is required", context);
-      return false;
-    }
 
-    if (firstName.length < 2) {
+    if (name.length < 2) {
       showError("First name must be at least 2 characters", context);
-      return false;
-    }
-
-    if (lastName.length < 2) {
-      showError("Last name must be at least 2 characters", context);
       return false;
     }
 
     return true;
   }
 
-  Future<void> _performAccountCreation(String firstName, String lastName) async {
+  Future<void> _performAccountCreation(String name) async {
     // Simulate API call
     await Future.delayed(const Duration(seconds: 2));
 

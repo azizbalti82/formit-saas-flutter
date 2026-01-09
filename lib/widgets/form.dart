@@ -6,7 +6,7 @@ import 'package:get/get.dart';
 
 import '../services/provider.dart';
 import '../services/themeService.dart';
-import '../tools/tools.dart';
+import '../services/tools.dart';
 
 class CustomButton extends StatefulWidget {
   final String text;

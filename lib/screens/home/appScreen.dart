@@ -23,7 +23,7 @@ import '../../main.dart';
 import '../../services/provider.dart';
 import '../../services/sharedPreferencesService.dart';
 import '../../services/themeService.dart';
-import '../../tools/tools.dart';
+import '../../services/tools.dart';
 import '../../widgets/dialogues.dart';
 import '../../widgets/menu.dart';
 import '../../widgets/messages.dart';

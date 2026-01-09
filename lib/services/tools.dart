@@ -7,8 +7,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../services/provider.dart';
-import '../services/themeService.dart';
+import 'provider.dart';
+import 'themeService.dart';
 
 void navigateTo(BuildContext context, Widget destination, bool isReplace) {
   final route = PageRouteBuilder(

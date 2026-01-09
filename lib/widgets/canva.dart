@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:canvas_kit/canvas_kit.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:formbuilder/widgets/messages.dart';
+import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
 import '../backend/models/form/screen.dart';
+import '../services/provider.dart';
 import '../services/themeService.dart';
+import 'dialogues.dart';
+import 'menu.dart';
 
 class InteractiveCanvas extends StatefulWidget {
   final List<Screen> screens;
@@ -34,12 +39,90 @@ class _InteractiveCanvasState extends State<InteractiveCanvas> {
   // Connection dragging state
   String? _draggingFromScreenId;
   Offset? _dragEndPosition;
+  static const double _zoomStep = 0.2;
+  final Provider provider = Get.find<Provider>();
+
+  updateScreenConnections(String screenId, List<Connect> connects){
+    //find the screen
+    Screen? screen = screens.firstWhereOrNull((s)=>s.id==screenId);
+    //update the connects
+    if(screen==null){
+      showError("Error while updating rules", context);
+    }else{
+      screen.workflow.connects = connects;
+      //todo save the screens in the main list not just in this local list
+      showSuccess("Rules updated!", context);
+    }
+
+  }
 
   @override
   void initState() {
     super.initState();
     _controller = CanvasKitController();
     screens = widget.screens;
+
+    ever(provider.shouldCenterCanvas, (shouldCenter) {
+      if (shouldCenter) {
+        _centerAllScreens();
+        provider.shouldCenterCanvas.value = false; // Reset
+      }
+    });
+    // Add zoom listener
+    ever(provider.zoomTrigger, (trigger) {
+      if (trigger == 1) {
+        _handleZoomIn();
+      } else if (trigger == -1) {
+        _handleZoomOut();
+      }
+      provider.zoomTrigger.value = 0; // Reset
+    });
+  }
+
+  void _handleZoomIn() {
+    final currentScale = _controller.scale;
+    final newScale = (currentScale + _zoomStep).clamp(_controller.minZoom, _controller.maxZoom);
+
+    // Zoom toward center of viewport
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.hasSize) {
+      final viewportCenter = Offset(box.size.width / 2, box.size.height / 2);
+      final worldCenter = _controller.screenToWorld(viewportCenter);
+      _controller.setScale(newScale, focalWorld: worldCenter);
+    }
+  }
+
+  void _handleZoomOut() {
+    final currentScale = _controller.scale;
+    final newScale = (currentScale - _zoomStep).clamp(_controller.minZoom, _controller.maxZoom);
+
+    // Zoom toward center of viewport
+    final RenderBox? box = context.findRenderObject() as RenderBox?;
+    if (box != null && box.hasSize) {
+      final viewportCenter = Offset(box.size.width / 2, box.size.height / 2);
+      final worldCenter = _controller.screenToWorld(viewportCenter);
+      _controller.setScale(newScale, focalWorld: worldCenter);
+    }
+  }
+
+  void _centerAllScreens() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      final RenderBox? box = context.findRenderObject() as RenderBox?;
+      if (box != null && box.hasSize && screens.isNotEmpty) {
+        List<Rect> screenRects = screens.map((screen) {
+          return Rect.fromLTWH(
+            screen.workflow.position.dx,
+            screen.workflow.position.dy,
+            150, // nodeWidth
+            100, // nodeHeight
+          );
+        }).toList();
+
+        _controller.fitToRects(screenRects, box.size, padding: 60);
+      }
+    });
   }
 
   @override
@@ -88,16 +171,18 @@ class _InteractiveCanvasState extends State<InteractiveCanvas> {
     if (_draggingFromScreenId != null &&
         targetScreenId != null &&
         _draggingFromScreenId != targetScreenId) {
-      // Find the source screen and add the connection
-      final screen = screens.firstWhere((s) => s.id == _draggingFromScreenId);
+
+      // Find the TARGET screen (where connection should be saved)
+      final targetScreen = screens.firstWhere((s) => s.id == targetScreenId);
 
       // Check if connection already exists
-      final alreadyConnected = screen.workflow.connects.any(
-        (c) => c.screenId == targetScreenId,
+      final alreadyConnected = targetScreen.workflow.connects.any(
+            (c) => c.screenId == _draggingFromScreenId,
       );
 
       if (!alreadyConnected) {
-        screen.workflow.connects.add(Connect(screenId: targetScreenId));
+        // Save the FROM id in the TO screen's connects
+        targetScreen.workflow.connects.add(Connect(screenId: _draggingFromScreenId!));
         print("Connected ${_draggingFromScreenId} to $targetScreenId");
       }
     }
@@ -218,45 +303,76 @@ class _InteractiveCanvasState extends State<InteractiveCanvas> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+              if(screen.isInitial)
+                SizedBox(height: 5,),
+              if(screen.isInitial)
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 4,vertical: 2),
+                  decoration: BoxDecoration(
+                      color: t.goldColor,
+                      borderRadius: BorderRadius.circular(4)
+                  ),
+                  child: Text("Initial",style: TextStyle(fontSize: 12),),
+                ),
             ],
           ),
         ),
 
         // Left connection point (input - receives connections)
-        Positioned(
-          left: -12,
-          top: 44 - 12,
-          child: GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: () {
-              // If we're dragging, connect to this screen
-              if (_draggingFromScreenId != null) {
-                _endDraggingConnection(screen.id,widget.t);
-              }
-            },
-            child: Container(
-              width: 40, // Larger hit area
-              height: 40,
-              alignment: Alignment.center,
-              child: Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  color: screen.isEnding ? Colors.green : t.accentColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: Colors.white, width: 1.5),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(1, 1),
-                    ),
-                  ],
+        (!screen.isInitial && _draggingFromScreenId == null && _hasIncomingConnections(screen.id))?
+          Positioned(
+            left: -12,
+            top: 32,
+            child: CollectionPopupMenu(
+              cardColor: t.cardColor,
+              customTrigger: Container(
+                width: 40,
+                height: 40,
+                alignment: Alignment.center,
+                child: Container(
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    color: screen.isEnding ? Colors.green : t.accentColor,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: Colors.white, width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(1, 1),
+                      ),
+                    ],
+                  ),
                 ),
               ),
+              items: [
+                PopupMenuItemData(
+                  onTap: () {
+                    showConnectionLogic(context,t,screen,updateScreenConnections);
+                  },
+                  label: "Connection Rules",
+                  color: t.textColor,
+                  icon: HugeIconsStroke.settings03,
+                ),
+                PopupMenuItemData(
+                  onTap: () {
+                    _removeDraggingConnection(screen.id);
+                  },
+                  label: "Remove Connection",
+                  color: t.errorColor,
+                  icon: HugeIconsStroke.remove01,
+                ),
+              ],
+              iconColor: t.textColor,
             ),
-          ),
-        ),
+          )
+        :(!screen.isInitial)?
+          Positioned(
+            left: -12,
+            top: 32,
+            child: leftPointWidget(screen, t),
+          ):SizedBox(),
 
         // Right connection point (output - drag from here)
         // Only show for non-ending screens
@@ -319,11 +435,11 @@ class _InteractiveCanvasState extends State<InteractiveCanvas> {
 
         connections.add((transform) {
           return ConnectionPainter(
-            transform,
-            [currentScreen.workflow.position, nextScreen.workflow.position],
-            widget.t.textColor,
-            () => _onConnectionTap(currentScreen.id, nextScreen.id),
-            widget.t
+              transform,
+              [currentScreen.workflow.position, nextScreen.workflow.position],
+              widget.t.textColor,
+                  () => _onConnectionTap(currentScreen.id, nextScreen.id),
+              widget.t
           );
         });
       }
@@ -332,19 +448,23 @@ class _InteractiveCanvasState extends State<InteractiveCanvas> {
     // Add manual connections based on connects list
     for (var screen in screens) {
       for (var connect in screen.workflow.connects) {
-        final targetScreen = screens.firstWhere(
-          (s) => s.id == connect.screenId,
+        // connect.screenId is the FROM screen
+        // screen is the TO screen
+        final fromScreen = screens.firstWhere(
+              (s) => s.id == connect.screenId,
           orElse: () => screen,
         );
 
-        if (targetScreen != screen) {
+        if (fromScreen != screen) {
           connections.add((transform) {
             return ConnectionPainter(
-              transform,
-              [screen.workflow.position, targetScreen.workflow.position],
-              widget.t.textColor,
-              () => _onConnectionTap(screen.id, targetScreen.id,),
-              t
+                transform,
+                // SWAPPED: Draw FROM fromScreen TO screen
+                [fromScreen.workflow.position, screen.workflow.position],
+                widget.t.textColor,
+                // SWAPPED: Callback shows FROM → TO
+                    () => _onConnectionTap(fromScreen.id, screen.id),
+                t
             );
           });
         }
@@ -354,7 +474,7 @@ class _InteractiveCanvasState extends State<InteractiveCanvas> {
     // Add temporary dragging connection
     if (_draggingFromScreenId != null && _dragEndPosition != null) {
       final dragScreen = screens.firstWhere(
-        (s) => s.id == _draggingFromScreenId,
+            (s) => s.id == _draggingFromScreenId,
       );
       connections.add((transform) {
         return DraggingConnectionPainter(
@@ -367,6 +487,71 @@ class _InteractiveCanvasState extends State<InteractiveCanvas> {
     }
 
     return connections;
+  }
+  void _removeDraggingConnection(String toScreenId) {
+    // Find the TO screen that contains the incoming connections
+    final toScreen = screens.firstWhere(
+          (s) => s.id == toScreenId,
+      orElse: () => screens.first,
+    );
+
+    final removedCount = toScreen.workflow.connects.length;
+
+    if (removedCount > 0) {
+      // Clear all incoming connections (stored in the TO screen)
+      toScreen.workflow.connects.clear();
+      print("Total connections removed from $toScreenId: $removedCount");
+      setState(() {}); // Rebuild to update UI
+    } else {
+      print("No connections found pointing to $toScreenId");
+    }
+  }
+  bool _hasIncomingConnections(String toScreenId) {
+    // Find the TO screen and check if it has any stored connections
+    final toScreen = screens.firstWhere(
+          (s) => s.id == toScreenId,
+      orElse: () => screens.first,
+    );
+
+    return toScreen.workflow.connects.isNotEmpty;
+  }
+  leftPointWidget(Screen screen,theme t) {
+    return Positioned(
+      left: -12,
+      top: 44 - 12,
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () {
+          // If we're dragging, connect to this screen
+          if (_draggingFromScreenId != null) {
+            _endDraggingConnection(screen.id,widget.t);
+          }else{
+            showConnectionLogic(context, t, screen,updateScreenConnections);
+          }
+        },
+        child: Container(
+          width: 40, // Larger hit area
+          height: 40,
+          alignment: Alignment.center,
+          child: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: screen.isEnding ? Colors.green : t.accentColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black26,
+                  blurRadius: 4,
+                  offset: Offset(1, 1),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -423,41 +608,6 @@ class ConnectionPainter extends CustomPainter {
       );
 
       canvas.drawPath(path, paint);
-      // ---- draw settings icon circle on the curve ----
-      final t = 0.5; // midpoint of the curve
-      Offset bezierPoint(Offset p0, Offset p1, Offset p2, Offset p3, double t) {
-        final u = 1 - t;
-        return p0 * (u * u * u) +
-            p1 * (3 * u * u * t) +
-            p2 * (3 * u * t * t) +
-            p3 * (t * t * t);
-      }
-
-      final center = bezierPoint(start, controlPoint1, controlPoint2, end, t);
-
-      // circle background
-      final circlePaint = Paint()..color = th.bgColor;
-      canvas.drawCircle(center, 12, circlePaint);
-
-
-      // draw a gear/settings icon as text (simplest way)
-      // draw a gear/settings icon as text (simplest way)
-      final icon = HugeIconsSolid.settings01; // Any IconData you want
-      final textPainter = TextPainter(
-        text: TextSpan(
-          text: String.fromCharCode(icon.codePoint),
-          style: TextStyle(
-            fontSize: 20, // size of the icon
-            fontFamily: icon.fontFamily,
-            package: icon.fontPackage, // important for material icons
-            color: th.textColor,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      );
-
-      textPainter.layout();
-      textPainter.paint(canvas, center - Offset(textPainter.width / 2, textPainter.height / 2));
     }
   }
 

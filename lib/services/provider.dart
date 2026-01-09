@@ -4,8 +4,9 @@ import 'package:formbuilder/backend/models/collection/collection.dart';
 import 'package:get/get.dart';
 
 import '../backend/models/account/user.dart';
+import '../backend/models/form/screen.dart';
 import '../backend/models/path.dart';
-import '../tools/tools.dart';
+import 'tools.dart';
 
 class Provider extends GetxController {
   RxInt currentIndex = 0.obs;
@@ -24,8 +25,21 @@ class Provider extends GetxController {
 
   //quick
   RxString newSelectedStoragePath = ''.obs;
+  RxBool shouldCenterCanvas = false.obs;
+  final RxInt zoomTrigger = 0.obs; // 1 = zoom in, -1 = zoom out, 0 = no action (for canva)
+  RxList<Connect> connects = <Connect>[].obs;
 
+  void zoomIn() {
+    zoomTrigger.value = 1;
+  }
 
+  void zoomOut() {
+    zoomTrigger.value = -1;
+  }
+
+  void centerCanvas() {
+    shouldCenterCanvas.value = true;
+  }
   void resetCurrentFolderId(List<Collection> allCollections){
     currentFolderId.value = allCollections
         .firstWhere((c) => c.parentId == null)

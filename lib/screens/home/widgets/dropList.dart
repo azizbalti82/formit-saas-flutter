@@ -66,3 +66,78 @@ class FontFamilySelector extends StatelessWidget {
     ),
   );
 }
+
+class ScreenItems extends StatelessWidget {
+  ScreenItems({super.key,required this.f,required this.screenId});
+
+  final Function(String value) f;
+  final String screenId;
+  final Provider provider = Get.find<Provider>();
+  final fonts = [
+    'Roboto',
+    'Open Sans',
+    'Lato',
+  ];
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 150,
+    child: FSelect<String>(
+      hint: "Select widget",
+      format: (s) => s,
+      children: [
+        for (final font in fonts)
+          FSelectItem(
+            font,
+            font,
+          )
+      ],
+      onChange: (v){
+        if(v!=null){
+          f(v);
+        }
+      },
+    ),
+  );
+}
+class LogicItems extends StatelessWidget {
+  LogicItems({super.key,required this.f,required this.screenId});
+
+  final Function(String value) f;
+  final String screenId;
+  final Provider provider = Get.find<Provider>();
+  final op = [
+    'Equal',
+    'Not Equal',
+    'Greater Than',
+    'Less Than',
+    'Greater or Equal',
+    'Less or Equal',
+    'Contains',
+    'Starts With',
+    'Ends With',
+    'Is Empty',
+    'Is Not Empty',
+  ];
+
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 150,
+    child: FSelect<String>(
+      hint: "Select logic",
+      format: (s) => s,
+      children: [
+        for (final font in op)
+          FSelectItem(
+            font,
+            font,
+          )
+      ],
+      onChange: (v){
+        if(v!=null){
+          f(v);
+        }
+      },
+    ),
+  );
+}

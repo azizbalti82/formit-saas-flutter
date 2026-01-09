@@ -1,7 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../backend/models/account/user.dart';
-import '../tools/tools.dart';
+import 'tools.dart';
 
 class SharedPrefService {
   static final Future<SharedPreferences> _prefs = SharedPreferences

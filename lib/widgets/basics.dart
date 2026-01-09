@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:formbuilder/tools/tools.dart';
+import 'package:formbuilder/services/tools.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 
 import '../services/themeService.dart';

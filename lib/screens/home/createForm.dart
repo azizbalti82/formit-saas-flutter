@@ -26,7 +26,7 @@ import '../../data/fonts.dart';
 import '../../main.dart';
 import '../../services/provider.dart';
 import '../../services/themeService.dart';
-import '../../tools/tools.dart';
+import '../../services/tools.dart';
 import '../../widgets/basics.dart';
 import '../../widgets/canva.dart';
 import '../../widgets/cards.dart';
@@ -81,7 +81,7 @@ class _State extends State<CreatForm> {
   void initState() {
     super.initState();
     t = widget.t;
-    screens = [Screen.createRegularScreen("Screen_1", 0)];
+    screens = [Screen.createRegularScreen("Screen_1", 0,isInitial:true)];
     endings = [Screen.createEndingScreen("Ending_1", index: 0)];
     selectedScreen = screens.first;
   }
@@ -362,6 +362,7 @@ class _State extends State<CreatForm> {
                   tipBuilder: (context, controller) => const Text('Zoom In'),
                   child: IconButton(
                     onPressed: () {
+                      provider.zoomIn();
                     },
                     icon: Icon(FIcons.zoomIn, color: t.textColor),
                   ),
@@ -369,7 +370,9 @@ class _State extends State<CreatForm> {
                 FTooltip(
                   tipBuilder: (context, controller) => const Text('Zoom Out'),
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      provider.zoomOut();
+                    },
                     icon: Icon(FIcons.zoomOut, color: t.textColor),
                   ),
                 ),
@@ -377,7 +380,9 @@ class _State extends State<CreatForm> {
                   tipBuilder: (context, controller) =>
                       const Text('Center View'),
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      provider.centerCanvas();
+                    }                 ,
                     icon: Icon(FIcons.focus, color: t.textColor),
                   ),
                 ),
@@ -386,6 +391,7 @@ class _State extends State<CreatForm> {
                       const Text('Auto Connect'),
                   child: IconButton(
                     onPressed: () {
+                      emptyConnections();
                       setState(() {
                         isAutoConnect = !isAutoConnect;
                       });
@@ -1386,6 +1392,17 @@ class _State extends State<CreatForm> {
                 color: (selectedScreen.id == s.id) ? t.bgColor : t.textColor,
               ),
             ),
+            if(s.isInitial)
+              SizedBox(width: 5,),
+            if(s.isInitial)
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 4,vertical: 2),
+                decoration: BoxDecoration(
+                  color: t.goldColor,
+                  borderRadius: BorderRadius.circular(4)
+                ),
+                child: Text("Initial",style: TextStyle(fontSize: 12),),
+              ),
             Spacer(),
             CollectionPopupMenu(
               iconColor: (selectedScreen.id == s.id) ? t.bgColor : t.textColor,
@@ -1851,5 +1868,14 @@ class _State extends State<CreatForm> {
 
   _messagesOnClick() {
     showMsg(Constants.notReadyMsg, context, t);
+  }
+
+  void emptyConnections() {
+    for(Screen s in screens){
+      s.workflow.connects = [];
+    }
+    for(Screen e in endings){
+      e.workflow.connects = [];
+    }
   }
 }

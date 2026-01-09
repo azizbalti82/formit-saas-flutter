@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:formbuilder/backend/models/form/screenCustomization.dart';
+import 'package:uuid/uuid.dart';
 
 import 'docItem.dart';
 
@@ -41,6 +42,7 @@ class EndingSettings {
 class Screen {
   String id;
   bool isEnding;
+  bool isInitial;
   EndingSettings? endingSettings;
   ScreenCustomization screenCustomization;
   Workflow workflow;
@@ -49,6 +51,7 @@ class Screen {
   Screen({
     required this.id,
     this.isEnding = false,
+    this.isInitial = false,
     this.endingSettings,
     ScreenCustomization? screenCustomization,
     required this.workflow,
@@ -64,10 +67,9 @@ class Screen {
     return {
       'id': id,
       'isEnding': isEnding,
+      'isInitial': isInitial,
       'endingSettings': endingSettings?.toJson(),
       'ScreenCustomization': screenCustomization.toJson(),
-
-      /// NEW FIELD ↓↓↓
       'workflow': workflow.toJson(),
     };
   }
@@ -77,6 +79,7 @@ class Screen {
     return Screen(
       id: json['id'],
       isEnding: json['isEnding'] ?? false,
+      isInitial:json['isInitial']??false,
       endingSettings: json['endingSettings'] != null
           ? EndingSettings.fromJson(json['endingSettings'])
           : null,
@@ -93,6 +96,7 @@ class Screen {
   Screen copyWith({
     String? id,
     bool? isEnding,
+    bool? isInitial,
     EndingSettings? endingSettings,
     ScreenCustomization? screenCustomization,
 
@@ -102,6 +106,7 @@ class Screen {
     return Screen(
       id: id ?? this.id,
       isEnding: isEnding ?? this.isEnding,
+      isInitial:isInitial??this.isInitial,
       endingSettings: endingSettings ?? this.endingSettings,
       screenCustomization: screenCustomization ?? this.screenCustomization,
 
@@ -116,11 +121,11 @@ class Screen {
     }
     return true;
   }
-
-  static Screen createRegularScreen(String id, int index) {
+  static Screen createRegularScreen(String id, int index,{bool isInitial=false}) {
     return Screen(
       id: id,
       isEnding: false,
+      isInitial:isInitial,
       screenCustomization: ScreenCustomization(),
       workflow: Workflow(position: Offset(200.0 * index, 0), connects: null),
     );
@@ -142,17 +147,77 @@ class Screen {
 }
 
 class Connect {
-  final String screenId; // the screen this node connects TO
+  final String screenId;
+  final List<Rule> rules;
 
-  Connect({required this.screenId});
+  Connect({
+    required this.screenId,
+    this.rules = const [],
+  });
 
-  // You can add a toMap/fromMap if you will save it in Firestore or Hive
   Map<String, dynamic> toMap() {
-    return {'screenId': screenId};
+    return {
+      'screenId': screenId,
+      'rules': rules.map((rule) => rule.toMap()).toList(),
+    };
   }
 
   factory Connect.fromMap(Map<String, dynamic> map) {
-    return Connect(screenId: map['screenId']);
+    return Connect(
+      screenId: map['screenId'],
+      rules: map['rules'] != null
+          ? (map['rules'] as List).map((r) => Rule.fromMap(r)).toList()
+          : [],
+    );
+  }
+}
+
+class Rule {
+  static final _uuid = Uuid();
+
+  final String ruleId;
+  final String widgetId;
+  final String logic;
+  final dynamic value;
+
+  Rule({
+    required this.widgetId,
+    required this.logic,
+    this.value,
+  }) : ruleId = _uuid.v4();
+
+  // Check if this logic requires a value
+  bool get requiresValue {
+    return ![
+      'Is Empty',
+      'Is Not Empty',
+      'isEmpty',
+      'isNotEmpty',
+    ].contains(logic);
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'widgetId': widgetId,
+      'logic': logic,
+      'value': value,
+    };
+  }
+
+  factory Rule.fromMap(Map<String, dynamic> map) {
+    return Rule(
+      widgetId: map['widgetId'],
+      logic: map['logic'],
+      value: map['value'],
+    );
+  }
+
+  @override
+  String toString() {
+    if (value != null) {
+      return '$widgetId $logic $value';
+    }
+    return '$widgetId $logic';
   }
 }
 
