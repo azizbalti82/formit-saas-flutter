@@ -7,28 +7,42 @@ import 'package:hugeicons_pro/hugeicons.dart';
 import '../backend/models/form/docItem.dart';
 import '../data/fonts.dart';
 import '../services/themeService.dart';
-import 'menu.dart';
+import 'dialogues.dart';
+
+
+// Model to represent a line in the document
+class DocumentLine {
+  final int lineNumber;
+  final FormItem? content; // null means empty line
+
+  DocumentLine({
+    required this.lineNumber,
+    this.content,
+  });
+
+  bool get isEmpty => content == null;
+}
 
 class FlatAutoComplete extends StatefulWidget {
   final List<DocItemType> items;
   final String font;
-  final Function(String) onSubmit;
+  final Function(DocItemType, int, bool) onAction; // itemType, lineNumber, isAdd
+  final Function(int) onDelete; // Callback for deleting a line
   final String? placeholder;
   final theme t;
   final ScreenCustomization screenStyle;
-  final VoidCallback? onHover; // 👈 Added hover callback
-  final VoidCallback? onClick; // 👈 Added click callback
+  final List<DocumentLine> documentLines; // The tracked list of lines
 
   const FlatAutoComplete({
     super.key,
     required this.font,
     required this.items,
-    required this.onSubmit,
+    required this.onAction,
+    required this.onDelete,
     required this.t,
-    this.placeholder = "Type '/' to insert Form items",
+    this.placeholder = "Hover to add or edit items",
     required this.screenStyle,
-    this.onHover, // 👈 Optional parameter
-    this.onClick, // 👈 Optional parameter
+    required this.documentLines,
   });
 
   @override
@@ -36,360 +50,415 @@ class FlatAutoComplete extends StatefulWidget {
 }
 
 class _FlatAutoCompleteState extends State<FlatAutoComplete> {
-  final TextEditingController _controller = TextEditingController();
-  final FocusNode _focusNode = FocusNode();
-  final LayerLink _layerLink = LayerLink();
-  OverlayEntry? _overlayEntry;
-  List<DocItemType> _filteredItems = [];
-  int _selectedIndex = -1;
-  int _hoveredIndex = -1; // 👈 Added for hover tracking
+  int? _hoveredLineIndex;
   late theme t;
-  bool isOptionsShown = false;
-  bool optionsClicked = false;
 
   @override
   void initState() {
     super.initState();
     t = widget.t;
-    _controller.addListener(_onTextChanged);
   }
 
-  @override
-  void dispose() {
-    _removeOverlay();
-    _controller.removeListener(_onTextChanged);
-    _controller.dispose();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _onTextChanged() {
-    final text = _controller.text;
-
-    if (text.contains('/')) {
-      final query = text.split('/').last.toLowerCase();
-      setState(() {
-        _filteredItems = widget.items
-            .where((item) => item.name.toLowerCase().contains(query))
-            .toList();
-        _selectedIndex = _filteredItems.isEmpty ? -1 : 0;
-      });
-      _showOverlay();
-    } else {
-      _removeOverlay();
-      setState(() {
-        _filteredItems = [];
-        _selectedIndex = -1;
-        _hoveredIndex = -1; // 👈 Reset hover on close
-      });
-    }
-  }
-
-  void _showOverlay() {
-    _removeOverlay();
-
-    _overlayEntry = OverlayEntry(
-      builder: (context) => Positioned(
-        width: _getTextFieldWidth(),
-        child: CompositedTransformFollower(
-          link: _layerLink,
-          showWhenUnlinked: false,
-          offset: const Offset(0, 45),
-          child: Material(
-            elevation: 4,
-            borderRadius: BorderRadius.circular(8),
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxHeight: 200),
-              child: ListView.builder(
-                padding: EdgeInsets.zero,
-                shrinkWrap: true,
-                itemCount: _filteredItems.length,
-                itemBuilder: (context, index) {
-                  final item = _filteredItems[index];
-                  final isSelected = index == _selectedIndex;
-                  final isHovered =
-                      index == _hoveredIndex; // 👈 Check hover state
-
-                  return MouseRegion(
-                    // 👈 Added MouseRegion for hover detection
-                    onEnter: (_) {
-                      // Use post-frame callback to avoid updating during mouse tracking
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          setState(() {
-                            _hoveredIndex = index;
-                          });
-                        }
-                      });
-                    },
-                    onExit: (_) {
-                      // Use post-frame callback to avoid updating during mouse tracking
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (mounted) {
-                          setState(() {
-                            _hoveredIndex = -1;
-                          });
-                        }
-                      });
-                    },
-                    cursor: SystemMouseCursors.click, // 👈 Show pointer cursor
-                    child: InkWell(
-                      onTap: () => _selectItem(item.name),
-                      // 👈 Added splash effect on tap
-                      splashColor: t.cardColor.withOpacity(0.3),
-                      highlightColor: t.cardColor.withOpacity(0.2),
-                      child: AnimatedContainer(
-                        // 👈 Smooth transition for background color
-                        duration: const Duration(milliseconds: 150),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isSelected || isHovered
-                              ? t.cardColor
-                              : Colors.transparent,
-                          // 👈 Optional: Add border radius for smoother look
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Row(
-                          children: [
-                            AnimatedSwitcher(
-                              // 👈 Smooth icon color transition
-                              duration: const Duration(milliseconds: 150),
-                              child: Icon(
-                                key: ValueKey(
-                                  '$index-${isSelected || isHovered}',
-                                ),
-                                iconBuilder(item),
-                                size: 18,
-                                color: isSelected || isHovered
-                                    ? t.textColor
-                                    : t.secondaryTextColor,
-                              ),
-                            ),
-                            const SizedBox(width: 10),
-                            AnimatedDefaultTextStyle(
-                              // 👈 Smooth text style transition
-                              duration: const Duration(milliseconds: 150),
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: t.textColor,
-                                fontWeight: isSelected || isHovered
-                                    ? FontWeight.w600
-                                    : FontWeight.normal,
-                              ),
-                              child: Text(item.name.toLowerCase()),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ),
-        ),
-      ),
+  void _showAddDialog(int lineNumber, bool addBelow) {
+    /*
+    showDialogAddOrReplaceFormItem(
+      context,
+      t,
+      lineNumber,
+      true, // isAdd
+          (selectedType) {
+        // Callback when user selects an item type
+        widget.onAction(selectedType, lineNumber, true);
+      },
     );
 
-    Overlay.of(context).insert(_overlayEntry!);
+     */
   }
 
-  void _removeOverlay() {
-    _overlayEntry?.remove();
-    _overlayEntry = null;
+  void _showReplaceDialog(int lineNumber) {
+    /*
+    showDialogAddOrReplaceFormItem(
+      context,
+      t,
+      lineNumber,
+      false, // isReplace
+          (selectedType) {
+        // Callback when user selects an item type
+        widget.onAction(selectedType, lineNumber, false);
+      },
+    );
+
+     */
   }
 
-  double _getTextFieldWidth() {
-    final RenderBox? renderBox = context.findRenderObject() as RenderBox?;
-    return renderBox?.size.width ?? 300;
+  void _deleteLine(int lineNumber) {
+    widget.onDelete(lineNumber);
   }
 
-  void _selectItem(String item) {
-    _controller.clear();
-    _removeOverlay();
-    widget.onSubmit(item);
-    setState(() {
-      _filteredItems = [];
-      _selectedIndex = -1;
-      _hoveredIndex = -1; // 👈 Reset hover state
-    });
-  }
+  Widget _buildLineActions(DocumentLine line, bool isHovered) {
+    if (!isHovered) return const SizedBox.shrink();
 
-  void _handleSubmit() {
-    final text = _controller.text;
-
-    if (_filteredItems.isNotEmpty && _selectedIndex >= 0) {
-      _selectItem(_filteredItems[_selectedIndex].name);
-    } else if (text.isNotEmpty) {
-      _controller.clear();
-      _removeOverlay();
-      widget.onSubmit(text);
-    } else {
-      // Enter pressed with empty text, still trigger callback
-      widget.onSubmit('');
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return CompositedTransformTarget(
-      link: _layerLink,
-      child: KeyboardListener(
-        focusNode: FocusNode(),
-        onKeyEvent: (event) {
-          if (event is! KeyDownEvent) return;
-
-          if (event.logicalKey.keyLabel == 'Arrow Down') {
-            if (_filteredItems.isNotEmpty) {
-              setState(() {
-                _selectedIndex = (_selectedIndex + 1) % _filteredItems.length;
-              });
-              _showOverlay();
-            }
-          } else if (event.logicalKey.keyLabel == 'Arrow Up') {
-            if (_filteredItems.isNotEmpty) {
-              setState(() {
-                _selectedIndex =
-                    (_selectedIndex - 1 + _filteredItems.length) %
-                    _filteredItems.length;
-              });
-              _showOverlay();
-            }
-          }
-        },
-        child: MouseRegion(
-          onEnter: (_) {
-            // Use post-frame callback to avoid MouseTracker assertion
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                widget.onHover?.call();
-                setState(() {
-                  isOptionsShown = true;
-                });
-              }
-            });
-          },
-          onExit: (_) {
-            // Use post-frame callback to avoid MouseTracker assertion
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) {
-                widget.onHover?.call();
-                setState(() {
-                  isOptionsShown = false;
-                });
-              }
-            });
-          },
-
+    if (line.isEmpty) {
+      // Empty line: show wide plus button
+      return InkWell(
+        onTap: () => _showAddDialog(line.lineNumber, false),
+        borderRadius: BorderRadius.circular(5),
+        child: Container(
+          decoration: BoxDecoration(
+            color: widget.screenStyle.textColorValue.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(5),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
+            mainAxisSize: MainAxisSize.min,
             children: [
-              if (isOptionsShown)
-               Container(
-                 decoration: BoxDecoration(
-                   color: widget.screenStyle.textColorValue.withOpacity(0.05),
-                   borderRadius: BorderRadius.circular(5),
-                 ),
-                 padding: EdgeInsets.symmetric(horizontal: 8,vertical: 4),
-                 child:  Row(
-                   children: [
-                     GestureDetector(
-                         onTap: (){
-
-                     }, child: Icon(
-                       HugeIconsStroke.delete03,
-                       size: 17,
-                       color: t.errorColor,
-                     )),
-                     SizedBox(width: 8,),
-                     CollectionPopupMenu(
-                       isFromFormBuilder: true,
-                       icon: HugeIconsStroke.plusSign,
-                       iconSize: 18,
-                       iconColor: widget.screenStyle.textColorValue,
-                       cardColor: t.cardColor,
-                       items: [
-                         PopupMenuItemData(
-                           onTap: () {
-                             WidgetsBinding.instance.addPostFrameCallback((_) {
-                               if (mounted) {
-                                 setState(() {
-                                   isOptionsShown = false;
-                                 });
-                               }
-                             });
-                           },
-                           label: "ejfrjt",
-                           color: t.textColor,
-                           icon: Icons.add_rounded,
-                         ),
-                       ],
-                     ),
-                     SizedBox(width: 8,),
-                     CollectionPopupMenu(
-                       isFromFormBuilder: true,
-                       icon: HugeIconsStroke.menuSquare,
-                       iconSize: 15,
-                       iconColor: widget.screenStyle.textColorValue,
-                       cardColor: t.cardColor,
-                       items: [
-                         PopupMenuItemData(
-                           onTap: () {
-                             WidgetsBinding.instance.addPostFrameCallback((_) {
-                               if (mounted) {
-                                 setState(() {
-                                   isOptionsShown = false;
-                                 });
-                               }
-                             });
-                           },
-                           label: "ejfrjt",
-                           color: t.textColor,
-                           icon: Icons.add_rounded,
-                         ),
-                       ],
-                     ),
-                   ],
-                 ),
-               ),
-              Expanded(
-                child: GestureDetector(
-                  // 👈 Added GestureDetector for click detection
-                  onTap: () {
-                    widget.onClick?.call(); // 👈 Trigger click callback
-                    _focusNode.requestFocus(); // Also focus the text field
-                  },
-                  child: TextField(
-                    controller: _controller,
-                    focusNode: _focusNode,
-                    maxLines: null,
-                    keyboardType: TextInputType.multiline,
-                    style: AppFonts.getFont(
-                      widget.font,
-                      base: TextStyle(
-                        color: widget.screenStyle.textColorValue,
-                        fontSize: widget.screenStyle.fontSize * 1.0,
-                      ),
-                    ),
-                    decoration: InputDecoration(
-                      hintText: widget.placeholder,
-                      border: InputBorder.none,
-                      enabledBorder: InputBorder.none,
-                      focusedBorder: InputBorder.none,
-                      contentPadding: const EdgeInsets.fromLTRB(
-                        12,12,12,12
-
-                      ),
-                    ),
-                  ),
+              Icon(
+                HugeIconsStroke.plusSign,
+                size: 18,
+                color: t.textColor,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Add item',
+                style: TextStyle(
+                  color: t.textColor,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ],
           ),
         ),
+      );
+    } else {
+      // Line with content: show delete, add above, replace, add below
+      return Container(
+        decoration: BoxDecoration(
+          color: widget.screenStyle.textColorValue.withOpacity(0.05),
+          borderRadius: BorderRadius.circular(5),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            InkWell(
+              onTap: () => _deleteLine(line.lineNumber),
+              borderRadius: BorderRadius.circular(3),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Tooltip(
+                  message: 'Delete',
+                  child: Icon(
+                    HugeIconsStroke.delete03,
+                    size: 17,
+                    color: t.errorColor,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            InkWell(
+              onTap: () => _showAddDialog(line.lineNumber, false),
+              borderRadius: BorderRadius.circular(3),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Tooltip(
+                  message: 'Add above',
+                  child: Icon(
+                    HugeIconsStroke.arrowUp01,
+                    size: 17,
+                    color: t.textColor,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            InkWell(
+              onTap: () => _showReplaceDialog(line.lineNumber),
+              borderRadius: BorderRadius.circular(3),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Tooltip(
+                  message: 'Replace',
+                  child: Icon(
+                    HugeIconsStroke.repeat,
+                    size: 17,
+                    color: t.textColor,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 4),
+            InkWell(
+              onTap: () => _showAddDialog(line.lineNumber + 1, true),
+              borderRadius: BorderRadius.circular(3),
+              child: Padding(
+                padding: const EdgeInsets.all(4),
+                child: Tooltip(
+                  message: 'Add below',
+                  child: Icon(
+                    HugeIconsStroke.arrowDown01,
+                    size: 17,
+                    color: t.textColor,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  Widget _buildLineContent(DocumentLine line) {
+    if (line.isEmpty) {
+      return Container(
+        constraints: const BoxConstraints(minHeight: 40),
+        alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        child: Text(
+          widget.placeholder ?? 'Empty line',
+          style: AppFonts.getFont(
+            widget.font,
+            base: TextStyle(
+              color: widget.screenStyle.textColorValue.withOpacity(0.4),
+              fontSize: widget.screenStyle.fontSize * 1.0,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      );
+    } else {
+      // Render the form item content
+      return _renderFormItem(line.content!);
+    }
+  }
+
+  Widget _renderFormItem(FormItem formItem) {
+    final baseStyle = AppFonts.getFont(
+      widget.font,
+      base: TextStyle(
+        color: widget.screenStyle.textColorValue,
+        fontSize: widget.screenStyle.fontSize * 1.0,
       ),
+    );
+
+    if (formItem is EmptyLineFormItem) {
+      return Container(
+        height: formItem.height,
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Text(
+          formItem.getDisplayText(),
+          style: baseStyle.copyWith(
+            color: widget.screenStyle.textColorValue.withOpacity(0.4),
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      );
+    } else if (formItem is TextFormItem) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        child: Text(
+          formItem.getDisplayText(),
+          style: baseStyle,
+          textAlign: formItem.alignment,
+        ),
+      );
+    } else if (formItem is InputFormItem) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              formItem.getDisplayText(),
+              style: baseStyle.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            TextField(
+              controller: TextEditingController(text: formItem.value),
+              onChanged: (value) {
+                formItem.value = value;
+              },
+              style: baseStyle,
+              decoration: InputDecoration(
+                hintText: formItem.placeholder ?? 'Enter value...',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(
+                    color: widget.screenStyle.textColorValue.withOpacity(0.2),
+                  ),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(
+                    color: widget.screenStyle.textColorValue.withOpacity(0.2),
+                  ),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(4),
+                  borderSide: BorderSide(
+                    color: t.textColor,
+                    width: 2,
+                  ),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
+              ),
+              maxLength: formItem.maxLength,
+            ),
+          ],
+        ),
+      );
+    } else if (formItem is ChecklistFormItem) {
+      return Container(
+        padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (formItem.title != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  formItem.title!,
+                  style: baseStyle.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ...formItem.items.map((item) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: item.isChecked,
+                      onChanged: (value) {
+                        setState(() {
+                          item.isChecked = value ?? false;
+                        });
+                      },
+                      activeColor: t.textColor,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        item.text,
+                        style: baseStyle.copyWith(
+                          decoration: item.isChecked
+                              ? TextDecoration.lineThrough
+                              : null,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ],
+        ),
+      );
+    }
+
+    // Fallback for unknown types
+    return Container(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      child: Text(
+        formItem.getDisplayText(),
+        style: baseStyle,
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: widget.documentLines.length,
+      itemBuilder: (context, index) {
+        final line = widget.documentLines[index];
+        final isHovered = _hoveredLineIndex == index;
+
+        return MouseRegion(
+          onEnter: (_) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _hoveredLineIndex = index;
+                });
+              }
+            });
+          },
+          onExit: (_) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() {
+                  _hoveredLineIndex = null;
+                });
+              }
+            });
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 150),
+            decoration: BoxDecoration(
+              color: isHovered
+                  ? widget.screenStyle.textColorValue.withOpacity(0.02)
+                  : Colors.transparent,
+              border: Border(
+                left: BorderSide(
+                  color: isHovered
+                      ? t.textColor.withOpacity(0.2)
+                      : Colors.transparent,
+                  width: 2,
+                ),
+              ),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Line number indicator
+                Container(
+                  width: 40,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  child: Text(
+                    '${line.lineNumber}',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: t.secondaryTextColor.withOpacity(0.5),
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                    ),
+                  ),
+                ),
+                // Line content
+                Expanded(
+                  child: line.isEmpty
+                      ? InkWell(
+                    onTap: () => _showAddDialog(line.lineNumber, false),
+                    child: _buildLineContent(line),
+                  )
+                      : _buildLineContent(line),
+                ),
+                // Action buttons (shown on hover)
+                if (isHovered)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                    child: _buildLineActions(line, isHovered),
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

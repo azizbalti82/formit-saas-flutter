@@ -668,15 +668,15 @@ class _State extends State<PreviewForm> {
                         items: [
                           PopupMenuItemData(
                             onTap: _pauseFormOnClick,
-                            label: "Pause",
+                            label: "Draft",
                             color: theme.errorColor,
-                            icon: HugeIconsStroke.pause,
+                            icon: HugeIconsStroke.edit02,
                           ),
                           PopupMenuItemData(
                             onTap: _activateFormOnClick,
-                            label: "Activate",
+                            label: "Active",
                             color: Colors.green,
-                            icon: HugeIconsStroke.toggleOn,
+                            icon: HugeIconsStroke.checkmarkCircle02,
                           ),
                         ],
                       ),
@@ -734,15 +734,15 @@ class _State extends State<PreviewForm> {
                       items: [
                         PopupMenuItemData(
                           onTap: _pauseFormOnClick,
-                          label: "Pause",
+                          label: "Draft",
                           color: theme.errorColor,
-                          icon: HugeIconsStroke.pause,
+                          icon: HugeIconsStroke.edit02
                         ),
                         PopupMenuItemData(
                           onTap: _activateFormOnClick,
-                          label: "Activate",
+                          label: "Active",
                           color: Colors.green,
-                          icon: HugeIconsStroke.toggleOn,
+                          icon: HugeIconsStroke.checkmarkCircle01,
                         ),
                       ],
                     ),
@@ -912,7 +912,7 @@ class _State extends State<PreviewForm> {
                   Icon(HugeIconsStroke.aiBrain01, color: t.textColor, size: 20),
                   const SizedBox(width: 10),
                   Text(
-                    "AI Analytics",
+                    "AI Analytics (soon)",
                     style: TextStyle(
                       color: t.textColor,
                       fontSize: 20,
@@ -942,7 +942,9 @@ class _State extends State<PreviewForm> {
                         SizedBox(width: 5),
                         CustomButton(
                           text: "Analyse",
-                          onPressed: () {},
+                          onPressed: () {
+                            showMsg(Constants.notReadyMsg, context, t);
+                          },
                           isLoading: false,
                           t: t,
                           isFullRow: false,

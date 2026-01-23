@@ -11,6 +11,7 @@ import 'package:formbuilder/screens/home/previewForm.dart';
 import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:mesh_gradient/mesh_gradient.dart';
 
@@ -267,6 +268,7 @@ class _AppScreenState extends State<AppScreen> {
             showMsg(Constants.notReadyMsg, context, t);
           },
         ),
+        /*
         menuItem(
           title: 'Notifications',
           icon: HugeIconsStroke.notification01,
@@ -275,12 +277,16 @@ class _AppScreenState extends State<AppScreen> {
             showDialogNotificationSettings(context,t);
           },
         ),
+
+         */
         menuItem(
           title: 'Billing & usage',
           icon: HugeIconsStroke.masterCard,
           onClick: () {
             handleSideBarCloseMobile();
-            showMsg(Constants.notReadyMsg, context, t);
+            setState(() {
+              provider.currentPath.value = [AppPath.billing.data()];
+            });
           },
         ),
         menuItem(
@@ -305,42 +311,42 @@ class _AppScreenState extends State<AppScreen> {
           title: 'Tutorials',
           icon: HugeIconsStroke.graduateMale,
           onClick: () {
-            EasyLauncher.url(url: "https://azizbalti.netlify.app");
+            EasyLauncher.url(url: "https://formit.online/tutorials");
           },
         ),
         menuItem(
           title: 'Contact support',
           icon: HugeIconsStroke.message01,
           onClick: () {
-            EasyLauncher.url(url: "https://azizbalti.netlify.app");
+            EasyLauncher.url(url: "https://formit.online/support");
           },
         ),
         menuItem(
           title: 'Change log',
           icon: HugeIconsStroke.sparkles,
           onClick: () {
-            EasyLauncher.url(url: "https://azizbalti.netlify.app");
+            EasyLauncher.url(url: "https://formit.online/changelog");
           },
         ),
         menuItem(
           title: 'Privacy policy',
           icon: HugeIconsStroke.lockPassword,
           onClick: () {
-            EasyLauncher.url(url: "https://azizbalti.netlify.app");
+            EasyLauncher.url(url: "https://formit.online/pages/legal/privacy");
           },
         ),
         menuItem(
           title: 'Terms of service',
           icon: HugeIconsStroke.service,
           onClick: () {
-            EasyLauncher.url(url: "https://azizbalti.netlify.app");
+            EasyLauncher.url(url: "https://formit.online/pages/legal/terms");
           },
         ),
         menuItem(
           title: 'Website',
           icon: HugeIconsStroke.globe02,
           onClick: () {
-            EasyLauncher.url(url: "https://azizbalti.netlify.app");
+            EasyLauncher.url(url: "https://formit.online");
           },
         ),
       ],
@@ -550,6 +556,8 @@ class _AppScreenState extends State<AppScreen> {
       );
     }else if (weAreInFavorites()) {
       return noResultsImage();
+    }else if (weAreInBilling()) {
+      return betaBillingNotice(t);
     }else {
       //if its home folder clean some things
       if (weAreInHome()) {
@@ -620,6 +628,78 @@ class _AppScreenState extends State<AppScreen> {
       ),
     );
   }
+
+  Widget betaBillingNotice(theme t) {
+    return Column(
+      children: [
+        SizedBox(height: 30,),
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            style: GoogleFonts.prata(
+              fontSize: 40,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.5,
+              height: 1.2,
+              color: t.textColor,
+            ),
+            children: [
+              const TextSpan(text: 'Formit is still in '),
+              TextSpan(
+                text: 'Beta',
+                style: GoogleFonts.prata(
+                  fontWeight: FontWeight.w900,
+                  color: t.accentColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        SizedBox(height: 40,),
+        Container(
+          width: 450,
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              colors: [
+                Colors.orange.withOpacity(0.08),
+                Colors.orange.withOpacity(0.03),
+              ],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            border: Border.all(
+              color: Colors.orange.withOpacity(0.25),
+            ),
+          ),
+          child: Text(
+                "We're currently in beta, which means billing is turned off "
+                    'and you get full access for free.\n\n'
+                    'Use the app freely and help us improve by reporting bugs, '
+                    'sharing feedback, or suggesting features.',
+            style: TextStyle(
+              color: t.textColor,
+              fontSize: 16
+            ),
+
+              ),
+        ),
+        SizedBox(height: 40,),
+        SizedBox(width: 200,child: FButton(onPress: (){
+          EasyLauncher.url(url: "https://formit.online/support");
+        }, child: Row(
+          children: [
+            Icon(HugeIconsStroke.customerSupport,color: t.bgColor,),
+            SizedBox(width: 5,),
+            Text("Contact our team",style: TextStyle(color: t.bgColor),)
+          ],
+        )),)
+      ],
+    );
+  }
+
 
   Widget menuItem({
     required String title,
@@ -994,13 +1074,7 @@ class _AppScreenState extends State<AppScreen> {
                             color: theme.textColor,
                             icon: HugeIconsStroke.heartAdd,
                           ),
-                          PopupMenuItemData(
-                            onTap: () {
-                            },
-                            label: "Add to archive",
-                            color: theme.textColor,
-                            icon: HugeIconsStroke.archive,
-                          ),
+
                           PopupMenuItemData(
                             onTap: () {
                               navigateTo(context, PreviewForm(t: t,f: f,goTo: PreviewFormSections.share,), false);
@@ -1227,6 +1301,15 @@ bool weAreInTemplates() {
   final Provider provider = Get.find<Provider>();
   Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
   if(current != AppPath.templates.data()){
+    return false;
+  }
+  return true;
+}
+
+bool weAreInBilling(){
+  final Provider provider = Get.find<Provider>();
+  Path current = provider.currentPath.lastOrNull ?? AppPath.home.data();
+  if(current != AppPath.billing.data()){
     return false;
   }
   return true;

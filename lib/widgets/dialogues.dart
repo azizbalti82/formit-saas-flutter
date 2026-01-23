@@ -26,6 +26,7 @@ import '../../backend/models/form/form.dart';
 // --------------------------------------------------------------------------
 // Notifications settings DIALOG
 // --------------------------------------------------------------------------
+/*
 Future showDialogNotificationSettings(BuildContext context, theme t) async {
   final Provider provider = Get.find<Provider>();
   return dialogBuilder(
@@ -148,6 +149,8 @@ Future showDialogNotificationSettings(BuildContext context, theme t) async {
   );
 }
 
+ */
+
 // --------------------------------------------------------------------------
 // NEW FOLDER DIALOG
 // --------------------------------------------------------------------------
@@ -189,12 +192,51 @@ Future showDialogNewFolder(BuildContext context, theme t) async {
 // --------------------------------------------------------------------------
 // notifications DIALOG
 // --------------------------------------------------------------------------
-Future showNotifications(BuildContext context, theme t) async {
+Future<void> showNotifications(BuildContext context, theme t) async {
   return dialogBuilder(
     context: context,
-    builder: (context, style, animation) => FDialog(
+    builder: (context, style,animation) => NotificationsDialog(
       style: style,
-      animation: animation,
+      t: t,
+    ),
+  );
+}
+
+class NotificationsDialog extends StatefulWidget {
+  final FDialogStyle style;
+  final theme t;
+
+  const NotificationsDialog({
+    super.key,
+    required this.style,
+    required this.t,
+  });
+
+  @override
+  State<NotificationsDialog> createState() => _NotificationsDialogState();
+}
+
+class _NotificationsDialogState extends State<NotificationsDialog> {
+  bool isRefreshingNotifications = false;
+
+  void _handleRefresh() {
+    setState(() {
+      isRefreshingNotifications = true;
+    });
+
+    Future.delayed(const Duration(seconds: 2)).then((_) {
+      if (mounted) {
+        setState(() {
+          isRefreshingNotifications = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FDialog(
+      style: (s) => widget.style,
       title: const Text(
         "Notifications",
         style: TextStyle(fontSize: 22),
@@ -202,11 +244,30 @@ Future showNotifications(BuildContext context, theme t) async {
       body: Column(
         children: [
           const SizedBox(height: 40),
-          Text("You don't have any notification yet",style: TextStyle(color: t.secondaryTextColor,fontSize: 16),),
+          Text(
+            "You don't have any notification yet",
+            style: TextStyle(
+              color: widget.t.secondaryTextColor,
+              fontSize: 16,
+            ),
+          ),
           const SizedBox(height: 40),
         ],
       ),
       actions: [
+        FButton(
+          style: FButtonStyle.outline(),
+          onPress: _handleRefresh,
+          child: isRefreshingNotifications
+              ? SizedBox(
+    width: 16,
+    height: 16,
+    child: CircularProgressIndicator(
+            strokeWidth: 2,
+            color:widget.t.textColor,
+          ))
+              : const Text('Refresh'),
+        ),
         FButton(
           onPress: () {
             Navigator.pop(context);
@@ -214,8 +275,8 @@ Future showNotifications(BuildContext context, theme t) async {
           child: const Text('Close'),
         ),
       ],
-    ),
-  );
+    );
+  }
 }
 // --------------------------------------------------------------------------
 // connection logic DIALOG
@@ -426,6 +487,42 @@ Future showDialogRenameCollection(
     ),
   );
 }
+// --------------------------------------------------------------------------
+// form items
+// --------------------------------------------------------------------------
+/*
+Future showDialogAddOrReplaceFormItem(
+    BuildContext context,
+    theme t,
+    int lineNumber,
+    bool isNew, Null Function(selectedType) param4
+    ) async {
+  final TextEditingController inputController = TextEditingController();
+  return dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      title: Text("Form Items", style: const TextStyle(fontSize: 22)),
+      body: Column(
+        children: [
+          const SizedBox(height: 40),
+        ],
+      ),
+      actions: [
+        FButton(
+          onPress: () {
+            //rename collection
+            Navigator.pop(context);
+          },
+          child: Text(isNew?'Add':"Replace"),
+        ),
+      ],
+    ),
+  );
+}
+
+ */
 
 // --------------------------------------------------------------------------
 // SEARCH DIALOG
@@ -784,8 +881,6 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
-          _buildProfileImagePicker(),
-          const SizedBox(height: 20),
           _buildNameFields(),
           const SizedBox(height: 10),
           _buildEmailPasswordCard("Edit Email", verifyEmailType.updateEmail),
@@ -802,60 +897,6 @@ class _ProfileTabsWidgetState extends State<ProfileTabsWidget> {
             },
             child: const Text('Save'),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileImagePicker() {
-    return InkWell(
-      onTap: _handleImagePick,
-      borderRadius: BorderRadius.circular(300),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: widget.t.textColor.withOpacity(0.1),
-              border: Border.all(
-                width: 2,
-                color: imageBytes != null
-                    ? widget.t.accentColor.withOpacity(0.5)
-                    : Colors.transparent,
-              ),
-            ),
-          ),
-          if (imageBytes == null)
-            Icon(
-              Icons.add_a_photo_outlined,
-              size: 35,
-              color: widget.t.textColor.withOpacity(0.3),
-            )
-          else
-            ClipOval(
-              child: Image.memory(
-                imageBytes!,
-                width: 100,
-                height: 100,
-                fit: BoxFit.cover,
-              ),
-            ),
-          if (imageBytes != null)
-            Positioned(
-              bottom: 0,
-              right: 0,
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: widget.t.accentColor,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.edit, size: 16, color: Colors.white),
-              ),
-            ),
         ],
       ),
     );

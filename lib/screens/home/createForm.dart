@@ -759,9 +759,11 @@ class _State extends State<CreatForm> {
                   isX: true,
                   iconSized: 20,
                   onclick: () {
-                    setState(() {
-                      isCustomizeSideBarOpen = false;
-                    });
+                    if(!isLandscape(context)) {
+                      setState(() {
+                        isCustomizeSideBarOpen = false;
+                      });
+                    }
                   },
                 ),
               ],
@@ -1767,13 +1769,13 @@ class _State extends State<CreatForm> {
       ],
     );
   }
-  Widget contentItemBuilder(DocItem c) {
+  Widget contentItemBuilder(FormItem c) {
     /// the default one is Text
     if(c.type == DocItemType.Text){
       //this is the default one it is a text and a builder if you write '/'
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 5),
-        child: FlatAutoComplete(
+        child:SizedBox()/* FlatAutoComplete(
           font: selectedScreen.screenCustomization.fontFamily.toLowerCase(),
             key: ObjectKey(selectedScreen.screenCustomization),
             screenStyle:selectedScreen.screenCustomization,
@@ -1804,7 +1806,7 @@ class _State extends State<CreatForm> {
 
               }
             }
-        ),
+        ),*/
       );
     }
 
@@ -1843,14 +1845,18 @@ class _State extends State<CreatForm> {
   _customizeOnClick() {
     setState(() {
       isCustomizeSideBarOpen = !isCustomizeSideBarOpen;
-      isScreensSideBarOpen = false;
+      if(!isLandscape(context)) {
+        isScreensSideBarOpen = false;
+      }
     });
   }
 
   _screensOnClick() {
     setState(() {
       isScreensSideBarOpen = !isScreensSideBarOpen;
-      isCustomizeSideBarOpen = false;
+      if(!isLandscape(context)) {
+        isCustomizeSideBarOpen = false;
+      }
     });
   }
 

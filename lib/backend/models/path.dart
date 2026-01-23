@@ -34,6 +34,7 @@ enum AppPath {
   trash,
   collections,
   favorites,
+  billing
 }
 
 extension AppPathExtension on AppPath {
@@ -57,6 +58,11 @@ extension AppPathExtension on AppPath {
       case AppPath.trash:
         return Path(
           title: 'Trash',
+          type: PathType.section,
+        );
+      case AppPath.billing:
+        return Path(
+          title: 'Billing & usage',
           type: PathType.section,
         );
       case AppPath.collections:

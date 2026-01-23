@@ -46,7 +46,7 @@ class Screen {
   EndingSettings? endingSettings;
   ScreenCustomization screenCustomization;
   Workflow workflow;
-  List<DocItem> content;
+  List<FormItem> content;
 
   Screen({
     required this.id,
@@ -56,7 +56,7 @@ class Screen {
     ScreenCustomization? screenCustomization,
     required this.workflow,
 
-  }) : content =  [DocItem()],screenCustomization = screenCustomization ?? ScreenCustomization() {
+  }) : content =  [],screenCustomization = screenCustomization ?? ScreenCustomization() {
     if (isEnding && endingSettings == null) {
       endingSettings = EndingSettings();
     }
