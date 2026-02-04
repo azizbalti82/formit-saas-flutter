@@ -15,6 +15,7 @@ import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
+import 'package:gradient_glow_border/gradient_glow_border.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:split_view/split_view.dart';
@@ -54,7 +55,7 @@ class _State extends State<CreatForm> {
   bool showKey = true;
   bool isCreatingLoading = false;
   bool isCustomizeSideBarOpen = false;
-  bool isScreensSideBarOpen = GetPlatform.isAndroid?false:true;
+  bool isScreensSideBarOpen = GetPlatform.isAndroid ? false : true;
   PreviewSizes previewSize = PreviewSizes.tablet;
   ScreenCustomization pageCustomization = ScreenCustomization();
   int _selectedSectionIndex = 0;
@@ -81,7 +82,7 @@ class _State extends State<CreatForm> {
   void initState() {
     super.initState();
     t = widget.t;
-    screens = [Screen.createRegularScreen("Screen_1", 0,isInitial:true)];
+    screens = [Screen.createRegularScreen("Screen_1", 0, isInitial: true)];
     endings = [Screen.createEndingScreen("Ending_1", index: 0)];
     selectedScreen = screens.first;
   }
@@ -101,45 +102,45 @@ class _State extends State<CreatForm> {
     double screenHeight = screenSize.height;
 
     return SystemUiStyleWrapper(
-        customColor:t.brightness == Brightness.light
-            ? Colors.white
-            : t.bgColor ,
+      customColor: t.brightness == Brightness.light ? Colors.white : t.bgColor,
       t: t,
       child: GestureDetector(
         onTap: () {
-            if(!isLandscape(context)){
-              setState(() {
-                isScreensSideBarOpen = false;
-                isCustomizeSideBarOpen = false;
-              });
-            };
-          },
-          child: Scaffold(
-        backgroundColor: t.bgColor,
-        appBar: _buildAppBar(t),
-        body:Stack(
-          children: [
-            Padding(
-              padding: EdgeInsets.symmetric(vertical: 20, horizontal: 12),
-              child: _buildLandscapeBody(screenWidth, screenHeight, t),
-            ),
-            if (isScreensSideBarOpen && _selectedSectionIndex == 0)
-              Positioned(
-                top: 0,
-                bottom: 0,
-                left: 5,
-                child: _buildScreensSidebar(t),
+          if (!isLandscape(context)) {
+            setState(() {
+              isScreensSideBarOpen = false;
+              isCustomizeSideBarOpen = false;
+            });
+          }
+          ;
+        },
+        child: Scaffold(
+          backgroundColor: t.bgColor,
+          appBar: _buildAppBar(t),
+          body: Stack(
+            children: [
+              Padding(
+                padding: EdgeInsets.symmetric(vertical: 20, horizontal: 12),
+                child: _buildLandscapeBody(screenWidth, screenHeight, t),
               ),
-            if (isCustomizeSideBarOpen && _selectedSectionIndex == 0)
-              Positioned(
-                top: 0,
-                bottom: 0,
-                right: 5,
-                child: _buildCustomizeSidebar(t),
-              ),
-          ],
+              if (isScreensSideBarOpen && _selectedSectionIndex == 0)
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  left: 5,
+                  child: _buildScreensSidebar(t),
+                ),
+              if (isCustomizeSideBarOpen && _selectedSectionIndex == 0)
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  right: 5,
+                  child: _buildCustomizeSidebar(t),
+                ),
+            ],
+          ),
         ),
-      ),)
+      ),
     );
   }
 
@@ -201,26 +202,87 @@ class _State extends State<CreatForm> {
             children: [
               // Content tab
               Center(
-                child: AspectRatio(
-                  aspectRatio: aspectRatio,
-                  child: Container(
-                    height: screenHeight * 0.6,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: colorFromHex(
-                        selectedScreen.screenCustomization.backgroundColor,
-                      ),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        width: 1,
-                        color: t.border.withOpacity(0.3),
+                child: Stack(
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: AspectRatio(
+                        aspectRatio: aspectRatio,
+                        child: Container(
+                          height: screenHeight * 0.6,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: colorFromHex(
+                              selectedScreen
+                                  .screenCustomization
+                                  .backgroundColor,
+                            ),
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                              width: 1,
+                              color: t.border.withOpacity(0.3),
+                            ),
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: _buildMainContent(),
+                          ),
+                        ),
                       ),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: _buildMainContent(),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: t.bgColor,
+                          borderRadius: BorderRadius.circular(100),
+                        ),
+
+                        height: 60,
+                        width: 60,
+                        child: FTappable(
+                          onPress: () async {
+                            final selectedType = await showDialogChooseFormItem(
+                              context,
+                            );
+                            if (selectedType != null) {
+                              // Handle the selected form item type
+                              setState(() {
+                                selectedScreen.content.add(createFormItem(selectedType,"this is a title"));
+                              });
+                              for(FormItem f in selectedScreen.content){
+                                print(f.type);
+                                print("\n");
+                              }
+                              print("---------------------------------------------------");
+                            }
+                          },
+                          child: GradientGlowBorder.solid(
+                            borderRadius: BorderRadius.circular(200),
+                            blurRadius: 0,
+                            colors: [
+                              Color(0xFFFF6B6B),
+                              Color(0xFFFFE66D),
+                              Color(0xFF4ECDC4),
+                              Color(0xFF556270),
+                            ],
+                            animate: true,
+                            animationCurve: Curves.linear,
+                            animationDuration: Duration(seconds: 2),
+                            glowOpacity: 1,
+                            spreadRadius: 2,
+                            thickness: 7,
+                            child: Center(
+                              child: Icon(
+                                HugeIconsSolid.add01,
+                                color: t.textColor,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
               // Workflow tab (Canvas)
@@ -233,99 +295,116 @@ class _State extends State<CreatForm> {
   }
 
   Widget _buildMainContent() {
-    final bool hasCover = selectedScreen.screenCustomization.coverImageBytes != null;
-    final bool hasLogo = selectedScreen.screenCustomization.logoImageBytes != null;
+    final bool hasCover =
+        selectedScreen.screenCustomization.coverImageBytes != null;
+    final bool hasLogo =
+        selectedScreen.screenCustomization.logoImageBytes != null;
 
     return Align(
-          alignment: Alignment.topCenter,
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: selectedScreen.screenCustomization.pageWidth*1.0,
-            ),
-            child:SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  // Add spacing below for the overlapping logo
-                  if (hasLogo && !hasCover)
-                    SizedBox(
-                      height: selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
-                    ),
-                  if (hasLogo || hasCover)
-                    Stack(
-                      clipBehavior: Clip.none,
-                      children: [
-                        // Cover Image (or placeholder if only logo exists)
-                        if (hasCover)
-                          GeneralImageViewer(
-                            heightPercentage:
-                            selectedScreen.screenCustomization.coverHeight * 0.01,
-                            sourceType: ImageSourceType.bytes,
-                            imageBytes:
+      alignment: Alignment.topCenter,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          maxWidth: selectedScreen.screenCustomization.pageWidth * 1.0,
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              // Add spacing below for the overlapping logo
+              if (hasLogo && !hasCover)
+                SizedBox(
+                  height:
+                      selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
+                ),
+              if (hasLogo || hasCover)
+                Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    // Cover Image (or placeholder if only logo exists)
+                    if (hasCover)
+                      GeneralImageViewer(
+                        heightPercentage:
+                            selectedScreen.screenCustomization.coverHeight *
+                            0.01,
+                        sourceType: ImageSourceType.bytes,
+                        imageBytes:
                             selectedScreen.screenCustomization.coverImageBytes,
-                            borderRadius: 0,
-                            fit: BoxFit.fitWidth,
-                          )
-                        else if (hasLogo)
-                          SizedBox(
-                            width: double.infinity,
+                        borderRadius: 0,
+                        fit: BoxFit.fitWidth,
+                      )
+                    else if (hasLogo)
+                      SizedBox(
+                        width: double.infinity,
+                        height:
+                            (selectedScreen.screenCustomization.logoHeight *
+                            0.5),
+                      ),
+
+                    if (hasLogo)
+                      Positioned(
+                        bottom: hasCover
+                            ? -(selectedScreen.screenCustomization.logoHeight *
+                                  0.5)
+                            : 0,
+                        left: 0,
+                        right: 0,
+                        child: Center(
+                          child: GeneralImageViewer(
+                            sourceType: ImageSourceType.bytes,
+                            imageBytes: selectedScreen
+                                .screenCustomization
+                                .logoImageBytes,
+                            width:
+                                selectedScreen.screenCustomization.logoWidth *
+                                1.0,
                             height:
-                            (selectedScreen.screenCustomization.logoHeight * 0.5),
+                                selectedScreen.screenCustomization.logoHeight *
+                                1.0,
+                            aspectRatio: 1,
+                            borderRadius:
+                                selectedScreen.screenCustomization.logoRound *
+                                1.0,
+                            fit: BoxFit.cover,
+                            placeholder: Container(
+                              color: Colors.grey.shade300,
+                              child: Center(child: Icon(Icons.image, size: 40)),
+                            ),
+                            errorWidget: Icon(Icons.broken_image),
+                            showBorder: selectedScreen
+                                .screenCustomization
+                                .logoHasBorder,
+                            borderColor: colorFromHex(
+                              selectedScreen
+                                  .screenCustomization
+                                  .backgroundColor,
+                            ),
+                            borderWidth: 2.5,
                           ),
+                        ),
+                      ),
+                  ],
+                ),
 
-                        if (hasLogo)
-                          Positioned(
-                              bottom: hasCover ? -(selectedScreen.screenCustomization.logoHeight * 0.5) : 0,
-                              left: 0,
-                              right: 0,
-                              child: Center(
-                                child: GeneralImageViewer(
-                                  sourceType: ImageSourceType.bytes,
-                                  imageBytes: selectedScreen
-                                      .screenCustomization
-                                      .logoImageBytes,
-                                  width:
-                                  selectedScreen.screenCustomization.logoWidth *
-                                      1.0,
-                                  height:
-                                  selectedScreen.screenCustomization.logoHeight *
-                                      1.0,
-                                  aspectRatio: 1,
-                                  borderRadius:
-                                  selectedScreen.screenCustomization.logoRound *
-                                      1.0,
-                                  fit: BoxFit.cover,
-                                  placeholder: Container(
-                                    color: Colors.grey.shade300,
-                                    child: Center(child: Icon(Icons.image, size: 40)),
-                                  ),
-                                  errorWidget: Icon(Icons.broken_image),
-                                  showBorder: selectedScreen
-                                      .screenCustomization
-                                      .logoHasBorder,
-                                  borderColor: colorFromHex(
-                                    selectedScreen
-                                        .screenCustomization
-                                        .backgroundColor,
-                                  ),
-                                  borderWidth: 2.5,
-                                ),
-                              )
-                          ),
-                      ],
-                    ),
+              // Add spacing below for the overlapping logo
+              if (hasLogo && hasCover)
+                SizedBox(
+                  height:
+                      selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
+                ),
+              if (hasLogo || hasCover)
+                SizedBox(height: 20),
+              ...selectedScreen.content.map((c) => Align(
+                alignment: Alignment.centerLeft,
+                child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 5,horizontal: 16),
+                  child: contentItemBuilder(c),
 
-                  // Add spacing below for the overlapping logo
-                  if (hasLogo && hasCover)
-                    SizedBox(
-                      height: selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
-                    ),
-                  SizedBox(height: 20,),
-                  ...selectedScreen.content.map((c)=>contentItemBuilder(c))
-                ],
-              ),
-            ),
-          ) // everything inside uses this font
+                )),
+              )
+            ],
+          ),
+        ),
+      ), // everything inside uses this font
     );
   }
 
@@ -382,7 +461,7 @@ class _State extends State<CreatForm> {
                   child: IconButton(
                     onPressed: () {
                       provider.centerCanvas();
-                    }                 ,
+                    },
                     icon: Icon(FIcons.focus, color: t.textColor),
                   ),
                 ),
@@ -425,6 +504,7 @@ class _State extends State<CreatForm> {
       ),
     );
   }
+
   Widget _buildLandscapeAppBarContent(theme theme) {
     return Row(
       children: [
@@ -571,6 +651,7 @@ class _State extends State<CreatForm> {
       ],
     );
   }
+
   Widget _buildPortraitAppBarContent(theme theme) {
     return Row(
       children: [
@@ -579,13 +660,27 @@ class _State extends State<CreatForm> {
         SizedBox(width: 10),
         if (_selectedSectionIndex == 0)
           Container(
-          child:Row(
-            children: [
-              IconButton(onPressed: _customizeOnClick, icon: Icon(HugeIconsStroke.edit03, size: 20, color: t.textColor)),
-              IconButton(onPressed: _screensOnClick, icon: Icon(HugeIconsStroke.smartPhone02, size: 20, color: t.textColor))
-            ],
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: _customizeOnClick,
+                  icon: Icon(
+                    HugeIconsStroke.edit03,
+                    size: 20,
+                    color: t.textColor,
+                  ),
+                ),
+                IconButton(
+                  onPressed: _screensOnClick,
+                  icon: Icon(
+                    HugeIconsStroke.smartPhone02,
+                    size: 20,
+                    color: t.textColor,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
         if (_selectedSectionIndex == 0) SizedBox(width: 10),
         if (_selectedSectionIndex == 0) aspectRatioChanger(t),
         if (_selectedSectionIndex == 0) SizedBox(width: 10),
@@ -643,6 +738,7 @@ class _State extends State<CreatForm> {
       ],
     );
   }
+
   // ==========================================================================
   // SIDEBARS
   // ==========================================================================
@@ -717,6 +813,7 @@ class _State extends State<CreatForm> {
       ),
     );
   }
+
   // --------------------------------------------------------------------------
   // CUSTOMIZE SIDEBAR
   // --------------------------------------------------------------------------
@@ -759,7 +856,7 @@ class _State extends State<CreatForm> {
                   isX: true,
                   iconSized: 20,
                   onclick: () {
-                    if(!isLandscape(context)) {
+                    if (!isLandscape(context)) {
                       setState(() {
                         isCustomizeSideBarOpen = false;
                       });
@@ -1365,7 +1462,7 @@ class _State extends State<CreatForm> {
       onPress: () {
         setState(() {
           selectedScreen = s;
-          if(!isLandscape(context)){
+          if (!isLandscape(context)) {
             isScreensSideBarOpen = false;
           }
         });
@@ -1394,16 +1491,15 @@ class _State extends State<CreatForm> {
                 color: (selectedScreen.id == s.id) ? t.bgColor : t.textColor,
               ),
             ),
-            if(s.isInitial)
-              SizedBox(width: 5,),
-            if(s.isInitial)
+            if (s.isInitial) SizedBox(width: 5),
+            if (s.isInitial)
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 4,vertical: 2),
+                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                 decoration: BoxDecoration(
                   color: t.goldColor,
-                  borderRadius: BorderRadius.circular(4)
+                  borderRadius: BorderRadius.circular(4),
                 ),
-                child: Text("Initial",style: TextStyle(fontSize: 12),),
+                child: Text("Initial", style: TextStyle(fontSize: 12)),
               ),
             Spacer(),
             CollectionPopupMenu(
@@ -1720,6 +1816,7 @@ class _State extends State<CreatForm> {
       ],
     );
   }
+
   // --------------------------------------------------------------------------
   // ASPECT RATIO CHANGER
   // --------------------------------------------------------------------------
@@ -1734,7 +1831,7 @@ class _State extends State<CreatForm> {
           : HugeIconsStroke.laptop,
       iconColor: theme.textColor,
       cardColor: theme.cardColor,
-      iconSize: !isLandscape(context)?20:18,
+      iconSize: !isLandscape(context) ? 20 : 18,
       items: [
         PopupMenuItemData(
           onTap: () {
@@ -1769,49 +1866,20 @@ class _State extends State<CreatForm> {
       ],
     );
   }
+
   Widget contentItemBuilder(FormItem c) {
     /// the default one is Text
-    if(c.type == DocItemType.Text){
+    if (c.type == DocItemType.Text) {
       //this is the default one it is a text and a builder if you write '/'
       return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0,vertical: 5),
-        child:SizedBox()/* FlatAutoComplete(
-          font: selectedScreen.screenCustomization.fontFamily.toLowerCase(),
-            key: ObjectKey(selectedScreen.screenCustomization),
-            screenStyle:selectedScreen.screenCustomization,
-            t: t,
-            items: DocItemType.values,
-            onHover: () {
-              print('TextField hovered!');
-              // Do something on hover
-            },
-            onClick: () {
-              print('TextField clicked!');
-              // Do something on click
-            },
-            onSubmit: (value) {
-              setState(() {
-                selectedScreen.content.add(DocItem());
-              });
-              if(value=="Text"){
-                print('Selected: $value');
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Action: $value')),
-                );
-              }else if(value=="Text"){
-
-              }else if(value=="Text"){
-
-              }else {
-
-              }
-            }
-        ),*/
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: Text(c.parameters["text"]),
       );
     }
 
     return SizedBox();
   }
+
   // ==========================================================================
   // ACTION HANDLERS
   // ==========================================================================
@@ -1842,10 +1910,11 @@ class _State extends State<CreatForm> {
   _aiOnClick() {
     showMsg(Constants.notReadyMsg, context, t);
   }
+
   _customizeOnClick() {
     setState(() {
       isCustomizeSideBarOpen = !isCustomizeSideBarOpen;
-      if(!isLandscape(context)) {
+      if (!isLandscape(context)) {
         isScreensSideBarOpen = false;
       }
     });
@@ -1854,7 +1923,7 @@ class _State extends State<CreatForm> {
   _screensOnClick() {
     setState(() {
       isScreensSideBarOpen = !isScreensSideBarOpen;
-      if(!isLandscape(context)) {
+      if (!isLandscape(context)) {
         isCustomizeSideBarOpen = false;
       }
     });
@@ -1877,11 +1946,26 @@ class _State extends State<CreatForm> {
   }
 
   void emptyConnections() {
-    for(Screen s in screens){
+    for (Screen s in screens) {
       s.workflow.connects = [];
     }
-    for(Screen e in endings){
+    for (Screen e in endings) {
       e.workflow.connects = [];
+    }
+  }
+
+  FormItem createFormItem(FormItemType selectedType,String textValue) {
+    if(selectedType == FormItemType.input){
+      return FormItem(type: DocItemType.Input, position: selectedScreen.content.length, parameters: {});
+    }else if(selectedType == FormItemType.checkboxes){
+      return FormItem(type: DocItemType.Checklist, position: selectedScreen.content.length, parameters: {});
+    }else if(selectedType == FormItemType.multipleChoice){
+      return FormItem(type: DocItemType.RadioList, position: selectedScreen.content.length, parameters: {});
+    }else {
+      //text
+      return FormItem(type: DocItemType.Text, position: selectedScreen.content.length, parameters: {
+        "text":textValue
+      });
     }
   }
 }

@@ -487,6 +487,149 @@ Future showDialogRenameCollection(
     ),
   );
 }
+
+enum FormItemType {
+  text,
+  input,
+  multipleChoice,
+  checkboxes,
+}
+
+class FormItemOption {
+  final FormItemType type;
+  final String label;
+  final IconData icon;
+  final String description;
+
+  const FormItemOption({
+    required this.type,
+    required this.label,
+    required this.icon,
+    required this.description,
+  });
+}
+
+Future<FormItemType?> showDialogChooseFormItem(BuildContext context) async {
+  final List<FormItemOption> formItems = [
+    const FormItemOption(
+      type: FormItemType.text,
+      label: 'Text',
+      icon: Icons.text_fields,
+      description: 'Add heading or label',
+    ),
+    const FormItemOption(
+      type: FormItemType.input,
+      label: 'Input',
+      icon: Icons.edit_outlined,
+      description: 'Short answer field',
+    ),
+    const FormItemOption(
+      type: FormItemType.multipleChoice,
+      label: 'Multiple Choice',
+      icon: Icons.radio_button_checked,
+      description: 'Single selection',
+    ),
+    const FormItemOption(
+      type: FormItemType.checkboxes,
+      label: 'Checkboxes',
+      icon: Icons.check_box_outlined,
+      description: 'Multiple selections',
+    ),
+  ];
+
+  return await dialogBuilder(
+    context: context,
+    builder: (context, style, animation) => FDialog(
+      style: style,
+      animation: animation,
+      title: const Text(
+        "Choose Form Item",
+        style: TextStyle(fontSize: 22),
+      ),
+      body: Column(
+        children: [
+          const SizedBox(height: 20),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 1.6,
+            ),
+            itemCount: formItems.length,
+            itemBuilder: (context, index) {
+              final item = formItems[index];
+              return _FormItemCard(
+                item: item,
+                onTap: () => Navigator.pop(context, item.type),
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+        ],
+      ), actions: [],
+    ),
+  ) as FormItemType?;
+}
+
+class _FormItemCard extends StatelessWidget {
+  final FormItemOption item;
+  final VoidCallback onTap;
+
+  const _FormItemCard({
+    required this.item,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return FTappable(
+      onPress: onTap,
+      child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 4),
+          decoration: BoxDecoration(
+            border: Border.all(
+              color: Colors.grey.withOpacity(0.3),
+              width: 1,
+            ),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                item.icon,
+                size: 32,
+                color: Theme.of(context).primaryColor,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                item.label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                item.description,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+    );
+  }
+}
 // --------------------------------------------------------------------------
 // form items
 // --------------------------------------------------------------------------

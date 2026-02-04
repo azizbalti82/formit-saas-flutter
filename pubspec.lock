@@ -469,6 +469,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.3.2"
+  gradient_glow_border:
+    dependency: "direct main"
+    description:
+      name: gradient_glow_border
+      sha256: a5a3825f374eeb7f1473baae102375b3d2c398f10abc447a93d27f3e07587080
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   http:
     dependency: transitive
     description:
