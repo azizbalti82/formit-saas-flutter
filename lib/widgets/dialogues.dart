@@ -509,7 +509,7 @@ class FormItemOption {
   });
 }
 
-Future<FormItemType?> showDialogChooseFormItem(BuildContext context) async {
+Future<FormItemType?> showDialogChooseFormItem(BuildContext context,theme t) async {
   final List<FormItemOption> formItems = [
     const FormItemOption(
       type: FormItemType.text,
@@ -523,6 +523,7 @@ Future<FormItemType?> showDialogChooseFormItem(BuildContext context) async {
       icon: Icons.edit_outlined,
       description: 'Short answer field',
     ),
+    /*
     const FormItemOption(
       type: FormItemType.multipleChoice,
       label: 'Multiple Choice',
@@ -535,6 +536,8 @@ Future<FormItemType?> showDialogChooseFormItem(BuildContext context) async {
       icon: Icons.check_box_outlined,
       description: 'Multiple selections',
     ),
+
+     */
   ];
 
   return await dialogBuilder(
@@ -553,7 +556,7 @@ Future<FormItemType?> showDialogChooseFormItem(BuildContext context) async {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
+              crossAxisCount: 2,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
               childAspectRatio: 1.6,
@@ -563,6 +566,7 @@ Future<FormItemType?> showDialogChooseFormItem(BuildContext context) async {
               final item = formItems[index];
               return _FormItemCard(
                 item: item,
+                t: t,
                 onTap: () => Navigator.pop(context, item.type),
               );
             },
@@ -577,10 +581,12 @@ Future<FormItemType?> showDialogChooseFormItem(BuildContext context) async {
 class _FormItemCard extends StatelessWidget {
   final FormItemOption item;
   final VoidCallback onTap;
+  final theme t;
 
   const _FormItemCard({
     required this.item,
     required this.onTap,
+    required this.t
   });
 
   @override
@@ -591,7 +597,7 @@ class _FormItemCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 4),
           decoration: BoxDecoration(
             border: Border.all(
-              color: Colors.grey.withOpacity(0.3),
+              color: t.textColor.withOpacity(0.1),
               width: 1,
             ),
             borderRadius: BorderRadius.circular(8),
@@ -602,13 +608,14 @@ class _FormItemCard extends StatelessWidget {
               Icon(
                 item.icon,
                 size: 32,
-                color: Theme.of(context).primaryColor,
+                color: t.accentColor,
               ),
               const SizedBox(height: 8),
               Text(
                 item.label,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
+                  color: t.textColor,
                   fontWeight: FontWeight.w600,
                 ),
                 textAlign: TextAlign.center,
@@ -617,8 +624,8 @@ class _FormItemCard extends StatelessWidget {
               Text(
                 item.description,
                 style: TextStyle(
-                  fontSize: 11,
-                  color: Colors.grey[600],
+                  fontSize: 13,
+                  color: t.secondaryTextColor,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 2,

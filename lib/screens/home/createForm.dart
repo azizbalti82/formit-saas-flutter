@@ -8,6 +8,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide colorFromHex;
+import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:formbuilder/backend/models/form/docItem.dart';
 import 'package:formbuilder/screens/home/appScreen.dart';
 import 'package:formbuilder/screens/home/formSettings.dart';
@@ -32,6 +33,7 @@ import '../../widgets/basics.dart';
 import '../../widgets/canva.dart';
 import '../../widgets/cards.dart';
 import '../../widgets/dialogues.dart';
+import '../../widgets/form builder items.dart';
 import '../../widgets/form.dart';
 import '../../widgets/image.dart';
 import '../../widgets/menu.dart';
@@ -244,17 +246,25 @@ class _State extends State<CreatForm> {
                           onPress: () async {
                             final selectedType = await showDialogChooseFormItem(
                               context,
+                              t,
                             );
                             if (selectedType != null) {
                               // Handle the selected form item type
                               setState(() {
-                                selectedScreen.content.add(createFormItem(selectedType,"this is a title"));
+                                selectedScreen.content.add(
+                                  createFormItem(
+                                    selectedType,
+                                    "this is a title",
+                                  ),
+                                );
                               });
-                              for(FormItem f in selectedScreen.content){
+                              for (FormItem f in selectedScreen.content) {
                                 print(f.type);
                                 print("\n");
                               }
-                              print("---------------------------------------------------");
+                              print(
+                                "---------------------------------------------------",
+                              );
                             }
                           },
                           child: GradientGlowBorder.solid(
@@ -391,16 +401,16 @@ class _State extends State<CreatForm> {
                   height:
                       selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
                 ),
-              if (hasLogo || hasCover)
-                SizedBox(height: 20),
-              ...selectedScreen.content.map((c) => Align(
-                alignment: Alignment.centerLeft,
-                child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 5,horizontal: 16),
-                  child: contentItemBuilder(c),
-
-                )),
-              )
+              if (hasLogo || hasCover) SizedBox(height: 20),
+              ...selectedScreen.content.map(
+                (c) => Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 5, horizontal: 16),
+                    child: contentItemBuilder(c),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -1868,16 +1878,128 @@ class _State extends State<CreatForm> {
   }
 
   Widget contentItemBuilder(FormItem c) {
+    Widget result = SizedBox();
+
     /// the default one is Text
     if (c.type == DocItemType.Text) {
       //this is the default one it is a text and a builder if you write '/'
-      return Padding(
+      result = Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Text(c.parameters["text"]),
+        child: Text(c.parameters["text"], style: TextStyle()),
+      );
+    } else if (c.type == DocItemType.Input) {
+      //this is the default one it is a text and a builder if you write '/'
+      result = Padding(
+        padding: const EdgeInsets.symmetric(vertical: 5),
+        child: CustomizableInputWidget(
+          placeholder: 'Click to focus',
+          width: double.infinity,
+          borderColor: Colors.grey.shade300,
+          borderColorFocus: selectedScreen.screenCustomization.accentColorValue,
+          borderWidth: 2,
+          borderWidthFocus: 3,
+          borderRadius: const BorderRadius.all(Radius.circular(8)),
+          backgroundColor: Colors.grey.shade50,
+          backgroundColorFocus: Colors.white,
+          boxShadowFocus: [
+            BoxShadow(
+              color: Colors.blue.withOpacity(0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+          animateOnFocus: true,
+          transitionDuration: const Duration(milliseconds: 300),
+        ),
       );
     }
 
-    return SizedBox();
+    result = GestureDetector(
+      onLongPressStart: (details) async {
+        print('Position: ${details.globalPosition}'); // Debug this
+        await showPopupMenu(
+          color: t.bgColor,
+          padding: EdgeInsets.zero,
+          context: context,
+          position: details.globalPosition,
+          items: [
+            PopupMenuItem(
+              value: 'turnInto',
+              height: 40,
+              child: Row(
+                children: [
+                  Icon(
+                    HugeIconsStroke.exchange01,
+                    color: t.textColor,
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text('Turn Into', style: TextStyle(color: t.textColor)),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              height: 40,
+              child: Row(
+                children: [
+                  Icon(HugeIconsStroke.delete01, color: t.errorColor, size: 20),
+                  SizedBox(width: 8),
+                  Text('Delete Item', style: TextStyle(color: t.errorColor)),
+                ],
+              ),
+            ),
+          ],
+          onSelected: (value) {
+            print('Selected: $value');
+          },
+        );
+      },
+      onSecondaryTapDown: (details) async {
+        // Right-click for desktop/web
+        print('Right-click Position: ${details.globalPosition}');
+        await showPopupMenu(
+          color: t.bgColor,
+          padding: EdgeInsets.zero,
+          context: context,
+          position: details.globalPosition,
+          items: [
+            PopupMenuItem(
+              value: 'turnInto',
+              height: 40,
+              child: Row(
+                children: [
+                  Icon(
+                    HugeIconsStroke.exchange01,
+                    color: t.textColor,
+                    size: 20,
+                  ),
+                  SizedBox(width: 8),
+                  Text('Turn Into', style: TextStyle(color: t.textColor)),
+                ],
+              ),
+            ),
+            PopupMenuItem(
+              value: 'delete',
+              height: 40,
+              child: Row(
+                children: [
+                  Icon(HugeIconsStroke.delete01, color: t.errorColor, size: 20),
+                  SizedBox(width: 8),
+                  Text('Delete Item', style: TextStyle(color: t.errorColor)),
+                ],
+              ),
+            ),
+          ],
+          onSelected: (value) {
+            print('Selected: $value');
+          },
+        );
+      },
+      child: result,
+    );
+
+    return result;
   }
 
   // ==========================================================================
@@ -1954,18 +2076,75 @@ class _State extends State<CreatForm> {
     }
   }
 
-  FormItem createFormItem(FormItemType selectedType,String textValue) {
-    if(selectedType == FormItemType.input){
-      return FormItem(type: DocItemType.Input, position: selectedScreen.content.length, parameters: {});
-    }else if(selectedType == FormItemType.checkboxes){
-      return FormItem(type: DocItemType.Checklist, position: selectedScreen.content.length, parameters: {});
-    }else if(selectedType == FormItemType.multipleChoice){
-      return FormItem(type: DocItemType.RadioList, position: selectedScreen.content.length, parameters: {});
-    }else {
+  FormItem createFormItem(FormItemType selectedType, String textValue) {
+    if (selectedType == FormItemType.input) {
+      return FormItem(
+        type: DocItemType.Input,
+        position: selectedScreen.content.length,
+        parameters: {},
+      );
+    } else if (selectedType == FormItemType.checkboxes) {
+      return FormItem(
+        type: DocItemType.Checklist,
+        position: selectedScreen.content.length,
+        parameters: {},
+      );
+    } else if (selectedType == FormItemType.multipleChoice) {
+      return FormItem(
+        type: DocItemType.RadioList,
+        position: selectedScreen.content.length,
+        parameters: {},
+      );
+    } else {
       //text
-      return FormItem(type: DocItemType.Text, position: selectedScreen.content.length, parameters: {
-        "text":textValue
-      });
+      return FormItem(
+        type: DocItemType.Text,
+        position: selectedScreen.content.length,
+        parameters: {"text": textValue},
+      );
     }
+  }
+
+  Future<T?> showPopupMenu<T>({
+    required BuildContext context,
+    required Offset position,
+    required List<PopupMenuItem<T>> items,
+    ValueChanged<T>? onSelected,
+    VoidCallback? onCanceled,
+    double? elevation,
+    Color? color,
+    Color? shadowColor,
+    Color? surfaceTintColor,
+    ShapeBorder? shape,
+    T? initialValue,
+    EdgeInsetsGeometry? padding,
+  }) async {
+    final result = await showMenu<T>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        position.dx,
+        position.dy,
+        position.dx,
+        position.dy,
+      ),
+      items: items,
+      elevation: elevation ?? 8.0,
+      color: color,
+      shadowColor: shadowColor,
+      surfaceTintColor: surfaceTintColor,
+      shape:
+          shape ??
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      initialValue: initialValue,
+      menuPadding: padding,
+    );
+
+    if (result != null && onSelected != null) {
+      onSelected(result);
+    } else if (result == null && onCanceled != null) {
+      onCanceled();
+    }
+
+    return result;
   }
 }
