@@ -45,6 +45,7 @@ class Screen {
   bool isInitial;
   EndingSettings? endingSettings;
   ScreenCustomization screenCustomization;
+  String buttonName;
   Workflow workflow;
   List<FormItem> content;
 
@@ -55,8 +56,7 @@ class Screen {
     this.endingSettings,
     ScreenCustomization? screenCustomization,
     required this.workflow,
-
-  }) : content =  [],screenCustomization = screenCustomization ?? ScreenCustomization() {
+  }) : content =  [],this.buttonName="Next",screenCustomization = screenCustomization ?? ScreenCustomization() {
     if (isEnding && endingSettings == null) {
       endingSettings = EndingSettings();
     }

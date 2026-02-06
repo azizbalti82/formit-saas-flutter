@@ -12,7 +12,7 @@ dependencies:
   csv: ^6.0.0
   uuid: ^4.0.0
   gradient_glow_border: ^2.0.2
-  contextmenu: ^3.0.0
+  reorderables: ^0.6.0
   vector_math: ^2.1.4
   canvas_kit: ^0.5.2
   flutter_colorpicker: ^1.1.0

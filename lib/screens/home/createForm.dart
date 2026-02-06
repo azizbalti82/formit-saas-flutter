@@ -6,6 +6,7 @@ import 'dart:typed_data';
 import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide colorFromHex;
 import 'package:flutter_context_menu/flutter_context_menu.dart';
@@ -16,9 +17,11 @@ import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:gradient_glow_border/gradient_glow_border.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:reorderables/reorderables.dart';
 import 'package:split_view/split_view.dart';
 import '../../backend/models/form/screen.dart';
 import '../../backend/models/form/form.dart';
@@ -67,7 +70,6 @@ class _State extends State<CreatForm> {
   );
   int maxInt = 9223372036854775807;
   bool isAutoConnect = false;
-
   late Screen selectedScreen;
   late List<Screen> screens;
   late List<Screen> endings;
@@ -254,17 +256,10 @@ class _State extends State<CreatForm> {
                                 selectedScreen.content.add(
                                   createFormItem(
                                     selectedType,
-                                    "this is a title",
+                                      "This is a default text"
                                   ),
                                 );
                               });
-                              for (FormItem f in selectedScreen.content) {
-                                print(f.type);
-                                print("\n");
-                              }
-                              print(
-                                "---------------------------------------------------",
-                              );
                             }
                           },
                           child: GradientGlowBorder.solid(
@@ -317,20 +312,23 @@ class _State extends State<CreatForm> {
           maxWidth: selectedScreen.screenCustomization.pageWidth * 1.0,
         ),
         child: SingleChildScrollView(
+          // ← only ONE scroll view for the whole page
           child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              // Add spacing below for the overlapping logo
+              // Spacing for overlapping logo when no cover
               if (hasLogo && !hasCover)
                 SizedBox(
                   height:
                       selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
                 ),
+
+              // Cover + overlapping logo
               if (hasLogo || hasCover)
                 Stack(
                   clipBehavior: Clip.none,
                   children: [
-                    // Cover Image (or placeholder if only logo exists)
+                    // Cover image or placeholder
                     if (hasCover)
                       GeneralImageViewer(
                         heightPercentage:
@@ -346,10 +344,10 @@ class _State extends State<CreatForm> {
                       SizedBox(
                         width: double.infinity,
                         height:
-                            (selectedScreen.screenCustomization.logoHeight *
-                            0.5),
+                            selectedScreen.screenCustomization.logoHeight * 0.5,
                       ),
 
+                    // Overlapping logo
                     if (hasLogo)
                       Positioned(
                         bottom: hasCover
@@ -377,9 +375,11 @@ class _State extends State<CreatForm> {
                             fit: BoxFit.cover,
                             placeholder: Container(
                               color: Colors.grey.shade300,
-                              child: Center(child: Icon(Icons.image, size: 40)),
+                              child: const Center(
+                                child: Icon(Icons.image, size: 40),
+                              ),
                             ),
-                            errorWidget: Icon(Icons.broken_image),
+                            errorWidget: const Icon(Icons.broken_image),
                             showBorder: selectedScreen
                                 .screenCustomization
                                 .logoHasBorder,
@@ -395,26 +395,128 @@ class _State extends State<CreatForm> {
                   ],
                 ),
 
-              // Add spacing below for the overlapping logo
+              // Extra spacing after overlapping logo
               if (hasLogo && hasCover)
                 SizedBox(
                   height:
                       selectedScreen.screenCustomization.logoHeight * 0.5 + 20,
                 ),
-              if (hasLogo || hasCover) SizedBox(height: 20),
-              ...selectedScreen.content.map(
-                (c) => Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 5, horizontal: 16),
-                    child: contentItemBuilder(c),
-                  ),
+
+              if (hasLogo || hasCover) const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+                child: ReorderableListView(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  buildDefaultDragHandles: false,
+                  proxyDecorator: (child, index, animation) {
+                    return Material(
+                      elevation: 2,
+                      color: selectedScreen
+                          .screenCustomization
+                          .backgroundColorValue,
+                      borderRadius: BorderRadius.circular(8),
+                      child: child,
+                    );
+                  },
+                  onReorder: (int oldIndex, int newIndex) {
+                    setState(() {
+                      if (oldIndex < newIndex) {
+                        newIndex -= 1;
+                      }
+                      final item = selectedScreen.content.removeAt(oldIndex);
+                      selectedScreen.content.insert(newIndex, item);
+                    });
+                  },
+                  children: selectedScreen.content.asMap().entries.map((entry) {
+                    final index = entry.key;
+                    final c = entry.value;
+
+                    return Container(
+                      key: ValueKey(c), // must be stable & unique
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 5,
+                          horizontal: 16,
+                        ),
+                        child: Row(
+                          children: [
+                            _ShortDelayDragHandle(
+                              index: index,
+                              child: InkWell(
+                                onTap: () {
+                                  showFormItemOptions(context, t, c);
+                                },
+                                child: FTooltip(
+                                  hover: true,
+                                  longPress: true,
+                                  tipBuilder: (context, _) => const Text(
+                                    'Drag to move\nClick to customize',
+                                  ),
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: Icon(
+                                      HugeIconsStroke.dragDropVertical,
+                                      color: selectedScreen
+                                          .screenCustomization
+                                          .textColorValue,
+                                      size: 22,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            Expanded(child: contentItemBuilder(c)),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ),
+              const SizedBox(height: 40),
+              if (selectedScreen.content.isNotEmpty)
+                Row(
+                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CustomizableButton(
+                      text: selectedScreen.buttonName ,
+                      isOutlined:
+                          !selectedScreen.screenCustomization.isButtonFilled,
+                      onPressed: () {
+                        showFormItemOptions(
+                          context,
+                          t,
+                          FormItem(type:DocItemType.button, position: -1, parameters: {}),
+                        );
+                      },
+                      borderColor: selectedScreen
+                          .screenCustomization
+                          .buttonBackgroundColorValue,
+                      textColor:
+                          (selectedScreen.screenCustomization.isButtonFilled)
+                          ? selectedScreen
+                                .screenCustomization
+                                .buttonTextColorValue
+                          : selectedScreen
+                                .screenCustomization
+                                .buttonBackgroundColorValue,
+                      backgroundColor:
+                          (selectedScreen.screenCustomization.isButtonFilled)
+                          ? selectedScreen
+                                .screenCustomization
+                                .buttonBackgroundColorValue
+                          : null,
+                      fontFamily: selectedScreen.screenCustomization.fontFamily,
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 100),
             ],
           ),
         ),
-      ), // everything inside uses this font
+      ),
     );
   }
 
@@ -999,6 +1101,48 @@ class _State extends State<CreatForm> {
                       ),
                     ),
                   ],
+                ),
+                SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildCustomizationItemColorPicker(
+                        "Input Text",
+                        '#${selectedScreen.screenCustomization.inputTextColor}',
+                        colorFromHex(
+                          selectedScreen.screenCustomization.inputTextColor,
+                        ),
+                        t,
+                        (selectedColor) {
+                          selectedScreen.screenCustomization = selectedScreen
+                              .screenCustomization
+                              .copyWith(
+                                inputTextColor: selectedColor.toHexString(),
+                              );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 12),
+                _buildCustomizationItemToggle(
+                  "Button Style",
+                  selectedScreen.screenCustomization.isButtonFilled
+                      ? "Filled"
+                      : "Outlined",
+
+                  t,
+                  () {
+                    setState(() {
+                      selectedScreen.screenCustomization = selectedScreen
+                          .screenCustomization
+                          .copyWith(
+                            isButtonFilled: !selectedScreen
+                                .screenCustomization
+                                .isButtonFilled,
+                          );
+                    });
+                  },
                 ),
                 _buildCustomizationSection("Page"),
                 Row(
@@ -1885,116 +2029,112 @@ class _State extends State<CreatForm> {
       //this is the default one it is a text and a builder if you write '/'
       result = Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
-        child: Text(c.parameters["text"], style: TextStyle()),
+        child: Text(
+          c.parameters["text"] ?? "",
+          style: GoogleFonts.getFont(
+            selectedScreen.screenCustomization.fontFamily ??
+                'Roboto', // safe fallback
+            textStyle: TextStyle(
+              color: selectedScreen.screenCustomization.textColorValue,
+              fontSize: selectedScreen.screenCustomization.fontSize * 1.0,
+            ),
+          ),
+        ),
       );
     } else if (c.type == DocItemType.Input) {
       //this is the default one it is a text and a builder if you write '/'
       result = Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
-        child: CustomizableInputWidget(
-          placeholder: 'Click to focus',
-          width: double.infinity,
-          borderColor: Colors.grey.shade300,
-          borderColorFocus: selectedScreen.screenCustomization.accentColorValue,
-          borderWidth: 2,
-          borderWidthFocus: 3,
-          borderRadius: const BorderRadius.all(Radius.circular(8)),
-          backgroundColor: Colors.grey.shade50,
-          backgroundColorFocus: Colors.white,
-          boxShadowFocus: [
-            BoxShadow(
-              color: Colors.blue.withOpacity(0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 4),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if(c.parameters["text"]!=null && c.parameters["text"] != "")
+            FTooltip(
+              hover: (c.parameters['required'] == true)?true:false,
+              longPress: (c.parameters['required'] == true)?true:false,
+              tipBuilder: (context, _){
+                if(c.parameters['required'] == true){
+                 return const Text('This Field Is Required') ;
+                }else {
+                  return SizedBox();
+                }
+              },
+              child: RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: c.parameters["text"] ?? "",
+                      style: GoogleFonts.getFont(
+                        selectedScreen.screenCustomization.fontFamily ??
+                            'Roboto',
+                        textStyle: TextStyle(
+                          color:
+                              selectedScreen.screenCustomization.textColorValue,
+                          fontSize:
+                              selectedScreen.screenCustomization.fontSize * 1.0,
+                        ),
+                      ),
+                    ),
+                    if (c.parameters['required'] ==
+                        true) // ← only show when required
+                      TextSpan(
+                        text: " ✱",
+                        style: TextStyle(
+                          color: selectedScreen
+                              .screenCustomization
+                              .accentColorValue,
+                          fontSize:
+                              selectedScreen.screenCustomization.fontSize * 0.9,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+            if(c.parameters["text"]!=null && c.parameters["text"]!="")
+              SizedBox(height: 10),
+            CustomizableInputWidget(
+              placeholder: c.parameters["placeholder"],
+              value: c.parameters["defaultValue"],
+              width: double.infinity,
+              borderColor: selectedScreen.screenCustomization.borderColorValue,
+              borderColorFocus:
+                  selectedScreen.screenCustomization.accentColorValue,
+              borderWidth: 1,
+              borderRadius: const BorderRadius.all(Radius.circular(8)),
+              backgroundColor: selectedScreen
+                  .screenCustomization
+                  .accentColorValue
+                  .withOpacity(0.01),
+              backgroundColorFocus:
+                  selectedScreen.screenCustomization.backgroundColorValue,
+              animateOnFocus: false,
+              transitionDuration: const Duration(milliseconds: 250),
+              cursorColor: selectedScreen.screenCustomization.accentColorValue,
+              enableInteractiveSelection: false,
+              placeholderColor: selectedScreen
+                  .screenCustomization
+                  .inputTextColorValue
+                  .withOpacity(0.1),
+              textColor: selectedScreen.screenCustomization.inputTextColorValue,
+              fontFamily: selectedScreen.screenCustomization.fontFamily,
             ),
           ],
-          animateOnFocus: true,
-          transitionDuration: const Duration(milliseconds: 300),
         ),
       );
     }
 
     result = GestureDetector(
       onLongPressStart: (details) async {
-        print('Position: ${details.globalPosition}'); // Debug this
-        await showPopupMenu(
-          color: t.bgColor,
-          padding: EdgeInsets.zero,
-          context: context,
-          position: details.globalPosition,
-          items: [
-            PopupMenuItem(
-              value: 'turnInto',
-              height: 40,
-              child: Row(
-                children: [
-                  Icon(
-                    HugeIconsStroke.exchange01,
-                    color: t.textColor,
-                    size: 20,
-                  ),
-                  SizedBox(width: 8),
-                  Text('Turn Into', style: TextStyle(color: t.textColor)),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              height: 40,
-              child: Row(
-                children: [
-                  Icon(HugeIconsStroke.delete01, color: t.errorColor, size: 20),
-                  SizedBox(width: 8),
-                  Text('Delete Item', style: TextStyle(color: t.errorColor)),
-                ],
-              ),
-            ),
-          ],
-          onSelected: (value) {
-            print('Selected: $value');
-          },
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showFormItemsOptions(details, c);
+        });
       },
       onSecondaryTapDown: (details) async {
-        // Right-click for desktop/web
-        print('Right-click Position: ${details.globalPosition}');
-        await showPopupMenu(
-          color: t.bgColor,
-          padding: EdgeInsets.zero,
-          context: context,
-          position: details.globalPosition,
-          items: [
-            PopupMenuItem(
-              value: 'turnInto',
-              height: 40,
-              child: Row(
-                children: [
-                  Icon(
-                    HugeIconsStroke.exchange01,
-                    color: t.textColor,
-                    size: 20,
-                  ),
-                  SizedBox(width: 8),
-                  Text('Turn Into', style: TextStyle(color: t.textColor)),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              height: 40,
-              child: Row(
-                children: [
-                  Icon(HugeIconsStroke.delete01, color: t.errorColor, size: 20),
-                  SizedBox(width: 8),
-                  Text('Delete Item', style: TextStyle(color: t.errorColor)),
-                ],
-              ),
-            ),
-          ],
-          onSelected: (value) {
-            print('Selected: $value');
-          },
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showFormItemsOptions(details, c);
+        });
       },
       child: result,
     );
@@ -2146,5 +2286,384 @@ class _State extends State<CreatForm> {
     }
 
     return result;
+  }
+
+  void showFormItemsOptions(details, FormItem c) async {
+    // Right-click for desktop/web
+    await showPopupMenu(
+      color: t.bgColor,
+      padding: EdgeInsets.zero,
+      context: context,
+      position: details.globalPosition,
+      items: [
+        PopupMenuItem(
+          value: 'addTop',
+          height: 40,
+          child: Row(
+            children: [
+              Icon(HugeIconsStroke.arrowUp01, color: t.textColor, size: 20),
+              SizedBox(width: 8),
+              Text('Add Item Above', style: TextStyle(color: t.textColor)),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'addBottom',
+          height: 40,
+          child: Row(
+            children: [
+              Icon(HugeIconsStroke.arrowDown01, color: t.textColor, size: 20),
+              SizedBox(width: 8),
+              Text('Add Item Bellow', style: TextStyle(color: t.textColor)),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'duplicate',
+          height: 40,
+          child: Row(
+            children: [
+              Icon(HugeIconsStroke.addSquare, color: t.textColor, size: 20),
+              SizedBox(width: 8),
+              Text('Duplicate', style: TextStyle(color: t.textColor)),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'turnInto',
+          height: 40,
+          child: Row(
+            children: [
+              Icon(HugeIconsStroke.exchange01, color: t.textColor, size: 20),
+              SizedBox(width: 8),
+              Text('Turn Into', style: TextStyle(color: t.textColor)),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: 'delete',
+          height: 40,
+          child: Row(
+            children: [
+              Icon(HugeIconsStroke.delete01, color: t.errorColor, size: 20),
+              SizedBox(width: 8),
+              Text('Delete Item', style: TextStyle(color: t.errorColor)),
+            ],
+          ),
+        ),
+      ],
+      onSelected: (value) async {
+        if (value == "addTop") {
+          final selectedType = await showDialogChooseFormItem(context, t);
+          if (selectedType != null) {
+            // Handle the selected form item type
+            setState(() {
+              var index = selectedScreen.content.indexWhere(
+                (p) => p.id == c.id,
+              );
+              if (index != -1) {
+                var part1 = selectedScreen.content.sublist(0, index);
+                var part2 = selectedScreen.content.sublist(index);
+                var newItem = createFormItem(
+                  selectedType,
+                  "This is a default text"
+                );
+                selectedScreen.content = part1 + [newItem] + part2;
+              }
+            });
+          }
+        } else if (value == "addBottom") {
+          final selectedType = await showDialogChooseFormItem(context, t);
+          if (selectedType != null) {
+            // Handle the selected form item type
+            setState(() {
+              var index = selectedScreen.content.indexWhere(
+                (p) => p.id == c.id,
+              );
+              if (index != -1) {
+                var part1 = selectedScreen.content.sublist(0, index + 1);
+                var part2 = selectedScreen.content.sublist(index + 1);
+                var newItem = createFormItem(
+                  selectedType,
+                  "this is a title inserted bellow",
+                );
+                selectedScreen.content = part1 + [newItem] + part2;
+              }
+            });
+          }
+        } else if (value == "turnInto") {
+          final selectedType = await showDialogChooseFormItem(context, t);
+          if (selectedType != null) {
+            // Handle the selected form item type
+            setState(() {
+              var index = selectedScreen.content.indexWhere(
+                (p) => p.id == c.id,
+              );
+              if (index != -1) {
+                selectedScreen.content[index] = createFormItem(
+                  selectedType,
+                    "This is a default text"
+                );
+              }
+            });
+          }
+        } else if (value == "duplicate") {
+          setState(() {
+            var index = selectedScreen.content.indexWhere((p) => p.id == c.id);
+            if (index != -1) {
+              // Create a NEW instance (very important!)
+              final FormItem newItem = c.copyWith(
+                id: "${c.id}_copy_${DateTime.now().millisecondsSinceEpoch}", // unique ID
+                // or generate UUID, or just let your model generate new ID automatically
+              );
+
+              var part1 = selectedScreen.content.sublist(0, index + 1);
+              var part2 = selectedScreen.content.sublist(index + 1);
+
+              selectedScreen.content = part1 + [newItem] + part2;
+            }
+          });
+        } else if (value == "delete") {
+          setState(() {
+            selectedScreen.content.removeWhere((p) => p.id == c.id);
+          });
+        }
+      },
+    );
+  }
+
+  void showFormItemOptions(
+      BuildContext context,
+      theme t,
+      FormItem item,
+      ) async {
+    // Determine type and prepare initial values
+    final String type = item.type.name.toLowerCase(); // 'text', 'input', 'button' etc.
+    final bool isInput = type == 'input';
+    final bool isButton = type == 'button';
+    final bool isText = type == 'text';
+
+    String title = "Settings";
+    if (isInput) title = "Input Field Settings";
+    if (isButton) title = "Button Settings";
+    if (isText) title = "Text Block Settings";
+
+    // Common: label / text content
+    String currentText = isButton
+        ? (selectedScreen.buttonName ?? '')
+        : (item.parameters['text'] ?? item.parameters['label'] ?? '');
+
+    // Input-specific fields
+    String currentPlaceholder = isInput ? (item.parameters['placeholder'] ?? '') : '';
+    bool isRequired = isInput ? (item.parameters['required'] ?? false) : false;
+
+    // Controllers
+    final TextEditingController textController = TextEditingController(text: currentText);
+    final TextEditingController placeholderController = TextEditingController(text: currentPlaceholder);
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: t.bgColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setBottomSheetState) {
+            return Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+                left: 20,
+                right: 20,
+                top: 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          color: t.textColor,
+                        ),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.close, color: t.textColor),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ─── Main Text / Label / Button Text ───
+                  Text(
+                    isButton
+                        ? "Button Text"
+                        : isInput
+                        ? "Label"
+                        : "Text Content",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: t.textColor,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: textController,
+                    style: TextStyle(color: t.textColor),
+                    decoration: InputDecoration(
+                      hintText: isButton
+                          ? "e.g. Submit"
+                          : isInput
+                          ? "e.g. Full Name"
+                          : "Enter your text here...",
+                      hintStyle: TextStyle(color: t.secondaryTextColor),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: t.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide(color: t.accentColor, width: 2),
+                      ),
+                    ),
+                    onChanged: (value) {
+                      setBottomSheetState(() {
+                        currentText = value;
+                      });
+                      // Auto-save – different location for button
+                      if (isButton) {
+                        selectedScreen.buttonName = value.trim().isNotEmpty ? value.trim() : "Next";
+                      } else {
+                        item.parameters['text'] = value.trim().isNotEmpty ? value.trim() : null;
+                      }
+                      setState(() {});
+                    },
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ─── Input-only fields ───
+                  if (isInput) ...[
+                    // Placeholder
+                    Text(
+                      "Placeholder",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: t.textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: placeholderController,
+                      style: TextStyle(color: t.textColor),
+                      decoration: InputDecoration(
+                        hintText: "e.g. Enter your email...",
+                        hintStyle: TextStyle(color: t.secondaryTextColor),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: t.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: t.accentColor, width: 2),
+                        ),
+                      ),
+                      onChanged: (value) {
+                        setBottomSheetState(() {
+                          currentPlaceholder = value;
+                        });
+                        item.parameters['placeholder'] = value.trim().isNotEmpty ? value.trim() : null;
+                        setState(() {});
+                      },
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Required toggle
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Required field",
+                          style: TextStyle(fontSize: 16, color: t.textColor),
+                        ),
+                        Switch(
+                          value: isRequired,
+                          activeColor: t.accentColor,
+                          onChanged: (bool value) {
+                            setBottomSheetState(() {
+                              isRequired = value;
+                            });
+                            item.parameters['required'] = value;
+                            setState(() {});
+                          },
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 32),
+                  ],
+
+                  // Save & Close
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        // Final save (though most already saved on change)
+                        if (isButton) {
+                          selectedScreen.buttonName = currentText.trim().isNotEmpty ? currentText.trim():"Next";
+                        } else {
+                          item.parameters['text'] = currentText.trim().isNotEmpty ? currentText.trim() : null;
+                        }
+
+                        if (isInput) {
+                          item.parameters['placeholder'] = currentPlaceholder.trim().isNotEmpty
+                              ? currentPlaceholder.trim()
+                              : null;
+                          item.parameters['required'] = isRequired;
+                        }
+
+                        Navigator.pop(context);
+                        setState(() {});
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: t.accentColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: const Text("Save & Close", style: TextStyle(fontSize: 16)),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _ShortDelayDragHandle extends ReorderableDelayedDragStartListener {
+  const _ShortDelayDragHandle({
+    required super.index,
+    required super.child,
+    super.key,
+  });
+
+  @override
+  MultiDragGestureRecognizer createRecognizer() {
+    return DelayedMultiDragGestureRecognizer(
+      delay: const Duration(milliseconds: 300),
+    );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// A fully customizable input widget with extensive styling and behavior options
 class CustomizableInputWidget extends StatefulWidget {
@@ -26,7 +27,6 @@ class CustomizableInputWidget extends StatefulWidget {
   final double? borderTopRightRadius;
   final double? borderBottomLeftRadius;
   final double? borderBottomRightRadius;
-
   // BORDER STATES (Interactive)
   final Color? borderColorFocus;
   final Color? borderColorHover;
@@ -226,7 +226,7 @@ class CustomizableInputWidget extends StatefulWidget {
   final Color? fillColor;
 
   const CustomizableInputWidget({
-    Key? key,
+    super.key,
     // Container/Layout
     this.width,
     this.height,
@@ -387,13 +387,11 @@ class CustomizableInputWidget extends StatefulWidget {
     // Fill
     this.filled = false,
     this.fillColor,
-  }) : super(key: key);
+  });
 
   @override
-  State<CustomizableInputWidget> createState() =>
-      _CustomizableInputWidgetState();
+  State<CustomizableInputWidget> createState() => _CustomizableInputWidgetState();
 }
-
 class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
   late FocusNode _focusNode;
   late TextEditingController _controller;
@@ -405,7 +403,6 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
     super.initState();
     _focusNode = widget.focusNode ?? FocusNode();
     _controller = widget.controller ?? TextEditingController(text: widget.initialValue);
-
     _focusNode.addListener(_onFocusChange);
   }
 
@@ -524,9 +521,8 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
   }
 
   TextStyle _getTextStyle() {
-    return TextStyle(
+    final baseStyle = TextStyle(
       fontSize: widget.fontSize,
-      fontFamily: widget.fontFamily,
       fontWeight: widget.fontWeight,
       fontStyle: widget.fontStyle,
       color: widget.textColor,
@@ -538,12 +534,20 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
       decorationStyle: widget.textDecorationStyle,
       shadows: widget.textShadow,
     );
+
+    if (widget.fontFamily != null && widget.fontFamily!.isNotEmpty) {
+      return GoogleFonts.getFont(
+        widget.fontFamily!,
+        textStyle: baseStyle,
+      );
+    }
+
+    return baseStyle;
   }
 
   TextStyle _getPlaceholderStyle() {
-    return TextStyle(
+    final baseStyle = TextStyle(
       fontSize: widget.fontSize,
-      fontFamily: widget.fontFamily,
       fontWeight: widget.fontWeight,
       fontStyle: widget.fontStyle,
       color: (widget.placeholderColor ?? Colors.grey).withOpacity(
@@ -553,22 +557,29 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
       letterSpacing: widget.letterSpacing,
       wordSpacing: widget.wordSpacing,
     );
+
+    if (widget.fontFamily != null && widget.fontFamily!.isNotEmpty) {
+      return GoogleFonts.getFont(
+        widget.fontFamily!,
+        textStyle: baseStyle,
+      );
+    }
+
+    return baseStyle;
   }
 
   Widget _buildLabel() {
     if (widget.label == null) return const SizedBox.shrink();
-
     return Padding(
       padding: const EdgeInsets.only(bottom: 8.0),
       child: RichText(
         text: TextSpan(
           text: widget.label,
-          style: widget.labelStyle ??
-              TextStyle(
-                color: widget.labelColor ?? Colors.black87,
-                fontSize: widget.labelFontSize ?? 14,
-                fontWeight: widget.labelFontWeight ?? FontWeight.normal,
-              ),
+          style: widget.labelStyle ?? TextStyle(
+            color: widget.labelColor ?? Colors.black87,
+            fontSize: widget.labelFontSize ?? 14,
+            fontWeight: widget.labelFontWeight ?? FontWeight.normal,
+          ),
           children: [
             if (widget.labelRequired || widget.required)
               TextSpan(
@@ -598,7 +609,6 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
         ),
       );
     }
-
     if (widget.helperText != null) {
       return Padding(
         padding: const EdgeInsets.only(top: 6.0),
@@ -612,7 +622,6 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
         ),
       );
     }
-
     return const SizedBox.shrink();
   }
 
@@ -663,9 +672,7 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
           onTap: widget.onTap,
           onEditingComplete: widget.onEditingComplete,
           onSubmitted: widget.onSubmitted,
-          onTapOutside: widget.onTapOutside != null
-              ? (_) => widget.onTapOutside!()
-              : null,
+          onTapOutside: widget.onTapOutside != null ? (_) => widget.onTapOutside!() : null,
           decoration: InputDecoration(
             hintText: widget.placeholder,
             hintStyle: _getPlaceholderStyle(),
@@ -696,8 +703,7 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
             suffixText: widget.suffixText,
             prefixIconConstraints: widget.prefixIconConstraints,
             suffixIconConstraints: widget.suffixIconConstraints,
-            contentPadding: widget.contentPadding ??
-                const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
+            contentPadding: widget.contentPadding ?? const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
             border: InputBorder.none,
             enabledBorder: InputBorder.none,
             focusedBorder: InputBorder.none,
@@ -715,8 +721,7 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
     );
 
     // Wrap in container with width/height constraints
-    if (widget.width != null || widget.height != null ||
-        widget.maxWidth != null || widget.minWidth != null) {
+    if (widget.width != null || widget.height != null || widget.maxWidth != null || widget.minWidth != null) {
       inputField = ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: widget.maxWidth ?? double.infinity,
@@ -751,5 +756,474 @@ class _CustomizableInputWidgetState extends State<CustomizableInputWidget> {
         _buildHelperOrError(),
       ],
     );
+  }
+}
+
+
+/// A fully customizable button widget with extensive styling options
+class CustomizableButton extends StatefulWidget {
+  // ============================================================================
+  // CONTAINER/LAYOUT PROPERTIES
+  // ============================================================================
+  final double? width;
+  final double? height;
+  final double? minWidth;
+  final double? minHeight;
+  final EdgeInsetsGeometry? margin;
+  final EdgeInsetsGeometry? padding;
+  final AlignmentGeometry? alignment;
+
+  // ============================================================================
+  // STYLE VARIANT
+  // ============================================================================
+  final bool isFilled;
+  final bool isOutlined;
+  final bool isText;
+
+  // ============================================================================
+  // BORDER PROPERTIES
+  // ============================================================================
+  final double borderWidth;
+  final Color? borderColor;
+  final BorderRadius? borderRadius;
+  final double? cornerRadius;
+
+  // ============================================================================
+  // BACKGROUND PROPERTIES
+  // ============================================================================
+  final Color? backgroundColor;
+  final Color? backgroundColorHover;
+  final Color? backgroundColorPressed;
+  final Color? backgroundColorDisabled;
+  final Gradient? backgroundGradient;
+
+  // ============================================================================
+  // TEXT PROPERTIES
+  // ============================================================================
+  final String? text;
+  final double? fontSize;
+  final String? fontFamily;
+  final FontWeight? fontWeight;
+  final FontStyle? fontStyle;
+  final Color? textColor;
+  final Color? textColorHover;
+  final Color? textColorPressed;
+  final Color? textColorDisabled;
+  final double? letterSpacing;
+  final TextAlign textAlign;
+  final TextDecoration? textDecoration;
+
+  // ============================================================================
+  // ICON PROPERTIES
+  // ============================================================================
+  final Widget? icon;
+  final Widget? leftIcon;
+  final Widget? rightIcon;
+  final double? iconSize;
+  final Color? iconColor;
+  final double? iconSpacing;
+
+  // ============================================================================
+  // SHADOW PROPERTIES
+  // ============================================================================
+  final List<BoxShadow>? boxShadow;
+  final List<BoxShadow>? boxShadowHover;
+  final List<BoxShadow>? boxShadowPressed;
+  final double? elevation;
+
+  // ============================================================================
+  // STATE PROPERTIES
+  // ============================================================================
+  final bool enabled;
+  final bool loading;
+  final Widget? loadingWidget;
+
+  // ============================================================================
+  // ANIMATION PROPERTIES
+  // ============================================================================
+  final Duration animationDuration;
+  final Curve animationCurve;
+
+  // ============================================================================
+  // INTERACTION PROPERTIES
+  // ============================================================================
+  final VoidCallback? onPressed;
+  final VoidCallback? onLongPress;
+  final VoidCallback? onHover;
+  final MouseCursor? mouseCursor;
+
+  // ============================================================================
+  // ADVANCED STYLING
+  // ============================================================================
+  final BoxShape shape;
+  final Clip clipBehavior;
+  final Matrix4? transform;
+  final AlignmentGeometry? transformAlignment;
+
+  // ============================================================================
+  // CHILD/CUSTOM CONTENT
+  // ============================================================================
+  final Widget? child;
+
+  const CustomizableButton({
+    super.key,
+    // Container/Layout
+    this.width,
+    this.height,
+    this.minWidth,
+    this.minHeight,
+    this.margin,
+    this.padding,
+    this.alignment,
+    // Style Variant
+    this.isFilled = false,
+    this.isOutlined = false,
+    this.isText = false,
+    // Border
+    this.borderWidth = 1.0,
+    this.borderColor,
+    this.borderRadius,
+    this.cornerRadius,
+    // Background
+    this.backgroundColor,
+    this.backgroundColorHover,
+    this.backgroundColorPressed,
+    this.backgroundColorDisabled,
+    this.backgroundGradient,
+    // Text
+    this.text,
+    this.fontSize,
+    this.fontFamily,
+    this.fontWeight,
+    this.fontStyle,
+    this.textColor,
+    this.textColorHover,
+    this.textColorPressed,
+    this.textColorDisabled,
+    this.letterSpacing,
+    this.textAlign = TextAlign.center,
+    this.textDecoration,
+    // Icon
+    this.icon,
+    this.leftIcon,
+    this.rightIcon,
+    this.iconSize,
+    this.iconColor,
+    this.iconSpacing = 8.0,
+    // Shadow
+    this.boxShadow,
+    this.boxShadowHover,
+    this.boxShadowPressed,
+    this.elevation,
+    // State
+    this.enabled = true,
+    this.loading = false,
+    this.loadingWidget,
+    // Animation
+    this.animationDuration = const Duration(milliseconds: 150),
+    this.animationCurve = Curves.easeInOut,
+    // Interaction
+    this.onPressed,
+    this.onLongPress,
+    this.onHover,
+    this.mouseCursor,
+    // Advanced
+    this.shape = BoxShape.rectangle,
+    this.clipBehavior = Clip.none,
+    this.transform,
+    this.transformAlignment,
+    // Custom
+    this.child,
+  });
+
+  @override
+  State<CustomizableButton> createState() => _CustomizableButtonState();
+}
+
+class _CustomizableButtonState extends State<CustomizableButton> {
+  bool _isHovered = false;
+  bool _isPressed = false;
+
+  bool get _isEnabled => widget.enabled && !widget.loading;
+
+  Color _getCurrentBackgroundColor() {
+    if (!_isEnabled) {
+      return widget.backgroundColorDisabled ?? Colors.grey.shade300;
+    }
+    if (_isPressed && widget.backgroundColorPressed != null) {
+      return widget.backgroundColorPressed!;
+    }
+    if (_isHovered && widget.backgroundColorHover != null) {
+      return widget.backgroundColorHover!;
+    }
+
+    // Handle style variants
+    if (widget.isFilled) {
+      return widget.backgroundColor ?? Theme.of(context).primaryColor;
+    } else if (widget.isOutlined || widget.isText) {
+      return widget.backgroundColor ?? Colors.transparent;
+    }
+
+    return widget.backgroundColor ?? Theme.of(context).primaryColor;
+  }
+
+  Color _getCurrentTextColor() {
+    if (!_isEnabled) {
+      return widget.textColorDisabled ?? Colors.grey.shade600;
+    }
+    if (_isPressed && widget.textColorPressed != null) {
+      return widget.textColorPressed!;
+    }
+    if (_isHovered && widget.textColorHover != null) {
+      return widget.textColorHover!;
+    }
+
+    // Handle style variants
+    if (widget.isFilled) {
+      return widget.textColor ?? Colors.white;
+    } else if (widget.isOutlined || widget.isText) {
+      return widget.textColor ?? Theme.of(context).primaryColor;
+    }
+
+    return widget.textColor ?? Colors.white;
+  }
+
+  Color? _getCurrentBorderColor() {
+    if (!_isEnabled) {
+      return Colors.grey.shade400;
+    }
+
+    if (widget.isOutlined) {
+      return widget.borderColor ?? Theme.of(context).primaryColor;
+    }
+
+    return widget.borderColor;
+  }
+
+  List<BoxShadow>? _getCurrentBoxShadow() {
+    if (!_isEnabled) {
+      return null;
+    }
+    if (_isPressed && widget.boxShadowPressed != null) {
+      return widget.boxShadowPressed;
+    }
+    if (_isHovered && widget.boxShadowHover != null) {
+      return widget.boxShadowHover;
+    }
+
+    // Default shadow for filled buttons
+    if (widget.isFilled && widget.boxShadow == null && widget.elevation == null) {
+      return [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 4,
+          offset: const Offset(0, 2),
+        ),
+      ];
+    }
+
+    if (widget.elevation != null) {
+      return [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: widget.elevation!,
+          offset: Offset(0, widget.elevation! / 2),
+        ),
+      ];
+    }
+
+    return widget.boxShadow;
+  }
+
+  BoxDecoration _getCurrentDecoration() {
+    final borderRadius = widget.borderRadius ??
+        (widget.cornerRadius != null
+            ? BorderRadius.circular(widget.cornerRadius!)
+            : BorderRadius.circular(8));
+
+    return BoxDecoration(
+      color: _getCurrentBackgroundColor(),
+      gradient: widget.backgroundGradient,
+      border: (widget.isOutlined || (!widget.isFilled && !widget.isText))
+          ? Border.all(
+        color: _getCurrentBorderColor() ?? Colors.transparent,
+        width: widget.borderWidth,
+      )
+          : null,
+      borderRadius: widget.shape == BoxShape.rectangle ? borderRadius : null,
+      boxShadow: _getCurrentBoxShadow(),
+      shape: widget.shape,
+    );
+  }
+
+  TextStyle _getTextStyle() {
+    final baseStyle = TextStyle(
+      fontSize: widget.fontSize ?? 16,
+      fontWeight: widget.fontWeight ?? FontWeight.w500,
+      fontStyle: widget.fontStyle,
+      color: _getCurrentTextColor(),
+      letterSpacing: widget.letterSpacing,
+      decoration: widget.textDecoration,
+    );
+
+    if (widget.fontFamily != null && widget.fontFamily!.isNotEmpty) {
+      return GoogleFonts.getFont(
+        widget.fontFamily!,
+        textStyle: baseStyle,
+      );
+    }
+
+    return baseStyle;
+  }
+
+  Widget _buildContent() {
+    if (widget.loading) {
+      return widget.loadingWidget ??
+          SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(_getCurrentTextColor()),
+            ),
+          );
+    }
+
+    if (widget.child != null) {
+      return widget.child!;
+    }
+
+    final List<Widget> children = [];
+
+    // Left icon or main icon
+    if (widget.leftIcon != null || (widget.icon != null && widget.text != null)) {
+      children.add(
+        IconTheme(
+          data: IconThemeData(
+            color: widget.iconColor ?? _getCurrentTextColor(),
+            size: widget.iconSize ?? 20,
+          ),
+          child: widget.leftIcon ?? widget.icon!,
+        ),
+      );
+      if (widget.text != null) {
+        children.add(SizedBox(width: widget.iconSpacing));
+      }
+    }
+
+    // Text
+    if (widget.text != null) {
+      children.add(
+        Text(
+          widget.text!,
+          textAlign: widget.textAlign,
+          style: _getTextStyle(),
+        ),
+      );
+    }
+
+    // Right icon
+    if (widget.rightIcon != null) {
+      if (widget.text != null) {
+        children.add(SizedBox(width: widget.iconSpacing));
+      }
+      children.add(
+        IconTheme(
+          data: IconThemeData(
+            color: widget.iconColor ?? _getCurrentTextColor(),
+            size: widget.iconSize ?? 20,
+          ),
+          child: widget.rightIcon!,
+        ),
+      );
+    }
+
+    // Icon only (no text)
+    if (widget.icon != null && widget.text == null && widget.leftIcon == null) {
+      children.add(
+        IconTheme(
+          data: IconThemeData(
+            color: widget.iconColor ?? _getCurrentTextColor(),
+            size: widget.iconSize ?? 20,
+          ),
+          child: widget.icon!,
+        ),
+      );
+    }
+
+    if (children.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: children,
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Widget button = MouseRegion(
+      onEnter: (_) {
+        if (_isEnabled) {
+          setState(() => _isHovered = true);
+          widget.onHover?.call();
+        }
+      },
+      onExit: (_) {
+        if (_isEnabled) {
+          setState(() => _isHovered = false);
+        }
+      },
+      cursor: widget.mouseCursor ??
+          (_isEnabled ? SystemMouseCursors.click : SystemMouseCursors.forbidden),
+      child: GestureDetector(
+        onTapDown: (_) {
+          if (_isEnabled) {
+            setState(() => _isPressed = true);
+          }
+        },
+        onTapUp: (_) {
+          if (_isEnabled) {
+            setState(() => _isPressed = false);
+          }
+        },
+        onTapCancel: () {
+          if (_isEnabled) {
+            setState(() => _isPressed = false);
+          }
+        },
+        onTap: _isEnabled ? widget.onPressed : null,
+        onLongPress: _isEnabled ? widget.onLongPress : null,
+        child: AnimatedContainer(
+          duration: widget.animationDuration,
+          curve: widget.animationCurve,
+          width: widget.width,
+          height: widget.height,
+          constraints: BoxConstraints(
+            minWidth: widget.minWidth ?? 0,
+            minHeight: widget.minHeight ?? 0,
+          ),
+          padding: widget.padding ??
+              const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          alignment: widget.alignment ?? Alignment.center,
+          decoration: _getCurrentDecoration(),
+          transform: widget.transform,
+          transformAlignment: widget.transformAlignment,
+          clipBehavior: widget.clipBehavior,
+          child: _buildContent(),
+        ),
+      ),
+    );
+
+    if (widget.margin != null) {
+      button = Padding(
+        padding: widget.margin!,
+        child: button,
+      );
+    }
+
+    return button;
   }
 }
