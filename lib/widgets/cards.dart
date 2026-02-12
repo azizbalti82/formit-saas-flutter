@@ -1,16 +1,12 @@
-import 'package:formbuilder/widgets/messages.dart';
-import 'package:hugeicons_pro/hugeicons.dart';
-import 'dart:convert';
-import '../backend/models/collection/collection.dart';
-import 'package:easy_url_launcher/easy_url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart' hide Svg;
+import 'package:formbuilder/widgets/messages.dart';
 import 'package:forui/forui.dart';
-import '../../services/themeService.dart';
-import 'dart:typed_data';
-import '../backend/models/integration.dart';
 import 'package:image/image.dart' as img;
+
+import '../../services/themeService.dart';
+import '../backend/models/integration.dart';
 
 class ProfileImagePicker extends StatelessWidget {
   final Uint8List? imageBytes;

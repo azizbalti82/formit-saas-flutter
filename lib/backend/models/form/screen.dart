@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:formbuilder/backend/models/form/screenCustomization.dart';
 import 'package:uuid/uuid.dart';
@@ -148,7 +147,7 @@ class Screen {
 
 class Connect {
   final String screenId;
-  final List<Rule> rules;
+  List<Rule> rules;
 
   Connect({
     required this.screenId,
@@ -173,28 +172,16 @@ class Connect {
 }
 
 class Rule {
-  static final _uuid = Uuid();
-
   final String ruleId;
-  final String widgetId;
-  final String logic;
+  final String? widgetId;
+  final String? logic;
   final dynamic value;
 
   Rule({
     required this.widgetId,
     required this.logic,
     this.value,
-  }) : ruleId = _uuid.v4();
-
-  // Check if this logic requires a value
-  bool get requiresValue {
-    return ![
-      'Is Empty',
-      'Is Not Empty',
-      'isEmpty',
-      'isNotEmpty',
-    ].contains(logic);
-  }
+  }) : ruleId = Uuid().v4();
 
   Map<String, dynamic> toMap() {
     return {

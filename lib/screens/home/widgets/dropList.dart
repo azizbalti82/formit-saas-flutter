@@ -67,77 +67,63 @@ class FontFamilySelector extends StatelessWidget {
   );
 }
 
-class ScreenItems extends StatelessWidget {
-  ScreenItems({super.key,required this.f,required this.screenId});
+class RuleDropList extends StatelessWidget {
+  RuleDropList({super.key,required this.f,required this.items,this.isTextRules,this.isNumberRules,this.hint="Select item"});
 
   final Function(String value) f;
-  final String screenId;
+  List<String> items;
   final Provider provider = Get.find<Provider>();
-  final fonts = [
-    'Roboto',
-    'Open Sans',
-    'Lato',
-  ];
+  final bool? isTextRules;
+  final bool? isNumberRules;
+  final String hint;
 
-  @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 150,
-    child: FSelect<String>(
-      hint: "Select widget",
-      format: (s) => s,
-      children: [
-        for (final font in fonts)
-          FSelectItem(
-            font,
-            font,
-          )
-      ],
-      onChange: (v){
-        if(v!=null){
-          f(v);
-        }
-      },
-    ),
-  );
-}
-class LogicItems extends StatelessWidget {
-  LogicItems({super.key,required this.f,required this.screenId});
 
-  final Function(String value) f;
-  final String screenId;
-  final Provider provider = Get.find<Provider>();
-  final op = [
+  final textRules = [
     'Equal',
     'Not Equal',
-    'Greater Than',
-    'Less Than',
-    'Greater or Equal',
-    'Less or Equal',
+    'Length Greater Than',
+    'Length Less Than',
+    'Length Equal',
     'Contains',
     'Starts With',
     'Ends With',
     'Is Empty',
     'Is Not Empty',
   ];
+  final numberRules = [
+    'Equal',
+    'Not Equal',
+    'Greater Than',
+    'Less Than',
+    'Is Empty',
+    'Is Not Empty',
+  ];
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-    width: 150,
-    child: FSelect<String>(
-      hint: "Select logic",
-      format: (s) => s,
-      children: [
-        for (final font in op)
-          FSelectItem(
-            font,
-            font,
-          )
-      ],
-      onChange: (v){
-        if(v!=null){
-          f(v);
-        }
-      },
-    ),
-  );
+  Widget build(BuildContext context){
+    if(isNumberRules!=null && isNumberRules!){
+      items = numberRules;
+    }else if(isTextRules!=null && isTextRules!){
+      items = textRules;
+    }
+    return SizedBox(
+      width: 150,
+      child: FSelect<String>(
+        hint: hint,
+        format: (s) => s,
+        children: [
+          for (final item in items)
+            FSelectItem(
+              item,
+              item,
+            )
+        ],
+        onChange: (v){
+          if(v!=null){
+            f(v);
+          }
+        },
+      ),
+    );
+  }
 }

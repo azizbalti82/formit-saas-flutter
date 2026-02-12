@@ -1,5 +1,6 @@
-import 'dart:typed_data';
 import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:hugeicons_pro/hugeicons.dart';

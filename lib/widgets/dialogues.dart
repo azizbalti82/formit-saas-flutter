@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'package:flutter/cupertino.dart' hide Form;
 import 'package:flutter/material.dart' hide Form;
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:flutter_svg/svg.dart';
@@ -8,20 +7,15 @@ import 'package:formbuilder/data/fakedata.dart';
 import 'package:formbuilder/services/themeService.dart';
 import 'package:formbuilder/widgets/form.dart';
 import 'package:forui/forui.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 
+import '../../backend/models/form/form.dart';
 import '../backend/models/collection/collection.dart';
-import '../backend/models/form/screen.dart';
 import '../screens/auth/intro.dart';
 import '../screens/auth/verifyEmail.dart';
-import '../screens/home/widgets/dropList.dart';
-import '../services/provider.dart';
 import '../services/tools.dart';
 import 'complex.dart';
 import 'messages.dart';
-import '../../backend/models/form/form.dart';
 
 // --------------------------------------------------------------------------
 // Notifications settings DIALOG
@@ -281,172 +275,6 @@ class _NotificationsDialogState extends State<NotificationsDialog> {
 // --------------------------------------------------------------------------
 // connection logic DIALOG
 // --------------------------------------------------------------------------
-Future showConnectionLogic(BuildContext context, theme t,Screen s,Function(String screenId, List<Connect> connects) updateScreenConnections) async {
-  final Provider provider = Get.find<Provider>();
-  provider.connects.value = s.workflow.connects;
-
-  return dialogBuilder(
-    context: context,
-    builder: (context, style, animation) => FDialog(
-      style: style,
-      animation: animation,
-      title: const Text(
-        "Connection rules",
-        style: TextStyle(fontSize: 22),
-      ),
-      body: Expanded(child: SingleChildScrollView(child: Column(
-        children: [
-          const SizedBox(height: 40),
-          if(s.workflow.connects.isEmpty)
-            Text("You don't have any connections to this screen yet",style: TextStyle(color: t.secondaryTextColor,fontSize: 16),)
-          else _buildConnections(s,t,provider),
-          const SizedBox(height: 40),
-        ],
-      ),)),
-      actions: [
-        Row(
-           children: [
-             Expanded(child: FButton(
-               onPress: () {
-                 updateScreenConnections(s.id,provider.connects);
-                 Navigator.pop(context);
-               },
-               child: const Text('Save'),
-             ),),
-             SizedBox(width: 10,),
-             Expanded(child: FButton(style: FButtonStyle.outline(),
-               onPress: () {
-                 Navigator.pop(context);
-               },
-               child: const Text('Close'),
-             ),)
-           ],
-        )
-      ],
-    ),
-  );
-}
-
-_buildConnections(Screen s,theme t,Provider p) {
-  return SingleChildScrollView(
-    child: Column(
-      children: p.connects.map((connect)=> Container(
-        padding: EdgeInsets.symmetric(horizontal: 6,vertical: 6),
-        margin: EdgeInsets.only(bottom: 10),
-        decoration: BoxDecoration(
-            color: t.cardColor,
-            borderRadius: BorderRadius.circular(4)
-        ),
-        child: Wrap(
-          crossAxisAlignment: WrapCrossAlignment.center,
-          children: [
-            Text("Go From   ",style: TextStyle(color: t.textColor),),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 4,vertical: 2),
-              decoration: BoxDecoration(
-                  color: t.accentColor,
-                  borderRadius: BorderRadius.circular(4)
-              ),
-              child: Text(connect.screenId,style: TextStyle(color: t.textColor),),
-            ),
-            Text("To   ",style: TextStyle(color: t.textColor),),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 4,vertical: 2),
-              decoration: BoxDecoration(
-                  color: t.textColor,
-                  borderRadius: BorderRadius.circular(4)
-              ),
-              child: Text(s.id,style: TextStyle(color: t.bgColor),),
-            ),
-
-            ...buildRules(s.id,connect,t,p)
-          ],
-        ),
-      )).toList(),
-    ),
-  );
-}
-
-List<Widget> buildRules(String screenId,Connect c,theme t,Provider p) {
-  List<Widget> result = [
-    Text("If   ",style: TextStyle(color: t.textColor),),
-    ScreenItems(
-      key: ValueKey(screenId),
-      screenId: screenId,
-      f: (v) {
-        Connect connect = c;
-        //connect.rules.firstWhereOrNull((r)=>r.ruleId==)
-        updateConnectRules(connect,p);
-      },
-    ),
-  ];
-
-  for(Rule r in c.rules){
-    if(c.rules.length>1){
-      result.add(Text("And   ",style: TextStyle(color: t.textColor),),);
-    }
-    result.addAll(
-      [
-        ScreenItems(
-          key: ValueKey(screenId),
-          screenId: screenId,
-          f: (v) {
-
-          },
-        ),
-        LogicItems(
-          screenId: screenId,
-          f: (v) {
-
-          },
-        ),
-        (["Is Empty","Is Not Empty"].contains(r.logic))?
-        SizedBox(): (["Not","Or"].contains(r.logic))?
-          //the logic requires another logic
-          LogicItems(
-          screenId: screenId,
-          f: (v) {
-
-          },
-          ): Text("'put your value here'")
-      ]
-    );
-
-
-  }
-//add the 'add rule' button
-  result.addAll(
-    [
-      SizedBox(width: 10,),
-      Material(
-        color: t.cardColor,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(4),
-          onTap: (){
-
-          },
-          child:  Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(HugeIconsStroke.add01,color:t.textColor ,size: 16,),
-              SizedBox(width: 5,),
-              Text('Add Rule',style: TextStyle(color: t.textColor,fontSize: 13),)
-            ],
-          ),
-        ),
-      ),
-      SizedBox(width: 10,),
-    ]
-  );
-  return result;
-}
-void updateConnectRules(Connect c, Provider p) {
-  final index = p.connects.indexWhere((con) => con.screenId == c.screenId);
-
-  if (index != -1) {
-    p.connects[index] = c; // replace item
-  }
-}
 
 // --------------------------------------------------------------------------
 // RENAME DIALOG

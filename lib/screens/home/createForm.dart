@@ -9,9 +9,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide colorFromHex;
-import 'package:flutter_context_menu/flutter_context_menu.dart';
 import 'package:formbuilder/backend/models/form/docItem.dart';
-import 'package:formbuilder/screens/home/appScreen.dart';
 import 'package:formbuilder/screens/home/formSettings.dart';
 import 'package:formbuilder/screens/home/widgets/dropList.dart';
 import 'package:formbuilder/widgets/messages.dart';
@@ -20,14 +18,11 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:gradient_glow_border/gradient_glow_border.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:reorderables/reorderables.dart';
 import 'package:split_view/split_view.dart';
+
 import '../../backend/models/form/screen.dart';
-import '../../backend/models/form/form.dart';
 import '../../backend/models/form/screenCustomization.dart';
 import '../../data/constants.dart';
-import '../../data/fonts.dart';
 import '../../main.dart';
 import '../../services/provider.dart';
 import '../../services/themeService.dart';
@@ -37,10 +32,8 @@ import '../../widgets/canva.dart';
 import '../../widgets/cards.dart';
 import '../../widgets/dialogues.dart';
 import '../../widgets/form builder items.dart';
-import '../../widgets/form.dart';
 import '../../widgets/image.dart';
 import '../../widgets/menu.dart';
-import '../../widgets/screenContent.dart';
 
 enum PreviewSizes { phone, tablet, desktop }
 
@@ -1680,8 +1673,7 @@ class _State extends State<CreatForm> {
                   color: t.textColor,
                   icon: HugeIconsStroke.copy02,
                 ),
-                if (s.isEnding && endings.length > 1 ||
-                    !s.isEnding && screens.length > 1)
+                if (s.isEnding && endings.length > 1 || !s.isInitial)
                   PopupMenuItemData(
                     onTap: () {
                       if (s.isEnding) {

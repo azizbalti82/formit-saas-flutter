@@ -4,8 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:formbuilder/screens/home/appScreen.dart';
 import 'package:formbuilder/screens/auth/intro.dart';
+import 'package:formbuilder/screens/home/appScreen.dart';
 import 'package:formbuilder/screens/home/createForm.dart';
 import 'package:formbuilder/services/provider.dart';
 import 'package:formbuilder/services/sharedPreferencesService.dart';
@@ -16,7 +16,6 @@ import 'package:formbuilder/widgets/menu.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:toastification/toastification.dart';
 import 'package:window_manager/window_manager.dart';
 

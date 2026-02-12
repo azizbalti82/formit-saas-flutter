@@ -1,39 +1,15 @@
 // ignore_for_file: file_names
 import 'dart:async';
-import 'dart:io';
-import 'dart:typed_data';
 
-import 'package:easy_url_launcher/easy_url_launcher.dart';
-import 'package:file_picker/file_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart' hide colorFromHex;
-import 'package:formbuilder/backend/models/form/docItem.dart';
-import 'package:formbuilder/screens/home/appScreen.dart';
-import 'package:formbuilder/screens/home/widgets/dropList.dart';
-import 'package:formbuilder/widgets/messages.dart';
 import 'package:forui/forui.dart';
 import 'package:get/get.dart';
-import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:split_view/split_view.dart';
-import '../../backend/models/form/screen.dart';
-import '../../backend/models/form/form.dart';
-import '../../backend/models/form/screenCustomization.dart';
-import '../../data/constants.dart';
-import '../../data/fonts.dart';
+
 import '../../main.dart';
 import '../../services/provider.dart';
 import '../../services/themeService.dart';
 import '../../services/tools.dart';
 import '../../widgets/basics.dart';
-import '../../widgets/canva.dart';
-import '../../widgets/cards.dart';
-import '../../widgets/dialogues.dart';
-import '../../widgets/form.dart';
-import '../../widgets/image.dart';
-import '../../widgets/menu.dart';
-import '../../widgets/screenContent.dart';
 
 class FormSettings extends StatefulWidget {
   FormSettings({super.key, required this.t});

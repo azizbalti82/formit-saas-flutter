@@ -1,14 +1,15 @@
-import 'package:flutter/material.dart';
 import 'package:canvas_kit/canvas_kit.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:flutter/material.dart';
+import 'package:formbuilder/screens/home/rulesEditor.dart';
+import 'package:formbuilder/services/tools.dart';
 import 'package:formbuilder/widgets/messages.dart';
 import 'package:get/get.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:vector_math/vector_math_64.dart' hide Colors;
+
 import '../backend/models/form/screen.dart';
 import '../services/provider.dart';
 import '../services/themeService.dart';
-import 'dialogues.dart';
 import 'menu.dart';
 
 class InteractiveCanvas extends StatefulWidget {
@@ -349,7 +350,7 @@ class _InteractiveCanvasState extends State<InteractiveCanvas> {
               items: [
                 PopupMenuItemData(
                   onTap: () {
-                    showConnectionLogic(context,t,screen,updateScreenConnections);
+                    navigateTo(context, RulesEditor(t: t, s: screen,screenOfConnections: screens,), false);
                   },
                   label: "Connection Rules",
                   color: t.textColor,
@@ -526,7 +527,7 @@ class _InteractiveCanvasState extends State<InteractiveCanvas> {
           if (_draggingFromScreenId != null) {
             _endDraggingConnection(screen.id,widget.t);
           }else{
-            showConnectionLogic(context, t, screen,updateScreenConnections);
+            navigateTo(context, RulesEditor(t: t, s: screen,screenOfConnections: screens,), false);
           }
         },
         child: Container(
